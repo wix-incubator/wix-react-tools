@@ -11,10 +11,18 @@
     "type": "git",
     "url": "git@github.com:wix/wix-react-tools.git"
   },
-  "files":["dist/src"],
+  "files": [
+    "dist/src"
+  ],
   "testGlob": "./dist/test/**/*.spec.js?(x)",
   "homepage": "https://github.com/wix/wix-react-tools#readme",
-  "keywords": ["typescript", "tdd"],
+  "keywords": [
+    "react",
+    "disposable",
+    "tools",
+    "mixin",
+    "component"
+  ],
   "main": "dist/src/index.js",
   "browser": "dist/src/index.js",
   "scripts": {
@@ -44,12 +52,18 @@
     "mocha": "~3.4.2",
     "mocha-env-reporter": "~2.0.4",
     "mocha-loader": "~1.1.1",
+    "mocha-plugin-env": "~0.0.4",
     "rimraf": "~2.6.1",
     "sinon": "~2.3.5",
     "sinon-chai": "~2.11.0",
     "source-map-support": "~0.4.15",
+    "tslib": "~1.7.1",
     "typescript": "~2.3.4",
     "webpack": "~3.0.0",
     "webpack-dev-server": "~2.5.0"
+  },
+  "dependencies": {
+    "react": "~15.6.1",
+    "test-drive-react": "~0.1.98"
   }
 }

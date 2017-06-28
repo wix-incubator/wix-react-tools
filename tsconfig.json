@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "lib": [
+      "dom",
       "es2015"
     ],
     "module": "commonjs",
@@ -10,6 +11,8 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "sourceMap": true,
+    "experimentalDecorators": true,
+    "jsx": "react",
     "outDir": "dist",
     "typeRoots": [
       "./node_modules/@types",
