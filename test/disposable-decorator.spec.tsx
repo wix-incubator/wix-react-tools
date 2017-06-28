@@ -2,6 +2,7 @@ import * as React from 'react';
 import {expect, sinon, ClientRenderer} from 'test-drive-react';
 import {disposable} from "../src/disposable-decorator";
 import {Disposers} from "../src/disposers";
+import {inBrowser} from "mocha-plugin-env/dist/src";
 
 
 interface Props {
@@ -27,7 +28,7 @@ describe("disposable decorator", () => {
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
 
-    it('called on unmount', () => {
+    it.assuming(inBrowser(), 'only in browser')('called on unmount', () => {
         let sinonSpy = sinon.spy();
         const {container} = clientRenderer.render(<div></div>);
 
