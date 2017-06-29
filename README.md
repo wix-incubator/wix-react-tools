@@ -87,3 +87,4 @@ ObserverComonent
 should we wrap create element using pragma annotation, globaly or during component render only?
 
 should we wrap inheriting classes lifecycle methods at the constructor or require inheriting classes to call super.lifecycleMethod
+
