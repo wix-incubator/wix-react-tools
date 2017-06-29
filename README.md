@@ -1,5 +1,8 @@
 # React bases
 
+ [![Greenkeeper badge](https://badges.greenkeeper.io/wix/react-bases.svg)](https://greenkeeper.io/)
+ [![Build Status](https://travis-ci.org/wix/react-bases.svg?branch=master)](https://travis-ci.org/wix/react-bases)
+ 
 This library exports different mixins for your react components and some curated base components using these mixins.
 all mixins can be flagged disabled for a specific inheriting class
 
