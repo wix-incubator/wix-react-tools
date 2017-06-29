@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { expect, sinon, simulate, ClientRenderer } from 'test-drive-react';
 import { GlobalID, reset, applyMixin } from '../../src/mixins/compWithMixins';
+import {inBrowser} from "mocha-plugin-env/dist/src";
 
 
 class MainProps {
@@ -8,7 +9,7 @@ class MainProps {
     testId: string;
 }
 
-describe('Global ID Mixin', () => {
+describe.assuming(inBrowser(), 'only in browser')('Global ID Mixin', () => {
 
     const clientRenderer = new ClientRenderer();
     beforeEach(() => reset());
