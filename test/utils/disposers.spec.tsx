@@ -14,10 +14,26 @@ describe("Disposers", () => {
         expect(disposer2).to.have.callCount(0);
 
         disposer1.reset();
-        disposer2.reset();
         disposables.disposeAll();
 
         expect(disposer1).to.have.callCount(0);
+        expect(disposer2).to.have.callCount(1);
+    });
+
+    it('registers anonymous disposers ', () => {
+        const disposables = new Disposers();
+        const disposer1 = sinon.spy();
+        const disposer2 = sinon.spy();
+
+        disposables.set(disposer1);
+        disposables.set(disposer2);
+
+        expect(disposer1).to.have.callCount(0);
+        expect(disposer2).to.have.callCount(0);
+
+        disposables.disposeAll();
+
+        expect(disposer1).to.have.callCount(1);
         expect(disposer2).to.have.callCount(1);
     });
 
@@ -63,6 +79,26 @@ describe("Disposers", () => {
         disposables.set('key2', disposer2);
 
         disposables.dispose('key1');
+        expect(disposer1).to.have.callCount(1);
+        expect(disposer2).to.have.callCount(0);
+
+        disposer1.reset();
+        disposer2.reset();
+        disposables.disposeAll();
+
+        expect(disposer1).to.have.callCount(0);
+        expect(disposer2).to.have.callCount(1);
+    });
+
+    it('un-registers anonymous disposers by returned key', () => {
+        const disposables = new Disposers();
+        const disposer1 = sinon.spy();
+        const disposer2 = sinon.spy();
+
+        const key1 = disposables.set(disposer1);
+        disposables.set(disposer2);
+
+        disposables.dispose(key1);
         expect(disposer1).to.have.callCount(1);
         expect(disposer2).to.have.callCount(0);
 

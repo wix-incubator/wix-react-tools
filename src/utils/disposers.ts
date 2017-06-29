@@ -1,13 +1,31 @@
 export const UNCAUGHT_DISPOSER_ERROR_MESSAGE = 'uncaught disposer error';
 
+let i = 0;
+function uniqueKey():string{
+    return '$$$'+(i++);
+}
+
 export class Disposers {
     private disposers:{
         [k:string]:Function
     } = {};
 
-    set(key:string, disposer:Function):void{
-        this.execute(key);
-        this.disposers[key] = disposer;
+    set(disposer:Function):string;
+    set(key:string, disposer:Function):void;
+    set(key:string|Function, disposer?:Function):string|void{
+        if (typeof key === 'string') {
+            disposer = disposer!;
+            this.execute(key);
+            this.disposers[key] = disposer;
+        } else {
+            disposer = key;
+            key = uniqueKey();
+            while (this.disposers.hasOwnProperty(key)){
+                key = uniqueKey();
+            }
+            this.disposers[key] = disposer;
+            return key;
+        }
     }
 
     dispose(key:string):void {
