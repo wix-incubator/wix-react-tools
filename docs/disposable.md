@@ -1,18 +1,20 @@
 # Disposable mixin
 
-Registeration API for disposing of component which is called when component unmounts.
+Helps manage clean-ups during the life span of the component. 
 
 ## API
   
-### Disposers class
+### Disposers utility class
 
+Keeps track of bound resources by registering and executing [disposer](https://en.wikipedia.org/wiki/Dispose_pattern) functions.
+A Disposers instance keeps track of functions by key.
 **disposeAll():void**
 
 executes all registered disposers and removes them from memory.
 
 **set(key:string, disposer:Function):void**
 
-registers a disposer by name. If a previous disposer was registered under the same name, it is executed.
+registers a disposer by name. If a previous disposer was registered under the same name, it is executed and removed.
 
 **dispose(key:string):void**
 
@@ -27,21 +29,36 @@ executes  a disposer by name and removes it from memory.
 
 ### @disposable decorator
 **requires decorated class to implement DisposeableCompMixin**
-initializes this.disposer and calls `this.disposer.disposeAll()` after `componentWillUnmount`;
- 
-usage:
+
+Initializes `this.disposer` with a new `Disposers` instance before `componentWillMount`.  
+Calls `this.disposer.disposeAll()` after `componentWillUnmount`.
+
+####usage
+
 ```ts
+resetTimer(){
+	const timerId = setTimeout(() => {/* ... */}, 500);
+	this.disposer.set(TIMER_KEY, () => clearTimeout(timerId));
+}
+ 
 componentDidMount(){
-	const intervalId = setInterval(() => {/* ... */}, 50);
-	this.disposer.set(MY_DISPOSE_NAME, () => clearInterval(intervalId))    
+    this.resetTimer();
 }
 ```
 
-manual dispose:
+manual dispose (will dispose old timer):
 ```ts
 onClick(){
-	this.disposer.dispose(MY_DISPOSE_NAME);
+	this.disposer.dispose(TIMER_KEY);
 }
 ```
+
+manual renew (will dispose old timer and register the new one):
+```ts
+onClick(){
+	this.resetTimer();
+}
+```
+
 ## Implementation
 missing server-rendering test
