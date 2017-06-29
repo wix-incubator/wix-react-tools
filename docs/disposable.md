@@ -69,7 +69,7 @@ executes all registered disposers and removes them from memory.
 
 Sets up this.disposer and takes care of clean-up when component unmounts;
 
-####example
+#### example
 
 set up `JOB` to run 1 second after component mounts
 
@@ -102,7 +102,7 @@ onClick(){
 ```
 
 
-####Under the hood
+#### Under the hood
 Initializes `this.disposer` with a new `Disposers` instance before `componentWillMount`.  
 Calls `this.disposer.disposeAll()` after `componentWillUnmount`.
 
