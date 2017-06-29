@@ -125,12 +125,12 @@ describe('ObservableComponent', () => {
             expect(select(testAnchor)).to.have.text('moshe 81');
         });
 
-        xit('should not rerender after modifying its props (when changing unrendered field)', () => {
+        it('should not rerender after modifying its props (when changing unrendered field)', () => {
             const renderSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onRender={renderSpy}></TestComp>);
+            const { select, waitForDom, container } = clientRenderer.render(<div><TestComp onRender={renderSpy}></TestComp></div>);
 
 
-            clientRenderer.render(<TestComp onRender={renderSpy} smell="good"></TestComp>, container);
+            clientRenderer.render(<div><TestComp onRender={renderSpy} smell="good"></TestComp></div>, container);
 
             expect(renderSpy).to.have.been.calledOnce;
             expect(select(testAnchor)).to.have.text('enter name here -1');
