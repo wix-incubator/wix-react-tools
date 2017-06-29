@@ -71,7 +71,7 @@ Sets up this.disposer and takes care of clean-up when component unmounts;
 
 #### example
 
-set up `JOB` to run 1 second after component mounts
+set up `JOB` to run 1 second after component mounts. `JOB` will be cancelled if the component un-mounts.
 
 ```ts
 const TIMER_KEY = "myTimer";
