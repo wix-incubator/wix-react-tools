@@ -15,49 +15,49 @@ sets the static render flag, when the static render flag is set to true, plugins
 
 ## available mixins:
 
-[global-id](https://github.com/wixplosives/observable-component/blob/master/docs/global-id.md)
+[global-id](https://github.com/wix/react-bases/blob/master/docs/global-id.md)
 
 *Easily generate namespaced global DOM ID's that can be used in label for attribute and more*
 
-[props-injection](https://github.com/wixplosives/observable-component/blob/master/docs/props-injection.md)
+[props-injection](https://github.com/wix/react-bases/blob/master/docs/props-injection.md)
 
 *allows injecting project resources directly into internal component props*
 
-[copy-data-attributes](https://github.com/wixplosives/observable-component/blob/master/docs/copy-data-attributes.md)
+[copy-data-attributes](https://github.com/wix/react-bases/blob/master/docs/copy-data-attributes.md)
 
 *merge all data-\* attributes to the component root element*
 
-[copy-aria](https://github.com/wixplosives/observable-component/blob/master/docs/copy-aria.md)
+[copy-aria](https://github.com/wix/react-bases/blob/master/docs/copy-aria.md)
 
 *merge all aria attributes to the component root element*
 
-[merge-class-names](https://github.com/wixplosives/observable-component/blob/master/docs/merge-class-names.md)
+[merge-class-names](https://github.com/wix/react-bases/blob/master/docs/merge-class-names.md)
 
 *adds className prop to the component root element className*
 
-[merge-inline-style](https://github.com/wixplosives/observable-component/blob/master/docs/merge-inline-style.md)
+[merge-inline-style](https://github.com/wix/react-bases/blob/master/docs/merge-inline-style.md)
 
 *merge inline style to the component root element style attribute*
 
-[langauges](https://github.com/wixplosives/observable-component/blob/master/docs/langauges.md)
+[langauges](https://github.com/wix/react-bases/blob/master/docs/langauges.md)
 
 *allows easily using langauge files*
 
-[disposable](https://github.com/wixplosives/observable-component/blob/master/docs/disposable.md)
+[disposable](https://github.com/wix/react-bases/blob/master/docs/disposable.md)
 
 *API to register for component unmount for destruct - centrelized dispose hook for mixins*
 
 ### events
 
-[mouse-toucher](https://github.com/wixplosives/observable-component/blob/master/docs/mouse-toucher.md)
+[mouse-toucher](https://github.com/wix/react-bases/blob/master/docs/mouse-toucher.md)
 
 *automatically listens to the corresponding touch event when listening to a mouse event*
 
-[safe-global-events](https://github.com/wixplosives/observable-component/blob/master/docs/safe-global-events.md)
+[safe-global-events](https://github.com/wix/react-bases/blob/master/docs/safe-global-events.md)
 
 *adds addGlobalEvent, setInterval, setTimout, requestAnimationFrame to the component prototype. added event listeners are safe to use in server and dispose automatically when component unmounts*
 
-[on-click-outside](https://github.com/wixplosives/observable-component/blob/master/docs/on-click-outside.md)
+[on-click-outside](https://github.com/wix/react-bases/blob/master/docs/on-click-outside.md)
 
 *adds onClickOutside to prototype and props*
 
