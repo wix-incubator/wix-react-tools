@@ -108,11 +108,12 @@ export class ObservableComponent<P, S> extends React.Component<P, S> {
     componentWillReceiveProps(newProps: P) {
         const cls = this.constructor as ObservableComponentClass<P, S>;
         const watchAllProps:boolean = cls.watchesAllProps;
-        let unWatchedProps:StringMap = {};
+        let unWatchedProps:StringMap | undefined = undefined;
         runInAction(() => {
             _.forEach(newProps, (prop, propName: keyof P) => {
                 const mobxManager:any = (this.observableProps as any).$mobx;
                 if(cls.watchesAllProps && !mobxManager.values[propName]){
+                    unWatchedProps = unWatchedProps || {};
                     unWatchedProps[propName] = prop;
                 }else{
                     this.observableProps[propName] = prop;
