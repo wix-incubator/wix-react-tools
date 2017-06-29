@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { expect, sinon, simulate, ClientRenderer } from 'test-drive-react';
-import { GlobalID, reset, applyMixin } from '../../src/mixins/compWithMixins';
+import { GlobalID, reset, applyMixin } from '../../src/mixins/global-id-decorator';
 
 
 class MainProps {
@@ -8,7 +8,7 @@ class MainProps {
     testId: string;
 }
 
-describe('Global ID Mixin', () => {
+describe('Global ID Decorator', () => {
 
     const clientRenderer = new ClientRenderer();
     beforeEach(() => reset());
@@ -48,22 +48,22 @@ describe('Global ID Mixin', () => {
 
 
         it('Uses external ID if passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='1' id={'DEATH'}></MainClass>);
+            const { select, waitForDom } = clientRenderer.render(<MainClass testId='1' id={'EXT'}></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT1')).to.exist;
             expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
-            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'DEATH_MyTestComp');
-            expect(select('TEST_CLASS_INPUT1')).to.have.attribute('id', 'DEATH_MyTestComp_MyInput');
-            expect(select('TEST_CLASS_LABEL1')).to.have.attribute('for', 'DEATH_MyTestComp_MyInput');
-            expect(select('TEST_CLASS_INPUT2')).to.have.attribute('id', 'DEATH_MyTestComp_MyOtherInput');
-            expect(select('TEST_CLASS_LABEL2')).to.have.attribute('for', 'DEATH_MyTestComp_MyOtherInput');
+            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'EXT_MyTestComp');
+            expect(select('TEST_CLASS_INPUT1')).to.have.attribute('id', 'EXT_MyTestComp_MyInput');
+            expect(select('TEST_CLASS_LABEL1')).to.have.attribute('for', 'EXT_MyTestComp_MyInput');
+            expect(select('TEST_CLASS_INPUT2')).to.have.attribute('id', 'EXT_MyTestComp_MyOtherInput');
+            expect(select('TEST_CLASS_LABEL2')).to.have.attribute('for', 'EXT_MyTestComp_MyOtherInput');
         });
 
         it('Generates an ID if external ID is not passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='1'> </MainClass>);
+            const { select, waitForDom } = clientRenderer.render(<MainClass testId='_I'> </MainClass>);
 
-            expect(select('MAIN_CLASS_ROOT1')).to.exist;
-            expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
+            expect(select('MAIN_CLASS_ROOT_I')).to.exist;
+            expect(select('MAIN_CLASS_ROOT_I', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
             expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'MainClass1_MyTestComp');
             expect(select('TEST_CLASS_INPUT1')).to.have.attribute('id', 'MainClass1_MyTestComp_MyInput');
             expect(select('TEST_CLASS_LABEL1')).to.have.attribute('for', 'MainClass1_MyTestComp_MyInput');
