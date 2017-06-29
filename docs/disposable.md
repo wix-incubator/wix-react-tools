@@ -4,34 +4,44 @@ Registeration API for disposing of component which is called when component unmo
 
 ## API
   
-**registerDisposer(disposer:() => any):() => any;**
+### Disposers class
 
-registers a disposer to be called on unmount, 
-returns a wrapped disposer that can be called for manual disposing
+**disposeAll():void**
 
+executes all registered disposers and removes them from memory.
+
+**set(key:string, disposer:Function):void**
+
+registers a disposer by name. If a previous disposer was registered under the same name, it is executed.
+
+**dispose(key:string):void**
+
+executes  a disposer by name and removes it from memory.
+
+### DisposeableCompMixin
+```ts
+ interface DisposeableCompMixin {
+    readonly disposer: Disposers;
+}
+```
+
+### @disposable decorator
+**requires decorated class to implement DisposeableCompMixin**
+initializes this.disposer and calls `this.disposer.disposeAll()` after `componentWillUnmount`;
+ 
 usage:
-```jsx
+```ts
 componentDidMount(){
 	const intervalId = setInterval(() => {/* ... */}, 50);
-	this.registerDisposer(() => clearInterval(intervalId))    
+	this.disposer.set(MY_DISPOSE_NAME, () => clearInterval(intervalId))    
 }
 ```
+
 manual dispose:
-```jsx
-componentDidMount(){
-	const intervalId = setInterval(() => {/* ... */}, 50);
-	this._manualDisposeInterval = this.registerDisposer(() => clearInterval(intervalId))    
-}
+```ts
 onClick(){
-	// manual dispose - will not be called again when component unmount
-	this._manualDisposeInterval()
+	this.disposer.dispose(MY_DISPOSE_NAME);
 }
 ```
-
 ## Implementation
-
-Add API to prototype:
-* registerDisposer - accepts a function to be called when component unmounts and return hook to manually dispose
-
-Wraps component instance methods on constructor:
-* componentWillUnmount - call dispose hooks after user code
+missing server-rendering test

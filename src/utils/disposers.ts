@@ -5,17 +5,17 @@ export class Disposers {
         [k:string]:Function
     } = {};
 
-    set(key:string, disposer:Function){
-        this.activateOld(key);
+    set(key:string, disposer:Function):void{
+        this.execute(key);
         this.disposers[key] = disposer;
     }
 
-    dispose(key:string) {
-        this.activateOld(key);
+    dispose(key:string):void {
+        this.execute(key);
         delete this.disposers[key];
     }
 
-    private activateOld(key: string) {
+    private execute(key: string) {
         try {
             if (this.disposers.hasOwnProperty(key)) {
                 this.disposers[key]();
@@ -25,9 +25,9 @@ export class Disposers {
         }
     }
 
-    disposeAll() {
+    disposeAll():void {
         Object.keys(this.disposers)
-            .forEach(k => this.activateOld(k));
+            .forEach(k => this.execute(k));
         this.disposers = {};
     }
 }
