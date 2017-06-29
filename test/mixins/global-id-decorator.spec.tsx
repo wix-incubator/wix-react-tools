@@ -23,14 +23,14 @@ describe('Global ID Decorator', () => {
 
     }
 
-    describe('Non-Root node usage', () => {
+    describe('If not used on ROOT node', () => {
 
-        class MainClass extends BaseComp<{},{}> {
+        class MainClass extends BaseComp<{}, {}> {
             props: MainProps;
             render() {
                 return <div data-automation-id={'MAIN_CLASS_ROOT' + this.props.testId}>
                     <TestClass id={this.getGlobalID('MyTestComp')}></TestClass>
-                    <label data-automation-id='MAIN_CLASS_LABEL' htmlFor={this.getGlobalID('MyTestComp')}></label>
+                    <label data-automation-id='MAIN_CLASS_LABEL' htmlFor={this.getGlobalID('MyTestComp')} ></label>
                 </div>
             }
         }
@@ -86,9 +86,9 @@ describe('Global ID Decorator', () => {
         });
     });
 
-    describe('Root node usage', () => {
+    describe('If used on ROOT node', () => {
 
-        class MainClass extends BaseComp<{},{}> {
+        class MainClass extends BaseComp<{}, {}> {
             props: MainProps;
             render() {
                 return <div data-automation-id={'MAIN_CLASS_ROOT' + this.props.testId}>
@@ -110,15 +110,15 @@ describe('Global ID Decorator', () => {
         }
 
         it('Uses external ID for root node if passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='1' id={'WAR'} ></MainClass>);
+            const { select, waitForDom } = clientRenderer.render(<MainClass testId='1' id={'EXT'} ></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT1')).to.exist;
-            expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.have.attribute('id', 'WAR_MyTestComp');
-            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'WAR_MyTestComp');
-            expect(select('TEST_CLASS_INPUT1')).to.have.attribute('id', 'WAR_MyTestComp');
-            expect(select('TEST_CLASS_LABEL1')).to.have.attribute('for', 'WAR_MyTestComp');
-            expect(select('TEST_CLASS_INPUT2')).to.have.attribute('id', 'WAR_MyTestComp_MyOtherInput');
-            expect(select('TEST_CLASS_LABEL2')).to.have.attribute('for', 'WAR_MyTestComp_MyOtherInput');
+            expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.have.attribute('id', 'EXT_MyTestComp');
+            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'EXT_MyTestComp');
+            expect(select('TEST_CLASS_INPUT1')).to.have.attribute('id', 'EXT_MyTestComp');
+            expect(select('TEST_CLASS_LABEL1')).to.have.attribute('for', 'EXT_MyTestComp');
+            expect(select('TEST_CLASS_INPUT2')).to.have.attribute('id', 'EXT_MyTestComp_MyOtherInput');
+            expect(select('TEST_CLASS_LABEL2')).to.have.attribute('for', 'EXT_MyTestComp_MyOtherInput');
         });
 
         it('Generates explicit ID for root node if external ID is not passed', () => {
@@ -134,7 +134,7 @@ describe('Global ID Decorator', () => {
         });
     });
 
-    describe('CreateElement sugar', () => {
+    describe('CreateElement syntax sugar', () => {
 
         @GlobalID()
         class OtherBaseComp<P, S> extends React.Component<P & { id?: string }, S>  {
@@ -170,20 +170,70 @@ describe('Global ID Decorator', () => {
             }
         }
 
-        it('Uses external ID if passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='1' id={'PLAGUE'}></MainClass>);
-            // debugger;
+        it('Generates an ID if external ID is not passed', () => {
+            const { select, waitForDom } = clientRenderer.render(<MainClass testId='_I' ></MainClass>);
 
-            expect(select('MAIN_CLASS_ROOT1')).to.exist;
-            expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
-            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'PLAGUE_MyTestComp');
-            expect(select('TEST_CLASS_INPUT1')).to.have.attribute('id', 'PLAGUE_MyTestComp_MyInput');
-            expect(select('TEST_CLASS_LABEL1')).to.have.attribute('for', 'PLAGUE_MyTestComp_MyInput');
-            expect(select('TEST_CLASS_INPUT2')).to.have.attribute('id', 'PLAGUE_MyTestComp_MyOtherInput');
-            expect(select('TEST_CLASS_LABEL2')).to.have.attribute('for', 'PLAGUE_MyTestComp_MyOtherInput');
+            expect(select('MAIN_CLASS_ROOT_I')).to.exist;
+            expect(select('MAIN_CLASS_ROOT_I', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
+            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'MainClass1_MyTestComp');
+            expect(select('TEST_CLASS_INPUT1')).to.have.attribute('id', 'MainClass1_MyTestComp_MyInput');
+            expect(select('TEST_CLASS_LABEL1')).to.have.attribute('for', 'MainClass1_MyTestComp_MyInput');
+            expect(select('TEST_CLASS_INPUT2')).to.have.attribute('id', 'MainClass1_MyTestComp_MyOtherInput');
+            expect(select('TEST_CLASS_LABEL2')).to.have.attribute('for', 'MainClass1_MyTestComp_MyOtherInput');
+        });
+
+        it('Uses external ID if passed', () => {
+            const { select, waitForDom } = clientRenderer.render(<MainClass testId='_I' id={'EXT'}></MainClass>);
+
+            expect(select('MAIN_CLASS_ROOT_I')).to.exist;
+            expect(select('MAIN_CLASS_ROOT_I', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
+            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'EXT_MyTestComp');
+            expect(select('TEST_CLASS_INPUT1')).to.have.attribute('id', 'EXT_MyTestComp_MyInput');
+            expect(select('TEST_CLASS_LABEL1')).to.have.attribute('for', 'EXT_MyTestComp_MyInput');
+            expect(select('TEST_CLASS_INPUT2')).to.have.attribute('id', 'EXT_MyTestComp_MyOtherInput');
+            expect(select('TEST_CLASS_LABEL2')).to.have.attribute('for', 'EXT_MyTestComp_MyOtherInput');
+        });
+
+    });
+
+    describe('Odds and Ends', () => {
+
+        it('Handles both id and htmlFor if present on same element', () => {
+
+            class MainClass extends BaseComp<{}, {}> {
+                render() {
+                    return <div data-automation-id={'MAIN_CLASS_ROOT'}>
+                        <input type="text" data-automation-id='MAIN_CLASS_DIV' id={this.getGlobalID('MyTestComp')} />
+                        <label data-automation-id='MAIN_CLASS_LABEL' id={this.getGlobalID('MyTestComp')} htmlFor={this.getGlobalID('MyTestComp')} ></label>
+                    </div>
+                }
+            }
+
+            const { select, waitForDom } = clientRenderer.render(<MainClass></MainClass>);
+
+            expect(select('MAIN_CLASS_DIV')).to.have.attribute('id', 'MainClass1_MyTestComp');
+            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('id', 'MainClass1_MyTestComp');
+            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'MainClass1_MyTestComp');
+        });
+
+
+        it('Is not confused by annotations on inheriting classes', () => {
+
+            @GlobalID()
+            class MainClass extends BaseComp<{}, {}> {
+                render() {
+                    return <div data-automation-id={'MAIN_CLASS_ROOT'}>
+                        <input type="text" data-automation-id='MAIN_CLASS_DIV' id={this.getGlobalID('MyTestComp')} />
+                        <label data-automation-id='MAIN_CLASS_LABEL' htmlFor={this.getGlobalID('MyTestComp')} ></label>
+                    </div>
+                }
+            }
+
+            const { select, waitForDom } = clientRenderer.render(<MainClass></MainClass>);
+
+            expect(select('MAIN_CLASS_DIV')).to.have.attribute('id', 'MainClass1_MyTestComp');
+            expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'MainClass1_MyTestComp');
         });
     });
 
-
-    //Test that annotation on inheriting class does not override/confuse the one on BaseComp
 });

@@ -13,7 +13,6 @@ export function applyMixin(target: any) {
         const origCreate = React.createElement;
 
         (React as any).createElement = function (type: any, props: any, children: any[]) {
-            console.log(arguments);
             if (props['htmlFor']) {
                 if (!target._id || props['htmlFor'].indexOf(target._id) !== 0)  {
                     props['htmlFor'] = target.getGlobalID(props['htmlFor']);
@@ -28,8 +27,6 @@ export function applyMixin(target: any) {
             return origCreate.apply(this, arguments);
         }
 
-
-
         const res = origRender.apply(this, arguments);
         (React as any).createElement = origCreate;
         return res;
@@ -41,7 +38,7 @@ export function GlobalID() {
         if (!(names[name])) {
             names[name] = 1;
         } else {
-            names[name] = names[name] + 1;
+            names[name]++;
         }
 
         return name + names[name];
@@ -49,7 +46,6 @@ export function GlobalID() {
 
     return function (cls: any) {
         cls.prototype.getGlobalID = function (str: string) {
-            // debugger;
             if (this.props.id) {
                 this._id = this.props.id;
             } else {
