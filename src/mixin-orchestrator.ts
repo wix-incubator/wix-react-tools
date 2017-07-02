@@ -93,7 +93,7 @@ export function registerForConstructor<T,TE  extends WithOrchestratorMeta<T> & T
         constructorHooks:[]
     };
     targetE.orchastratorSymbol.constructorHooks = targetE.orchastratorSymbol.constructorHooks || [];
-    targetE.orchastratorSymbol!.constructorHooks!.push(cb);
+    targetE.orchastratorSymbol.constructorHooks.push(cb);
     return targetE;
 }
 

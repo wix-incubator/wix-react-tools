@@ -8,14 +8,14 @@ import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
 
 //'mixin1SpyBefore','mixin2SpyBefore','mixin1SpyAfter','mixin2SpyAfter','mixin1SpyAround','mixin2SpyAround','userCodeSpy'
-type Spies = {
-    mixin1SpyBefore: sinon.SinonSpy;
-    mixin2SpyBefore: sinon.SinonSpy;
-    mixin1SpyAfter: sinon.SinonSpy;
-    mixin2SpyAfter: sinon.SinonSpy;
-    mixin1SpyAround: sinon.SinonSpy;
-    mixin2SpyAround: sinon.SinonSpy;
-    userCodeSpy: sinon.SinonSpy;
+class Spies {
+    mixin1SpyBefore = sinon.spy();
+    mixin2SpyBefore = sinon.spy();
+    mixin1SpyAfter = sinon.spy();
+    mixin2SpyAfter = sinon.spy();
+    mixin1SpyAround = sinon.spy();
+    mixin2SpyAround = sinon.spy();
+    userCodeSpy = sinon.spy();
 }
 function expectCallOrder(order:{name:string,spy:sinon.SinonSpy}[],calls:number=1){
 
@@ -27,10 +27,18 @@ function expectCallOrder(order:{name:string,spy:sinon.SinonSpy}[],calls:number=1
     }
 }
 
-function expectNoCalls(spies:{[name:string]:sinon.SinonSpy}){
+function expectNoCalls(spies:Spies){
     _forEach(spies,(element:sinon.SinonSpy) => {
-        expect(element,name).to.have.not.been.called;
+        expect(element,name).to.have.callCount(0);
     });
+}
+
+function getSpiesOrder(spies: Spies) {
+    return [{name: 'mixin1SpyBefore', spy: spies.mixin1SpyBefore},
+        {name: 'mixin2SpyBefore', spy: spies.mixin2SpyBefore},
+        {name: 'userCodeSpy', spy: spies.userCodeSpy},
+        {name: 'mixin2SpyAfter', spy: spies.mixin2SpyAfter},
+        {name: 'mixin1SpyAfter', spy: spies.mixin1SpyAfter}];
 }
 
 describe("mixin orchestrator", () => {
@@ -89,31 +97,28 @@ describe("mixin orchestrator", () => {
             describe.assuming(inBrowser(),'inbrowser')('client side life cycle',()=>{
                 describe('before and after: '+lifeCycleMethod,()=>{
                     it('allows mutliple mixins to run code in '+lifeCycleMethod+' with user method', () => {
-                        const spies:Spies = _reduce(['mixin1SpyBefore','mixin2SpyBefore','mixin1SpyAfter','mixin2SpyAfter','mixin1SpyAround','mixin2SpyAround','userCodeSpy'],
-                                             (accum:Spies,spyName:keyof Spies)=>{
-                                                 accum[spyName] = sinon.spy();
-                                                 return accum
-                                             },{}) as Spies;
+                        const spies:Spies = new Spies();
 
-                        const spyOrder = [{name:'mixin1SpyBefore',spy:spies.mixin1SpyBefore},
-                                    {name:'mixin2SpyBefore',spy:spies.mixin2SpyBefore},
-                                    {name:'userCodeSpy',spy:spies.userCodeSpy},
-                                    {name:'mixin2SpyAfter',spy:spies.mixin2SpyAfter},
-                                    {name:'mixin1SpyAfter',spy:spies.mixin1SpyAfter}]
+                        const spyOrder = getSpiesOrder(spies);
 
+                        //TODO generalize
                         function mixin1<T>(cls:T):T{
                             registerLifeCycle(cls,'before',lifeCycleMethod,spies.mixin1SpyBefore);
                             registerLifeCycle(cls,'after',lifeCycleMethod,spies.mixin1SpyAfter);
                             // registerLifeCycle(cls,'around',lifeCycleMethod,mixin1Spy);
                             return cls;
                         }
-
                         function mixin2<T>(cls:T):T{
                             registerLifeCycle(cls,'before',lifeCycleMethod,spies.mixin2SpyBefore);
                             registerLifeCycle(cls,'after',lifeCycleMethod,spies.mixin2SpyAfter);
                             return cls;
                         }
 
+                        // TODO test using directly on user class
+                        // TODO test what happens when user overrides hooked method with calling super
+                        // TODO test what happens with no user nethod
+
+                        // define base class
                         @mixin2
                         @mixin1
                         @orchastrated
@@ -121,17 +126,20 @@ describe("mixin orchestrator", () => {
 
                         }
 
+                        // define final component class
                         class UserClass extends MixinBaseComp<any,any>{
                             render(){
                                 return <div></div>
                             }
                         }
+                        // simulate user overriding lifeCycleMethod with no call to super[lifeCycleMethod]
                         (UserClass as any).prototype[lifeCycleMethod] = function(this:UserClass):any{
                             spies.userCodeSpy();
                             if(lifeCycleMethod==='render'){
                                 return <div></div>
                             }
-                        }
+                        };
+
                         const {container} = clientRenderer.render(<div><UserClass></UserClass></div>);
                         if(isCreationLifeCycle){
                             expectCallOrder([...spyOrder]);
@@ -188,7 +196,7 @@ describe("mixin orchestrator", () => {
     })
 
 
-    it('allows mixins to activate it automatically', () => {
+    it('allows mixins to activate orchestrator automatically', () => {
 
 
         const mixin1Spy = sinon.spy();
