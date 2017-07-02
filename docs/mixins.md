@@ -5,14 +5,14 @@ mixins allow modifying the behavior of classes/components
 all mixins can be flagged disabled for a specific inheriting class
 
 Each mixin provides:
-* typescript interface to implement
 * decorator to add implementation
+* typescript interface to implement
 * props interface
 
 # how to use
 
 ```tsx
-import {globalIdProps,globalIdInterface,globalId}
+import {globalId,globalIdInterface, globalIdProps}
 
 @globalId
 class MyComp extends React.Component<globalIdProps & MyProps,any> implements globalIdInterface{
@@ -39,7 +39,7 @@ React.render(<MyComp id="App"></MyComp>)
 
 [global-id](https://github.com/wix/react-bases/blob/master/docs/global-id.md)
 
-*Easily generate namespaced global DOM ID's that can be used in label for attribute and more*
+*Easily generate namespaced global DOM ID's that can be used in label forHtml property and more*
 
 [props-injection](https://github.com/wix/react-bases/blob/master/docs/props-injection.md)
 
