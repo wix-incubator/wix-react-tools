@@ -1,6 +1,6 @@
-# Mixin orchestrator
+# Class Mixer
 
-the mixin orchestrator adds middleware api to every class thus allowing a mixin to hook into any instance method.
+the Mixer adds middleware api to every class thus allowing a mixin to hook into any instance method.
 the main use case is for mixins to customize react lifecycle methods in components.
 
 middlewares applied to base classes can wrap methods of classes
@@ -28,6 +28,22 @@ the mixin recieves the arguments of the constructor.
 
 ## API
 
+
+arguments:
+- targetClass: class to modify
+- callback:    callback after constructor
+- options:     (optional) a mixer options object
+
+returns: the modified class
+
+### callback method
+
+arguments:
+- instance: the target class whos constructor was just called
+- instancePluginData: a data object for plugin data associated with the instance (can be activated through the mixer options);
+- constructorArguments: the arguments that were passed to the constructor
+
+returns: void
 ```ts
     function registerForConstructor<T,D extends object>(
                           targetClass:typeof T,
@@ -63,6 +79,23 @@ allows adding middlewares to methods, changing input and output.
 
 ## API
 
+arguments:
+- targetClass: class to modify
+- methodName:  name of method to wrap
+- callback:    callback after constructor
+- options:     (optional) a mixer options object
+
+returns: the modified class
+
+### callback method
+
+arguments:
+- instance: the target class whos constructor was just called
+- instancePluginData: a data object for plugin data associated with the instance (can be activated through the mixer options);
+- next: the unwrapped method (or a previous wrapping plugin)
+- methodArguments: the arguments that were passed to the method
+
+returns: void
 ```ts
     function registerMiddleware<T,D extends object>(
                           targetClass:typeof T,
@@ -88,7 +121,7 @@ allows adding middlewares to methods, changing input and output.
       console.log('called on method with '+methodArguments[0]);
       const result:string = next('goodbye');
       console.log(result)
-      return result
+      return 'wrapped=> '+result
     });
  }
 
@@ -97,7 +130,7 @@ allows adding middlewares to methods, changing input and output.
 
  a.printMessage('hello');
  /*
- will return "message printed: goodbye"
+ will return "wrapped=> message printed: goodbye"
 
  will print
  "called on method with hello"
@@ -152,7 +185,7 @@ returns: modified/original arguments to be passed to the method
 
 # registerAfter
 
-registers a callback to be after before a class method is called
+registers a callback to be after a class method is called
 
 ## API
 
@@ -169,10 +202,10 @@ returns: the modified class
 arguments:
 - instance: the target class instance whos method is about to be called
 - instancePluginData: a data object for plugin data associated with the instance (can be activated through the mixer options);
-- result: wrapped method return value
+- result: method return value
 
 
-returns: modifed/original result to be returned from the wrapped method
+returns: modifed/original result
 
 ```ts
     function registerAfter<T,D extends object>(
@@ -180,7 +213,7 @@ returns: modifed/original result to be returned from the wrapped method
                           methodName: string,
                           callback:   (instance:T,
                                     /* instancePluginData:D, if requested in options */
-                                       ...methodArguments:any[])=>[],
+                                       result:any)=>any,
                           options?:Options);
 
  ```
@@ -195,16 +228,16 @@ returns: modifed/original result to be returned from the wrapped method
     });
     registerAfter(cls,'printMessage',function(instance:Logger,methodReturn){
       console.log(methodReturn);
-      return methodReturn
+      return 'wrapped=> '+methodReturn;
     });
  }
 
- const a = new Logger('inited');
- //will print "inited"
+ const a = new Logger('MyLogger');
+ //will print "inited logger: MyLogger"
 
  a.printMessage('hello');
  /*
- will return "message printed: goodbye"
+ will return "wrapped=> message printed: goodbye"
 
  will print
  "called on method with hello"
@@ -213,7 +246,111 @@ returns: modifed/original result to be returned from the wrapped method
  */
 ```
 
-# Options
+# registerToProto
+
+allows adding utility methods to class. this is done using the prototype and is the most performant option, it is unsuitable for lifecycle methods as it is overriden by methods with the same name on the class (or inheriting classes)
 
 
- eager mode allows adding the middleware even if the method does not exist on the class
+## API
+
+arguments:
+- targetClass: class to modify
+- methodName:  name of method to add
+- method:    method to add
+- options:     (optional)a mixer options object
+
+returns: the modified class
+
+### method
+
+arguments:
+- instance: the target class instance who the method is called on
+- instancePluginData: a data object for plugin data associated with the instance (can be activated through the mixer options);
+- methodArguments: the arguments to be passed to the method
+
+
+returns: modifed/original result
+
+```ts
+    function registerToProto<T,D extends object>(
+                          targetClass:typeof T,
+                          methodName: string,
+                          method:   (instance:T,
+                                    /* instancePluginData:D, if requested in options */
+                                        ...methodArguments:any[])=>[])=>any,
+                          options?:Options);
+
+ ```
+
+## Example
+
+ ```ts
+ @makeLogger
+ class Logger(){
+    printMessage:(...rest)=>void;
+ }
+
+ function makeLogger(cls:typeof object){
+    registerToProto(cls,'printMessage',function(instance:object,...methodArguments){
+      console.log(...methodArguments);
+    });
+ }
+
+ const a = new Logger('MyLogger');
+
+ a.printMessage('hello');
+ /*
+ will print
+ "hello"
+ */
+```
+
+
+# Mixin Options
+
+## data key
+
+allows mixins to store data for a mixed class instance
+
+should be generated using generateKey
+
+### example
+
+```ts
+import {registerBefore,registerAfter,generateKey} from 'class-mixer'
+
+
+function logMethodPerf(methodName:string){
+  return function(cls:typeof object){
+    const mixinDataKey = generateKey('perfLogger');
+
+    registerBefore(cls,
+                   methodName,
+                   function(instance:Logger,data,...methodArguments){
+                      data.before = Date.now();
+                      return methodArguments
+                    },
+                    {dataKey:mixinDataKey});
+
+
+    registerAfter(cls,
+                   methodName,
+                   function(instance:Logger,data,result){
+                      console.log(Data.now()-data.before)
+                      return result
+                    },
+                    {dataKey:mixinDataKey});
+  }
+
+}
+
+
+```
+
+
+
+## eager mode
+applies to: registerMiddleware, registerBefore, registerAfter
+
+allows adding the middleware even if the method does not exist on the class
+
