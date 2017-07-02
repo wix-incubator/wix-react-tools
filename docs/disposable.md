@@ -1,37 +1,108 @@
 # Disposable mixin
 
-Registeration API for disposing of component which is called when component unmounts.
+Helps manage clean-ups according to the life cycle of the component. 
 
 ## API
   
-**registerDisposer(disposer:() => any):() => any;**
+### Disposers utility class
 
-registers a disposer to be called on unmount, 
-returns a wrapped disposer that can be called for manual disposing
+Keeps track of bound resources by registering and executing [disposer](https://en.wikipedia.org/wiki/Dispose_pattern) functions.
+A Disposers instance keeps track of functions by key.
 
-usage:
-```jsx
-componentDidMount(){
-	const intervalId = setInterval(() => {/* ... */}, 50);
-	this.registerDisposer(() => clearInterval(intervalId))    
+**set(key:string, disposer:Function):void**
+
+registers a disposer by key. If a previous disposer was registered under the same name, it is executed and removed.
+
+```ts
+const d = new Disposers();
+d.set('printer', ()=>{console.log('foo');}); // prints nothing
+d.set('amother printer', ()=>{console.log('foo2');}); // prints nothing
+d.set('printer', ()=>{console.log('bar');}); // prints foo
+```
+**set(disposer:Function):string**
+
+registers an anonymous disposer. Returns a random generated key that is affiliated with the disposer.
+
+```ts
+const d = new Disposers();
+d.set(()=>{console.log('foo');}); // prints nothing
+d.set(()=>{console.log('bar');}); // prints nothing
+```
+
+**dispose(key:string):void**
+
+executes a disposer by key and removes it from memory.
+```ts
+const d = new Disposers();
+d.set('printer', ()=>{console.log('foo');}); // prints nothing
+d.dispose('printer'); // prints foo
+d.dispose('printer'); // prints nothing
+```
+```ts
+const d = new Disposers();
+const key = d.set(()=>{console.log('foo');}); // prints nothing
+d.dispose(key); // prints foo
+d.dispose(key); // prints nothing
+```
+**disposeAll():void**
+```ts
+const d = new Disposers();
+d.set('printer', ()=>{console.log('pre-foo');});
+d.set('printer', ()=>{console.log('foo');}); // prints pre-foo
+d.set('amother printer', ()=>{console.log('bar');}); 
+d.set(()=>{console.log('baz');});
+d.disposeAll() // prints foo, bar, baz
+```
+
+executes all registered disposers and removes them from memory.
+
+
+### DisposeableCompMixin
+```ts
+ interface DisposeableCompMixin {
+    readonly disposer: Disposers;
 }
 ```
-manual dispose:
-```jsx
-componentDidMount(){
-	const intervalId = setInterval(() => {/* ... */}, 50);
-	this._manualDisposeInterval = this.registerDisposer(() => clearInterval(intervalId))    
+
+### @disposable decorator
+**requires decorated class to implement DisposeableCompMixin**
+
+Sets up this.disposer and takes care of clean-up when component unmounts;
+
+#### example
+
+set up `JOB` to run 1 second after component mounts. `JOB` will be cancelled if the component un-mounts.
+
+```ts
+const TIMER_KEY = "myTimer";
+const JOB = () => {/* ... */};
+
+resetTimer(){
+	const timerId = setTimeout(JOB, 1000);
+	this.disposer.set(TIMER_KEY, () => clearTimeout(timerId));
 }
+ 
+componentDidMount(){
+    this.resetTimer();
+}
+```
+
+cancel execution of `JOB` if it did not yet run
+```ts
 onClick(){
-	// manual dispose - will not be called again when component unmount
-	this._manualDisposeInterval()
+	this.disposer.dispose(TIMER_KEY);
 }
 ```
 
-## Implementation
+cancel execution of `JOB` if it did not yet run, and set `JOB` to run 1 second after onClick
+```ts
+onClick(){
+	this.resetTimer();
+}
+```
 
-Add API to prototype:
-* registerDisposer - accepts a function to be called when component unmounts and return hook to manually dispose
 
-Wraps component instance methods on constructor:
-* componentWillUnmount - call dispose hooks after user code
+#### Under the hood
+Initializes `this.disposer` with a new `Disposers` instance before `componentWillMount`.  
+Calls `this.disposer.disposeAll()` after `componentWillUnmount`.
+

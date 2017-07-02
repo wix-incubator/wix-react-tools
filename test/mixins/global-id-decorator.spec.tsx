@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { expect, sinon, simulate, ClientRenderer } from 'test-drive-react';
+import { expect, ClientRenderer } from 'test-drive-react';
 import { GlobalID, reset, applyMixin } from '../../src/mixins/global-id-decorator';
+import {inBrowser} from "mocha-plugin-env/dist/src";
 
 
 class MainProps {
@@ -8,7 +9,7 @@ class MainProps {
     testId: string;
 }
 
-describe('Global ID Decorator', () => {
+describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
 
     const clientRenderer = new ClientRenderer();
     beforeEach(() => reset());
@@ -48,7 +49,7 @@ describe('Global ID Decorator', () => {
 
 
         it('Uses external ID if passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='1' id={'EXT'}></MainClass>);
+            const { select } = clientRenderer.render(<MainClass testId='1' id={'EXT'}></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT1')).to.exist;
             expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
@@ -60,7 +61,7 @@ describe('Global ID Decorator', () => {
         });
 
         it('Generates an ID if external ID is not passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='_I'> </MainClass>);
+            const { select } = clientRenderer.render(<MainClass testId='_I'></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT_I')).to.exist;
             expect(select('MAIN_CLASS_ROOT_I', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
@@ -72,10 +73,10 @@ describe('Global ID Decorator', () => {
         });
 
         it('Generates counter-based IDs for multiple instances of same class', () => {
-            const { select, waitForDom } = clientRenderer.render(
+            const { select } = clientRenderer.render(
                 <div>
-                    <MainClass testId='1'> </MainClass>
-                    <MainClass testId='2'> </MainClass>
+                    <MainClass testId='1'></MainClass>
+                    <MainClass testId='2'></MainClass>
                 </div>
             );
 
@@ -110,7 +111,7 @@ describe('Global ID Decorator', () => {
         }
 
         it('Uses external ID for root node if passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='1' id={'EXT'} ></MainClass>);
+            const { select } = clientRenderer.render(<MainClass testId='1' id={'EXT'} ></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT1')).to.exist;
             expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.have.attribute('id', 'EXT_MyTestComp');
@@ -122,7 +123,7 @@ describe('Global ID Decorator', () => {
         });
 
         it('Generates explicit ID for root node if external ID is not passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='1' ></MainClass>);
+            const { select,  } = clientRenderer.render(<MainClass testId='1' ></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT1')).to.exist;
             expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.have.attribute('id', 'MainClass1_MyTestComp');
@@ -171,7 +172,7 @@ describe('Global ID Decorator', () => {
         }
 
         it('Generates an ID if external ID is not passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='_I' ></MainClass>);
+            const { select } = clientRenderer.render(<MainClass testId='_I' ></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT_I')).to.exist;
             expect(select('MAIN_CLASS_ROOT_I', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
@@ -183,7 +184,7 @@ describe('Global ID Decorator', () => {
         });
 
         it('Uses external ID if passed', () => {
-            const { select, waitForDom } = clientRenderer.render(<MainClass testId='_I' id={'EXT'}></MainClass>);
+            const { select } = clientRenderer.render(<MainClass testId='_I' id={'EXT'}></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT_I')).to.exist;
             expect(select('MAIN_CLASS_ROOT_I', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
@@ -209,7 +210,7 @@ describe('Global ID Decorator', () => {
                 }
             }
 
-            const { select, waitForDom } = clientRenderer.render(<MainClass></MainClass>);
+            const { select } = clientRenderer.render(<MainClass></MainClass>);
 
             expect(select('MAIN_CLASS_DIV')).to.have.attribute('id', 'MainClass1_MyTestComp');
             expect(select('MAIN_CLASS_LABEL')).to.have.attribute('id', 'MainClass1_MyTestComp');
@@ -229,7 +230,7 @@ describe('Global ID Decorator', () => {
                 }
             }
 
-            const { select, waitForDom } = clientRenderer.render(<MainClass></MainClass>);
+            const { select } = clientRenderer.render(<MainClass></MainClass>);
 
             expect(select('MAIN_CLASS_DIV')).to.have.attribute('id', 'MainClass1_MyTestComp');
             expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'MainClass1_MyTestComp');

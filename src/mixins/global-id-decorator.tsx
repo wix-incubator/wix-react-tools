@@ -6,7 +6,6 @@ export function reset() {
     names = {};
 }
 
-
 export function applyMixin(target: any) {
     const origRender = target.render;
     target.render = function () {
@@ -25,7 +24,7 @@ export function applyMixin(target: any) {
             }
 
             return origCreate.apply(this, arguments);
-        }
+        };
 
         const res = origRender.apply(this, arguments);
         (React as any).createElement = origCreate;
