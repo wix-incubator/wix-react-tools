@@ -17,10 +17,10 @@ npm install react-bases
 
 # how to use
 
- - base components
- - [mixins](./docs/mixins.md)
- - [class-mixer](./docs/class-mixer.md)
- - [react-mixer](./docs/react-mixer.md)
+ - base components - built in baseComponents flavors
+ - [mixins](./docs/mixins.md) - mixins to use to define your own case component
+ - [class-mixer](./docs/class-mixer.md) - mixin creation API
+ - [react-mixer](./docs/react-mixer.md) - specific react mixin creation API
 
 
 ## config
