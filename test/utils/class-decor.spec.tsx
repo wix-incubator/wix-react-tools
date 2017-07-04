@@ -13,6 +13,7 @@ import {expectSpyChain} from '../test-drivers/spy-chain';
 
 const ORIGIN_ARGUMENT = 111;
 const ORIGIN_RESULT = 222;
+const PARENT_RESULT = 333;
 const METHOD = 'myMethod' as any;
 
 // this class is used for type checking
@@ -21,7 +22,7 @@ class _Base {
     }
 
     myMethod(foo: number): number {
-        return 3.14;
+        return PARENT_RESULT;
     }
 
 }
