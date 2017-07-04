@@ -1,11 +1,10 @@
 import _union = require('lodash/union');
 
-export type ConstructorHook<T extends object> = (target: T, args: any[]) => void;
 
 export type Class<T extends object> = new(...args: any[]) => T;
-export type DumbClass = new(...args: any[]) => object;
+type DumbClass = new(...args: any[]) => object;
 
-
+export type ConstructorHook<T extends object> = (target: T, args: any[]) => void;
 export type BeforeHook<T, A extends Array<any>> = (target: T, args: A) => A;
 export type AfterHook<T, R = void> = (target: T, res: R) => R;
 
@@ -17,7 +16,7 @@ function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
     return result;
 }
 
-export class MixerData<T extends object> {
+class MixerData<T extends object> {
     // get constructorHooks(): ConstructorHook<T>[] {
     //     const value: ConstructorHook<T>[] = [];
     //     Object.defineProperty(this, 'constructorHooks', {value});
@@ -36,31 +35,25 @@ export class MixerData<T extends object> {
     }
 }
 
-export type Mixed<T extends object> = {
+type Mixed<T extends object> = {
     $mixerData: MixerData<T>
 };
 
-export type MixedClass<T extends object> = Class<T> & Mixed<T>;
+type MixedClass<T extends object> = Class<T> & Mixed<T>;
 
-/**
- *
- * @param target the class to register
- * @param cb
- * @returns {MixedClass<T>} the extended class (that should be returned from the decorator)
- */
-export function registerForConstructor<T extends object>(target: Class<T> | MixedClass<T>, cb: ConstructorHook<T>): MixedClass<T> {
+export function registerForConstructor<T extends object>(target: Class<T>, cb: ConstructorHook<T>): Class<T> {
     const mixed = mix(target);
     mixed.$mixerData.constructorHooks.push(cb);
     return mixed;
 }
 
-export function registerBefore<T extends object>(target: Class<T> | MixedClass<T>, methodName: keyof T, cb: BeforeHook<T, any>): MixedClass<T> {
+export function registerBefore<T extends object>(target: Class<T>, methodName: keyof T, cb: BeforeHook<T, any>): Class<T> {
     const mixed = mix(target);
     getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(cb);
     return mixed;
 }
 
-export function registerAfter<T extends object>(target: Class<T> | MixedClass<T>, methodName: keyof T, cb: AfterHook<T, any>): MixedClass<T> {
+export function registerAfter<T extends object>(target: Class<T>, methodName: keyof T, cb: AfterHook<T, any>): Class<T> {
     const mixed = mix(target);
     getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(cb);
     return mixed;
@@ -70,7 +63,7 @@ function isMixed<T>(subj: any): subj is Mixed<T> {
     return subj.isMixed;
 }
 
-export function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
+function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
     if (isMixed<T>(clazz)) {
         // TODO override $mixerData to allow multiple child classes
         // TODO handle inheritance tree of decorators
@@ -119,7 +112,9 @@ function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ct
     mixerMeta.hookedMethodNames.forEach((methodName: keyof T) => {
         mixerMeta.origin[methodName] = target[methodName]; // TODO check if same as prototype method
         // TODO named function
-        Object.getPrototypeOf(target)[methodName] = function (this: T, ...methodArgs: any[]) {
+        Object.getPrototypeOf(target)[methodName] = function (this: T) {
+            let methodArgs: any[] = Array.prototype.slice.call(arguments);
+
             const beforeHooks = mixerMeta.beforeHooks[methodName];
             if (beforeHooks) {
                 beforeHooks.forEach((hook: BeforeHook<T, typeof methodArgs>) => {
@@ -129,17 +124,14 @@ function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ct
                     }
                 });
             }
-            let res = mixerMeta.origin[methodName]!.apply(this, methodArgs);
+            let methodResult = mixerMeta.origin[methodName]!.apply(this, methodArgs);
             const afterHooks = mixerMeta.afterHooks[methodName];
             if (afterHooks) {
-                afterHooks.forEach((hook: AfterHook<T, typeof res>) => {
-                    const result = hook(this, res);
-                    if (result !== undefined) {
-                        res = result;
-                    }
+                afterHooks.forEach((hook: AfterHook<T, typeof methodResult>) => {
+                    methodResult = hook(this, methodResult);
                 });
             }
-            return res;
+            return methodResult;
         };
     });
 }
