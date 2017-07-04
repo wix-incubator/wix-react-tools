@@ -84,7 +84,7 @@ called on constructor with "MyLogger";
 inited logger: MyLogger
 ```
 
-# register middleware:
+# registerMiddleware:
 
 allows adding middlewares to methods, changing input and output.
 

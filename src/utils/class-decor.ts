@@ -1,12 +1,23 @@
 import _union = require('lodash/union');
+import _curry = require('lodash/curry');
 
 
 export type Class<T extends object> = new(...args: any[]) => T;
 type DumbClass = new(...args: any[]) => object;
 
-export type ConstructorHook<T extends object> = (target: T, args: any[]) => void;
-export type BeforeHook<T, A extends Array<any>> = (target: T, args: A) => A;
-export type AfterHook<T, R = void> = (target: T, res: R) => R;
+// see https://github.com/Microsoft/TypeScript/issues/16931
+export type Method<R = void> = (...args:any[]) => R;
+export type Method0<R = void> = () => R;
+export type Method1<T1, R = void> = (t1: T1) => R;
+export type Method2<T1, T2, R = void> = (t1: T1, t2: T2) => R;
+export type Method3<T1, T2, T3, R = void> = (t1: T1, t2: T2, t3: T3) => R;
+export type Method4<T1, T2, T3, T4, R = void> = (t1: T1, t2: T2, t3: T3, t4: T4) => R;
+
+
+export type ConstructorHook<T extends object> = Method2<T, any[]>;
+export type BeforeHook<T, A extends Array<any>> = Method2<T, A, A>;
+export type AfterHook<T, R = void> = Method2<T, R, R>;
+export type MiddlewareHook<T, A extends Array<any>, R = void> = Method3<T, Method<R>, A, R>;
 
 function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
     let result = obj[key];
@@ -28,10 +39,15 @@ class MixerData<T extends object> {
     constructorHooks: ConstructorHook<T>[] = [];
     beforeHooks: {[P in keyof T]?:Array<BeforeHook<T, any>>} = {};
     afterHooks: {[P in keyof T]?:Array<AfterHook<T, any>>} = {};
+    middlewareHooks: {[P in keyof T]?:Array<MiddlewareHook<T, any, any>>} = {};
 
-    origin: {[P in keyof T]?:Function} = {};
-    get hookedMethodNames():Array<keyof T>{
-        return _union(Object.keys(this.beforeHooks), Object.keys(this.afterHooks)) as Array<keyof T>;
+    origin: {[P in keyof T]?:T[P]&Method<any>} = {};
+
+    get hookedMethodNames(){
+        return _union(
+            Object.keys(this.middlewareHooks),
+            Object.keys(this.beforeHooks),
+            Object.keys(this.afterHooks)) as Array<keyof T>;
     }
 }
 
@@ -56,6 +72,12 @@ export function registerBefore<T extends object>(target: Class<T>, methodName: k
 export function registerAfter<T extends object>(target: Class<T>, methodName: keyof T, cb: AfterHook<T, any>): Class<T> {
     const mixed = mix(target);
     getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(cb);
+    return mixed;
+}
+
+export function registerMiddleware<T extends object>(target: Class<T>, methodName: keyof T, cb: MiddlewareHook<T, any, any>): Class<T> {
+    const mixed = mix(target);
+    getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(cb);
     return mixed;
 }
 
@@ -107,31 +129,57 @@ function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
     return Extended as any;
 }
 
+
 function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ctorArgs: any[]) {
-    mixerMeta.constructorHooks && mixerMeta.constructorHooks.forEach((cb: ConstructorHook<any>) => cb(target, ctorArgs));
+    mixerMeta.constructorHooks && mixerMeta.constructorHooks.forEach((cb: ConstructorHook<T>) => cb(target, ctorArgs));
     mixerMeta.hookedMethodNames.forEach((methodName: keyof T) => {
         mixerMeta.origin[methodName] = target[methodName]; // TODO check if same as prototype method
         // TODO named function
         Object.getPrototypeOf(target)[methodName] = function (this: T) {
             let methodArgs: any[] = Array.prototype.slice.call(arguments);
-
-            const beforeHooks = mixerMeta.beforeHooks[methodName];
-            if (beforeHooks) {
-                beforeHooks.forEach((hook: BeforeHook<T, typeof methodArgs>) => {
-                    const result = hook(this, methodArgs);
-                    if (Array.isArray(result)) {
-                        methodArgs = result;
-                    }
-                });
-            }
-            let methodResult = mixerMeta.origin[methodName]!.apply(this, methodArgs);
-            const afterHooks = mixerMeta.afterHooks[methodName];
-            if (afterHooks) {
-                afterHooks.forEach((hook: AfterHook<T, typeof methodResult>) => {
-                    methodResult = hook(this, methodResult);
-                });
-            }
+            methodArgs = runBeforeHooks(this, mixerMeta, methodName, methodArgs);
+            let methodResult = runMiddlewareHooksAndOrigin(this, mixerMeta, methodName, methodArgs);
+            methodResult = runAfterHooks(this, mixerMeta, methodName, methodResult);
             return methodResult;
         };
     });
+}
+
+function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
+    const beforeHooks = mixerMeta.beforeHooks[methodName];
+    if (beforeHooks) {
+        beforeHooks.forEach((hook: BeforeHook<T, typeof methodArgs>) => {
+            const result = hook(target, methodArgs);
+            if (Array.isArray(result)) {
+                methodArgs = result;
+            }
+        });
+    }
+    return methodArgs;
+}
+
+function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
+    const originalMethod: Method<any> = mixerMeta.origin[methodName]!;
+    const middlewareHooks = mixerMeta.middlewareHooks[methodName];
+    return (middlewareHooks)? // should never be an empty array - either undefined or with hook(s)
+        middlewareHooks[0](target, wrapMiddleware(target, originalMethod, middlewareHooks, 1), methodArgs) :
+        originalMethod.apply(target, methodArgs);
+}
+
+function wrapMiddleware<T extends object, A extends Array<any>, R>(target: T, originalMethod: Method<R>, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number){
+    return (...args: any[]):R => {
+        return middlewareHooks.length <= idx ?
+            originalMethod.apply(target, args) :
+            middlewareHooks[idx](target, wrapMiddleware(target, originalMethod, middlewareHooks, idx + 1), args as A);
+    };
+}
+
+function runAfterHooks<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodResult: any) {
+    const afterHooks = mixerMeta.afterHooks[methodName];
+    if (afterHooks) {
+        afterHooks.forEach((hook: AfterHook<T, typeof methodResult>) => {
+            methodResult = hook(target, methodResult);
+        });
+    }
+    return methodResult;
 }
