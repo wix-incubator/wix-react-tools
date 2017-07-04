@@ -1,6 +1,6 @@
 import _union = require('lodash/union');
 
-export type Hook<T extends object> = (target: T, args: any[]) => void;
+export type ConstructorHook<T extends object> = (target: T, args: any[]) => void;
 
 export type Class<T extends object> = new(...args: any[]) => T;
 export type DumbClass = new(...args: any[]) => object;
@@ -18,15 +18,15 @@ function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
 }
 
 export class MixerData<T extends object> {
-    // get constructorHooks(): Hook<T>[] {
-    //     const value: Hook<T>[] = [];
+    // get constructorHooks(): ConstructorHook<T>[] {
+    //     const value: ConstructorHook<T>[] = [];
     //     Object.defineProperty(this, 'constructorHooks', {value});
     //     return value;
     // };
 
     // TODO @measure if worth making lazy
     // @lazyField
-    constructorHooks: Hook<T>[] = [];
+    constructorHooks: ConstructorHook<T>[] = [];
     beforeHooks: {[P in keyof T]?:Array<BeforeHook<T, any>>} = {};
     afterHooks: {[P in keyof T]?:Array<AfterHook<T, any>>} = {};
 
@@ -48,19 +48,19 @@ export type MixedClass<T extends object> = Class<T> & Mixed<T>;
  * @param cb
  * @returns {MixedClass<T>} the extended class (that should be returned from the decorator)
  */
-export function registerForConstructor<T extends object>(target: Class<T> | MixedClass<T>, cb: Hook<T>): MixedClass<T> {
+export function registerForConstructor<T extends object>(target: Class<T> | MixedClass<T>, cb: ConstructorHook<T>): MixedClass<T> {
     const mixed = mix(target);
     mixed.$mixerData.constructorHooks.push(cb);
     return mixed;
 }
 
-export function registerBeforeMethod<T extends object>(target: Class<T> | MixedClass<T>, methodName: keyof T, cb: BeforeHook<T, any>): MixedClass<T> {
+export function registerBefore<T extends object>(target: Class<T> | MixedClass<T>, methodName: keyof T, cb: BeforeHook<T, any>): MixedClass<T> {
     const mixed = mix(target);
     getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(cb);
     return mixed;
 }
 
-export function registerAfterMethod<T extends object>(target: Class<T> | MixedClass<T>, methodName: keyof T, cb: AfterHook<T, any>): MixedClass<T> {
+export function registerAfter<T extends object>(target: Class<T> | MixedClass<T>, methodName: keyof T, cb: AfterHook<T, any>): MixedClass<T> {
     const mixed = mix(target);
     getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(cb);
     return mixed;
@@ -115,7 +115,7 @@ export function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
 }
 
 function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ctorArgs: any[]) {
-    mixerMeta.constructorHooks && mixerMeta.constructorHooks.forEach((cb: Hook<any>) => cb(target, ctorArgs));
+    mixerMeta.constructorHooks && mixerMeta.constructorHooks.forEach((cb: ConstructorHook<any>) => cb(target, ctorArgs));
     mixerMeta.hookedMethodNames.forEach((methodName: keyof T) => {
         mixerMeta.origin[methodName] = target[methodName]; // TODO check if same as prototype method
         // TODO named function

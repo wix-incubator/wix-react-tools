@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {expect, sinon} from 'test-drive-react';
 import {
-    Class, registerAfterMethod, registerBeforeMethod,
+    Class, registerAfter, registerBefore,
     registerForConstructor
 } from "../../src/utils/class-decor";
 import _reduce = require('lodash/reduce');
@@ -58,8 +58,8 @@ describe("mixer", () => {
 
         function decorate<T extends _Base>(cls: Class<T>): Class<T> {
             cls = registerForConstructor(cls, ()=>{});
-            cls = registerBeforeMethod(cls, 'myMethod', ()=>{});
-            cls = registerAfterMethod(cls, 'myMethod', ()=>{});
+            cls = registerBefore(cls, 'myMethod', ()=>{});
+            cls = registerAfter(cls, 'myMethod', ()=>{});
             return cls;
         }
         // fixture class tree
@@ -148,7 +148,7 @@ describe("mixer", () => {
         });
     });
 
-    describe("registerBeforeMethod", () => {
+    describe("registerBefore", () => {
         let spy1: sinon.SinonSpy; // mixin 1
         let spy2: sinon.SinonSpy; // mixin 2
         let spy3: sinon.SinonSpy; // original base class
@@ -156,11 +156,11 @@ describe("mixer", () => {
 
 
         function mixin1<T extends object>(cls: Class<T>): Class<T> {
-            return registerBeforeMethod(cls, METHOD, spy1);
+            return registerBefore(cls, METHOD, spy1);
         }
 
         function mixin2<T extends object>(cls: Class<T>): Class<T> {
-            return registerBeforeMethod(cls, METHOD, spy2);
+            return registerBefore(cls, METHOD, spy2);
         }
 
         beforeEach('init Base class', () => {
@@ -225,7 +225,7 @@ describe("mixer", () => {
     });
 
 
-    describe("registerAfterMethod", () => {
+    describe("registerAfter", () => {
         let spy1: sinon.SinonSpy; // mixin 1
         let spy2: sinon.SinonSpy; // mixin 2
         let spy3: sinon.SinonSpy; // original base class
@@ -233,11 +233,11 @@ describe("mixer", () => {
 
 
         function mixin1<T extends object>(cls: Class<T>): Class<T> {
-            return registerAfterMethod(cls, METHOD, spy1);
+            return registerAfter(cls, METHOD, spy1);
         }
 
         function mixin2<T extends object>(cls: Class<T>): Class<T> {
-            return registerAfterMethod(cls, METHOD, spy2);
+            return registerAfter(cls, METHOD, spy2);
         }
 
         beforeEach('init Base class', () => {

@@ -1,14 +1,11 @@
-# Class Mixer
+# Class Decor
 
-the Mixer adds middleware api to every class thus allowing a mixin to hook into any instance method.
-the main use case is for mixins to customize react lifecycle methods in components.
+The class decor API allows easily and efficiently hooking into any instance method. 
+The main use case is to customize react lifecycle methods in class components.
 
-middlewares applied to base classes can wrap methods of classes
-inheriting from them.
+Middlewares applied to base classes can wrap methods of classes inheriting from them.
 
 the examples of the api below use the following user class:
-
-
 
 ```ts
 @mixin
@@ -22,54 +19,69 @@ class Logger{
   }
 }
 ```
-# register for constructor:
+# registerForConstructor:
 register mixin callback to be called on instance creation.
-the mixin recieves the arguments of the constructor.
+the mixin receives the arguments of the constructor.
 
 ## API
 
-
 arguments:
+- options: (optional) decorator options object
+- callback: callback after constructor
 - targetClass: class to modify
-- callback:    callback after constructor
-- options:     (optional) a mixer options object
 
 returns: the modified class
 
 ### callback method
 
 arguments:
-- instance: the target class whos constructor was just called
-- instancePluginData: a data object for plugin data associated with the instance (can be activated through the mixer options);
+- instance: the new object whose constructor was just called
 - constructorArguments: the arguments that were passed to the constructor
+- instancePluginData: a data object for plugin data associated with the instance (can be activated through the mixer options);
 
 returns: void
-```ts
-    function registerForConstructor<T,D extends object>(
-                          targetClass:typeof T,
-                          callback:   (instance:T,
-                                    /* pluginInstanceData:D, if requested in options */
-                                       ...constructorArguments:any[])=>any,
-                          options?:Options);
 
+### curry
+The function is [curried](https://lodash.com/docs#curry), so it can be used as a decorator after applying all arguments except for the class.
+
+```ts
+    registerForConstructor<T extends object>(
+        cb: ConstructorHook<T, void>,
+        target: Class<T>): Class<T>;
+        
+    registerForConstructor<T extends object>(
+        cb: ConstructorHook<T, void>): <ClassT extends Class<T>>(target:ClassT)=>ClassT;
+        
+    registerForConstructor<T extends object>(
+        options:Options,
+        cb: ConstructorHook<T>, 
+        target: Class<T>): Class<T>;
+        
+    registerForConstructor<T extends object>(
+        options:Options,
+        cb: ConstructorHook<T>): <ClassT extends Class<T>>(target:ClassT)=>ClassT;
  ```
 
  ## Example
 
-
+using this decorator:
  ```ts
  function mixin(cls:typeof Logger){
-    registerForConstructor(cls,function(instance:Logger,...constructorArguments){
-      console.log('called on constructor with "'+constructorArguments[0]+'"');
-    })
+    registerForConstructor(function(instance:Logger, constructorArguments){
+        console.log('called on constructor with "'+constructorArguments[0]+'"');
+    }, cls)
  }
-
-new Logger('MyLogger');
-/*
-will print:
+ ``` 
+ or (equivalent):
+  ```ts
+  const mixin = registerForConstructor(function(instance:Logger, constructorArguments){
+        console.log('called on constructor with "'+constructorArguments[0]+'"');
+    });
+  ```
+with the `Logger` class as described above, will cause `new Logger('MyLogger')` to print:
+```
 called on constructor with "MyLogger";
 inited logger: MyLogger
-*/
 ```
 
 # register middleware:
@@ -317,7 +329,7 @@ should be generated using generateKey
 ### example
 
 ```ts
-import {registerBefore,registerAfter,generateKey} from 'class-mixer'
+import {registerBefore,registerAfter,generateKey} from 'class-decor'
 
 
 function logMethodPerf(methodName:string){
