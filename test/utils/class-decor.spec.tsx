@@ -3,7 +3,7 @@ import {expect, sinon} from 'test-drive-react';
 import {
     Class,
     after,
-    before,
+    before as beforeMethod,
     preConstruct,
     middleware
 } from "../../src/utils/class-decor";
@@ -85,7 +85,7 @@ describe("class decor API", () => {
 
         function decorate<T extends _Base>(cls: Class<T>): Class<T> {
             cls = preConstruct(cls, () => undefined);
-            cls = before(cls, 'myMethod', () => undefined);
+            cls = beforeMethod(cls, 'myMethod', () => undefined);
             cls = after(cls, 'myMethod', () => undefined);
             cls = middleware(cls, 'myMethod', () => undefined);
             return cls;
@@ -191,7 +191,7 @@ describe("class decor API", () => {
         describe("priority", () => {
 
             function beforeAfterDecor<T extends _Base>(cls: Class<T>): Class<T> {
-                cls = before<T>(cls, METHOD, (target: T, args: [number]) => {
+                cls = beforeMethod<T>(cls, METHOD, (target: T, args: [number]) => {
                     SPIES.firstBefore(target, args);
                     return [args[0] + 1]
                 });
@@ -221,7 +221,7 @@ describe("class decor API", () => {
 
         describe("before and after", () => {
             function outer<T extends _Base>(cls: Class<T>): Class<T> {
-                cls = before<T>(cls, METHOD, (target: T, args: [number]) => {
+                cls = beforeMethod<T>(cls, METHOD, (target: T, args: [number]) => {
                     SPIES.firstBefore(target, args);
                     return [args[0] + 1]
                 });
@@ -232,7 +232,7 @@ describe("class decor API", () => {
             }
 
             function inner<T extends _Base>(cls: Class<T>): Class<T> {
-                cls = before<T>(cls, METHOD, (target: T, args: [number]) => {
+                cls = beforeMethod<T>(cls, METHOD, (target: T, args: [number]) => {
                     SPIES.lastBefore(target, args);
                     return [args[0] + 1]
                 });
