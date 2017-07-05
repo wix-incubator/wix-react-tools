@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/chai": "~4.0.1",
-    "@types/lodash": "4.14.67",
+    "@types/lodash": "4.14.68",
     "@types/mocha": "~2.2.41",
     "@types/sinon": "~2.3.1",
     "@types/sinon-chai": "~2.7.28",
@@ -66,8 +66,8 @@
   "dependencies": {
     "lodash": "4.17.4",
     "mobx": "3.1.16",
-    "mobx-react": "4.2.1",
+    "mobx-react": "4.2.2",
     "react": "~15.6.1",
-    "test-drive-react": "~0.1.98"
+    "test-drive-react": "~0.5.0"
   }
 }
