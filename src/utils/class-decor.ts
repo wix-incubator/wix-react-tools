@@ -46,27 +46,25 @@ type Mixed<T extends object> = {
 
 type MixedClass<T extends object> = Class<T> & Mixed<T>;
 
-// TODO rename preConstructor
-export function registerForConstructor<T extends object>(target: Class<T>, cb: ConstructorHook<T>): Class<T> {
+export function preConstruct<T extends object>(target: Class<T>, cb: ConstructorHook<T>): Class<T> {
     const mixed = mix(target);
     mixed.$mixerData.constructorHooks.push(cb);
     return mixed;
 }
 
-// TODO rename before
-export function registerBefore<T extends object>(target: Class<T>, methodName: keyof T, cb: BeforeHook<T, any>): Class<T> {
+export function before<T extends object>(target: Class<T>, methodName: keyof T, cb: BeforeHook<T, any>): Class<T> {
     const mixed = mix(target);
     getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(cb);
     return mixed;
 }
 
-export function registerAfter<T extends object>(target: Class<T>, methodName: keyof T, cb: AfterHook<T, any>): Class<T> {
+export function after<T extends object>(target: Class<T>, methodName: keyof T, cb: AfterHook<T, any>): Class<T> {
     const mixed = mix(target);
     getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(cb);
     return mixed;
 }
 
-export function registerMiddleware<T extends object>(target: Class<T>, methodName: keyof T, cb: MiddlewareHook<T, any, any>): Class<T> {
+export function middleware<T extends object>(target: Class<T>, methodName: keyof T, cb: MiddlewareHook<T, any, any>): Class<T> {
     const mixed = mix(target);
     getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(cb);
     return mixed;

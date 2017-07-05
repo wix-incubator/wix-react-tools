@@ -2,10 +2,10 @@ import * as React from 'react';
 import {expect, sinon} from 'test-drive-react';
 import {
     Class,
-    registerAfter,
-    registerBefore,
-    registerForConstructor,
-    registerMiddleware
+    after,
+    before,
+    preConstruct,
+    middleware
 } from "../../src/utils/class-decor";
 import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
@@ -84,10 +84,10 @@ describe("class decor API", () => {
     describe("heritage side-effects", () => {
 
         function decorate<T extends _Base>(cls: Class<T>): Class<T> {
-            cls = registerForConstructor(cls, () => undefined);
-            cls = registerBefore(cls, 'myMethod', () => undefined);
-            cls = registerAfter(cls, 'myMethod', () => undefined);
-            cls = registerMiddleware(cls, 'myMethod', () => undefined);
+            cls = preConstruct(cls, () => undefined);
+            cls = before(cls, 'myMethod', () => undefined);
+            cls = after(cls, 'myMethod', () => undefined);
+            cls = middleware(cls, 'myMethod', () => undefined);
             return cls;
         }
 
@@ -114,17 +114,17 @@ describe("class decor API", () => {
         });
     });
 
-    describe("registerForConstructor", () => {
+    describe("preConstruct", () => {
         let first: sinon.SinonSpy;
         let last: sinon.SinonSpy;
         let userConstructorSpy: sinon.SinonSpy;
 
         function decor1<T extends object>(cls: Class<T>): Class<T> {
-            return registerForConstructor(cls, first);
+            return preConstruct(cls, first);
         }
 
         function decor2<T extends object>(cls: Class<T>): Class<T> {
-            return registerForConstructor(cls, last);
+            return preConstruct(cls, last);
         }
 
         beforeEach('init Base class', () => {
@@ -191,18 +191,18 @@ describe("class decor API", () => {
         describe("priority", () => {
 
             function beforeAfter<T extends _Base>(cls: Class<T>): Class<T> {
-                cls = registerBefore<T>(cls, METHOD, (target: T, args: [number]) => {
+                cls = before<T>(cls, METHOD, (target: T, args: [number]) => {
                     SPIES.firstBefore(target, args);
                     return [args[0] + 1]
                 });
-                return registerAfter<T>(cls, METHOD, (target: T, result: number) => {
+                return after<T>(cls, METHOD, (target: T, result: number) => {
                     SPIES.lastAfter(target, result);
                     return result + 1;
                 });
             }
 
             function middleware<T extends _Base>(cls: Class<T>): Class<T> {
-                return registerMiddleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
+                return middleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
                     SPIES.lastBefore(target, args);
                     const res = next(args[0] + 1);
                     SPIES.firstAfter(target, res);
@@ -219,24 +219,24 @@ describe("class decor API", () => {
 
         });
 
-        describe("registerBefore and registerAfter", () => {
+        describe("before and after", () => {
             function outer<T extends _Base>(cls: Class<T>): Class<T> {
-                cls = registerBefore<T>(cls, METHOD, (target: T, args: [number]) => {
+                cls = before<T>(cls, METHOD, (target: T, args: [number]) => {
                     SPIES.firstBefore(target, args);
                     return [args[0] + 1]
                 });
-                return registerAfter<T>(cls, METHOD, (target: T, result: number) => {
+                return after<T>(cls, METHOD, (target: T, result: number) => {
                     SPIES.lastAfter(target, result);
                     return result + 1;
                 });
             }
 
             function inner<T extends _Base>(cls: Class<T>): Class<T> {
-                cls = registerBefore<T>(cls, METHOD, (target: T, args: [number]) => {
+                cls = before<T>(cls, METHOD, (target: T, args: [number]) => {
                     SPIES.lastBefore(target, args);
                     return [args[0] + 1]
                 });
-                return registerAfter<T>(cls, METHOD, (target: T, result: number) => {
+                return after<T>(cls, METHOD, (target: T, result: number) => {
                     SPIES.firstAfter(target, result);
                     return result + 1;
                 });
@@ -246,9 +246,9 @@ describe("class decor API", () => {
             checkDecorationStyles(outer, inner);
         });
 
-        describe("registerMiddleware", () => {
+        describe("middleware", () => {
             function outer<T extends _Base>(cls: Class<T>): Class<T> {
-                return registerMiddleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
+                return middleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
                     SPIES.firstBefore(target, args);
                     const res = next(args[0] + 1);
                     SPIES.lastAfter(target, res);
@@ -257,7 +257,7 @@ describe("class decor API", () => {
             }
 
             function inner<T extends _Base>(cls: Class<T>): Class<T> {
-                return registerMiddleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
+                return middleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
                     SPIES.lastBefore(target, args);
                     const res = next(args[0] + 1);
                     SPIES.firstAfter(target, res);
