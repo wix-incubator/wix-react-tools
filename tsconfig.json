@@ -12,6 +12,7 @@
     "strictNullChecks": true,
     "sourceMap": true,
     "experimentalDecorators": true,
+    "stripInternal":true,
     "jsx": "react",
     "outDir": "dist",
     "typeRoots": [
