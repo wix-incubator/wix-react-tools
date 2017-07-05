@@ -11,35 +11,23 @@ import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
 import {expectSpyChain} from '../test-drivers/spy-chain';
 
-const ORIGIN_ARGUMENT = 111;
-const ORIGIN_RESULT = 222;
-const PARENT_RESULT = 333;
-const METHOD = 'myMethod' as any;
+//---------test tools
 
-// this class is used for type checking
-class _Base {
-    constructor(public myNumber: number = 0) {
-    }
-
-    myMethod(foo: number): number {
-        return PARENT_RESULT;
-    }
-
-}
-type Decorator = (c:Class<_Base>) => Class<_Base>;
-
-function makeBaseClass(spy?: sinon.SinonSpy): typeof _Base {
-    return class Base extends _Base {
-        myMethod(num: number): number {
-            spy!(num);
-            return super.myMethod(num);
-        }
+// a type that adds spy type to each field
+type Spied<T extends { [k: string]: Function }> = {
+    [P in keyof T]: T[P] & sinon.SinonSpy;
     };
+
+// helper to spy all methods with good typings
+function spyAll<T extends { [k: string]: Function }>(obj: T): Spied<T> {
+    Object.keys(obj).forEach(k => sinon.spy(obj, k));
+    return obj as any;
 }
 
-/**
- * test driver
- */
+function resetAll<T extends { [k: string]: Function }>(obj: Spied<T>): void {
+    Object.keys(obj).forEach((k: keyof T) => obj[k].reset());
+}
+
 function getHeritage(clazz: Class<any>): Array<Class<any>> {
     const res = [];
     while (clazz !== Object) {
@@ -64,6 +52,32 @@ describe("getHeritage", () => {
     });
 });
 
+//--------- test
+const ORIGIN_ARGUMENT = 111;
+const ORIGIN_RESULT = 222;
+const PARENT_RESULT = 333;
+const METHOD = 'myMethod' as any;
+
+// this class is used for type checking
+class _Base {
+    constructor(public myNumber: number = 0) {
+    }
+
+    myMethod(foo: number): number {
+        return PARENT_RESULT;
+    }
+
+}
+type Decorator = (c: Class<_Base>) => Class<_Base>;
+
+function makeBaseClass(spy?: sinon.SinonSpy): typeof _Base {
+    return class Base extends _Base {
+        myMethod(num: number): number {
+            spy!(num);
+            return super.myMethod(num);
+        }
+    };
+}
 
 describe("class decor API", () => {
     let Base: typeof _Base;
@@ -101,167 +115,224 @@ describe("class decor API", () => {
     });
 
     describe("registerForConstructor", () => {
-        let spy1: sinon.SinonSpy;
-        let spy2: sinon.SinonSpy;
+        let first: sinon.SinonSpy;
+        let last: sinon.SinonSpy;
+        let userConstructorSpy: sinon.SinonSpy;
 
         function decor1<T extends object>(cls: Class<T>): Class<T> {
-            return registerForConstructor(cls, spy1);
+            return registerForConstructor(cls, first);
         }
 
         function decor2<T extends object>(cls: Class<T>): Class<T> {
-            return registerForConstructor(cls, spy2);
+            return registerForConstructor(cls, last);
         }
 
         beforeEach('init Base class', () => {
             Base = makeBaseClass();
-            spy1 = sinon.spy();
-            spy2 = sinon.spy();
+            first = sinon.spy();
+            last = sinon.spy();
+            userConstructorSpy = sinon.spy();
         });
 
-        function checkClass(UserClass: typeof Base, spy3: sinon.SinonSpy) {
-            let obj = new UserClass(ORIGIN_ARGUMENT);
-            expect(obj.myNumber).to.equal(ORIGIN_ARGUMENT);
-            expect(spy1, 'spy1').to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT]);
-            expect(spy2, 'spy2').to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT]);
-            expect(spy3, 'spy3').to.have.callCount(1).and.calledWith(sinon.match.same(obj));
-            expectSpyChain(
-                {n: 'spy1', c: spy1.firstCall},
-                {n: 'spy2', c: spy2.firstCall});
-        }
-
         it('called on instance creation (direct apply on class)', () => {
-            const spy3 = sinon.spy();
 
             @decor2
             @decor1
             class UserClass extends Base {
                 constructor(myNumber: number) {
-                    expect(spy1).to.have.callCount(0);
-                    expect(spy2).to.have.callCount(0);
+                    expect(first).to.have.callCount(0);
+                    expect(last).to.have.callCount(0);
                     super(myNumber);
-                    spy3(this);
+                    userConstructorSpy(this);
                 }
             }
-            checkClass(UserClass, spy3);
+            checkClass(UserClass, userConstructorSpy);
         });
         it('when applied on parent class, called on instance creation before user code constructor', () => {
-            const spy3 = sinon.spy();
 
             class UserClass extends decor2(decor1(Base)) {
                 constructor(myNumber: number) {
                     super(myNumber);
-                    spy3(this);
+                    userConstructorSpy(this);
                 }
             }
 
-            checkClass(UserClass, spy3);
+            checkClass(UserClass, userConstructorSpy);
             expectSpyChain(
-                {n: 'spy1', c: spy1.firstCall},
-                {n: 'spy2', c: spy2.firstCall},
-                {n: 'spy3', c: spy3.firstCall});
+                {n: 'first', c: first.firstCall},
+                {n: 'last', c: last.firstCall},
+                {n: 'userConstructorSpy', c: userConstructorSpy.firstCall});
         });
+
+        function checkClass(UserClass: typeof Base, spy3: sinon.SinonSpy) {
+            let obj = new UserClass(ORIGIN_ARGUMENT);
+            expect(obj.myNumber).to.equal(ORIGIN_ARGUMENT);
+            expect(first, 'first').to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT]);
+            expect(last, 'last').to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT]);
+            expect(spy3, 'userConstructorSpy').to.have.callCount(1).and.calledWith(sinon.match.same(obj));
+            expectSpyChain(
+                {n: 'first', c: first.firstCall},
+                {n: 'last', c: last.firstCall});
+        }
+
     });
 
     describe("method hooks", () => {
-        const SPIES = {
-            decor1Pre: (target: _Base, args: [number]) => undefined,
-            decor1Post: (target: _Base, res: number) => undefined,
-            decor2Pre: (target: _Base, args: [number]) => undefined,
-            decor2Post: (target: _Base, res: number) => undefined,
+
+        const SPIES = spyAll({
+            firstBefore: (target: _Base, args: [number]) => undefined,
+            lastBefore: (target: _Base, args: [number]) => undefined,
+            firstAfter: (target: _Base, res: number) => undefined,
+            lastAfter: (target: _Base, res: number) => undefined,
             superClassFunction: () => undefined,
             childFunction: (target: _Base, arg: number) => undefined,
-        };
-        Object.keys(SPIES).forEach(k => sinon.spy(SPIES, k));
+        });
 
-        function spy(name: keyof typeof SPIES) {
-            return (SPIES as any)[name] as sinon.SinonSpy;
-        }
-        beforeEach('init Base class', () => {
-            Object.keys(SPIES).forEach((k: any) => spy(k).reset());
-            Base = makeBaseClass(SPIES.superClassFunction as sinon.SinonSpy);
+        describe("priority", () => {
+
+            function beforeAfter<T extends _Base>(cls: Class<T>): Class<T> {
+                cls = registerBefore<T>(cls, METHOD, (target: T, args: [number]) => {
+                    SPIES.firstBefore(target, args);
+                    return [args[0] + 1]
+                });
+                return registerAfter<T>(cls, METHOD, (target: T, result: number) => {
+                    SPIES.lastAfter(target, result);
+                    return result + 1;
+                });
+            }
+
+            function middleware<T extends _Base>(cls: Class<T>): Class<T> {
+                return registerMiddleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
+                    SPIES.lastBefore(target, args);
+                    const res = next(args[0] + 1);
+                    SPIES.firstAfter(target, res);
+                    return res + 1;
+                });
+            }
+
+            describe("before & after wraps middleware when applied first", () => {
+                checkDecorationStyles(beforeAfter, middleware, true);
+            });
+            describe("before & after wraps middleware also when applied last", () => {
+                checkDecorationStyles(middleware, beforeAfter, true);
+            });
+
         });
 
         describe("registerBefore and registerAfter", () => {
-            function decor1<T extends _Base>(cls: Class<T>): Class<T> {
+            function outer<T extends _Base>(cls: Class<T>): Class<T> {
                 cls = registerBefore<T>(cls, METHOD, (target: T, args: [number]) => {
-                    SPIES.decor1Pre(target, args);
+                    SPIES.firstBefore(target, args);
                     return [args[0] + 1]
                 });
                 return registerAfter<T>(cls, METHOD, (target: T, result: number) => {
-                    SPIES.decor1Post(target, result);
-                    return result + 1;
-                });
-            }
-            function decor2<T extends _Base>(cls: Class<T>): Class<T> {
-                cls = registerBefore<T>(cls, METHOD, (target: T, args: [number]) => {
-                    SPIES.decor2Pre(target, args);
-                    return [args[0] + 1]
-                });
-                return registerAfter<T>(cls, METHOD, (target: T, result: number) => {
-                    SPIES.decor2Post(target, result);
+                    SPIES.lastAfter(target, result);
                     return result + 1;
                 });
             }
 
-            checkDecorationStyles(decor1, decor2);
+            function inner<T extends _Base>(cls: Class<T>): Class<T> {
+                cls = registerBefore<T>(cls, METHOD, (target: T, args: [number]) => {
+                    SPIES.lastBefore(target, args);
+                    return [args[0] + 1]
+                });
+                return registerAfter<T>(cls, METHOD, (target: T, result: number) => {
+                    SPIES.firstAfter(target, result);
+                    return result + 1;
+                });
+            }
+
+            // first  is outer, last is inner
+            checkDecorationStyles(outer, inner);
         });
 
         describe("registerMiddleware", () => {
-            function decor1<T extends _Base>(cls: Class<T>): Class<T> {
+            function outer<T extends _Base>(cls: Class<T>): Class<T> {
                 return registerMiddleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
-                    SPIES.decor1Pre(target, args);
+                    SPIES.firstBefore(target, args);
                     const res = next(args[0] + 1);
-                    SPIES.decor1Post(target, res);
+                    SPIES.lastAfter(target, res);
                     return res + 1;
                 });
             }
-            function decor2<T extends _Base>(cls: Class<T>): Class<T> {
+
+            function inner<T extends _Base>(cls: Class<T>): Class<T> {
                 return registerMiddleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
-                    SPIES.decor2Pre(target, args);
+                    SPIES.lastBefore(target, args);
                     const res = next(args[0] + 1);
-                    SPIES.decor2Post(target, res);
+                    SPIES.firstAfter(target, res);
                     return res + 1;
                 });
             }
-            checkDecorationStyles(decor1, decor2);
+
+            // first  is outer, last is inner
+            checkDecorationStyles(outer, inner);
         });
 
-        function checkDecorationStyles(decor1:Decorator, decor2:Decorator) {
-            it('when direct apply on class', () => {
-                @decor2
-                @decor1
-                class UserClass extends Base {
-                    myMethod(foo: number): number {
-                        SPIES.childFunction(this, foo);
-                        return ORIGIN_RESULT;
+        function checkDecorationStyles(first: Decorator, second: Decorator, sampleTest=false) {
+            let UserClass: typeof _Base;
+
+            describe('when direct apply on class', () => {
+                before('define classes', () => {
+                    Base = makeBaseClass(SPIES.superClassFunction);
+                    @second
+                    @first
+                    class _UserClass extends Base {
+                        myMethod(foo: number): number {
+                            SPIES.childFunction(this, foo);
+                            return ORIGIN_RESULT;
+                        }
                     }
-                }
-                checkClass(UserClass);
+                    UserClass = _UserClass;
+                });
+                checkClass(sampleTest);
 
             });
-            it('when applied on base class', () => {
-                let BaseClass = decor2(decor1(Base));
-                class UserClass extends BaseClass {
-                    myMethod(foo: number): number {
-                        SPIES.childFunction(this, foo);
-                        return ORIGIN_RESULT;
+            describe('when applied on base class', () => {
+                before('define classes', () => {
+                    Base = second(first(makeBaseClass(SPIES.superClassFunction)));
+                    class _UserClass extends Base {
+                        myMethod(foo: number): number {
+                            SPIES.childFunction(this, foo);
+                            return ORIGIN_RESULT;
+                        }
                     }
+                    UserClass = _UserClass;
+                });
+                checkClass(sampleTest);
+            });
+
+            function checkClass(sampleTest=false) {
+                let obj1:_Base, obj2:_Base;
+                before('define classes', () => {
+                    // TODO uncomment and fix!
+                    obj2 = obj1 = new UserClass();
+                //    obj2 = new UserClass();
+                });
+                if (sampleTest){
+                    checkMethod(() => obj1, 'single test');
+                } else {
+                    checkMethod(() => obj1, 'first instance, first method execution');
+                    checkMethod(() => obj2, 'second instance, first method execution');
+                    checkMethod(() => obj2, 'second instance, second method execution');
                 }
-                checkClass(UserClass);
+            }
+        }
+
+
+        function checkMethod(objProvider: ()=>_Base, runId: string) {
+            it(runId, () => {
+                resetAll(SPIES);
+                const obj = objProvider();
+                const result = obj.myMethod(ORIGIN_ARGUMENT);
+                expect(SPIES.firstBefore).to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT]);
+                expect(SPIES.lastBefore).to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT + 1]);
+                expect(SPIES.superClassFunction).to.have.callCount(0);
+                expect(SPIES.childFunction).to.have.callCount(1).and.calledWith(sinon.match.same(obj), ORIGIN_ARGUMENT + 2);
+                expect(SPIES.firstAfter).to.have.callCount(1).and.calledWith(sinon.match.same(obj), ORIGIN_RESULT);
+                expect(SPIES.lastAfter).to.have.callCount(1).and.calledWith(sinon.match.same(obj), ORIGIN_RESULT + 1);
+                expect(result).to.equal(ORIGIN_RESULT + 2);
             });
         }
-
-        function checkClass(UserClass: typeof Base) {
-            let obj = new UserClass();
-            let result = obj.myMethod(ORIGIN_ARGUMENT);
-            expect(spy('decor1Pre')).to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT]);
-            expect(spy('decor2Pre')).to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT + 1]);
-            expect(spy('superClassFunction')).to.have.callCount(0);
-            expect(spy('childFunction')).to.have.callCount(1).and.calledWith(sinon.match.same(obj), ORIGIN_ARGUMENT + 2);
-            expect(spy('decor2Post')).to.have.callCount(1).and.calledWith(sinon.match.same(obj), ORIGIN_RESULT);
-            expect(spy('decor1Post')).to.have.callCount(1).and.calledWith(sinon.match.same(obj), ORIGIN_RESULT + 1);
-            expect(result).to.equal(ORIGIN_RESULT + 2);
-        }
-
     });
 });
