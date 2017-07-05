@@ -10,49 +10,8 @@ import {
 import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
 import {expectSpyChain} from '../test-drivers/spy-chain';
+import {getHeritage, resetAll, spyAll} from "../test-tools";
 
-//---------test tools
-
-// a type that adds spy type to each field
-type Spied<T extends { [k: string]: Function }> = {
-    [P in keyof T]: T[P] & sinon.SinonSpy;
-    };
-
-// helper to spy all methods with good typings
-function spyAll<T extends { [k: string]: Function }>(obj: T): Spied<T> {
-    Object.keys(obj).forEach(k => sinon.spy(obj, k));
-    return obj as any;
-}
-
-function resetAll<T extends { [k: string]: Function }>(obj: Spied<T>): void {
-    Object.keys(obj).forEach((k: keyof T) => obj[k].reset());
-}
-
-function getHeritage(clazz: Class<any>): Array<Class<any>> {
-    const res = [];
-    while (clazz !== Object) {
-        res.unshift(clazz);
-        clazz = Object.getPrototypeOf(clazz.prototype).constructor;
-    }
-    return res;
-}
-
-describe("getHeritage", () => {
-    class Foo {
-    }
-    class Bar extends Foo {
-    }
-    class Baz extends Bar {
-    }
-    it("works on single class", () => {
-        expect(getHeritage(Foo)).to.eql([Foo]);
-    });
-    it("works on real chain", () => {
-        expect(getHeritage(Baz)).to.eql([Foo, Bar, Baz]);
-    });
-});
-
-//--------- test
 const ORIGIN_ARGUMENT = 111;
 const ORIGIN_RESULT = 222;
 const PARENT_RESULT = 333;
