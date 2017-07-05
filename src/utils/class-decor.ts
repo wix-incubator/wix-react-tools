@@ -5,7 +5,7 @@ export type Class<T extends object> = new(...args: any[]) => T;
 type DumbClass = new(...args: any[]) => object;
 
 // see https://github.com/Microsoft/TypeScript/issues/16931
-export type Method<R = void> = (...args:any[]) => R;
+export type Method<R = void> = (...args: any[]) => R;
 export type Method0<R = void> = () => R;
 export type Method1<T1, R = void> = (t1: T1) => R;
 export type Method2<T1, T2, R = void> = (t1: T1, t2: T2) => R;
@@ -16,6 +16,7 @@ export type ConstructorHook<T extends object> = Method2<T, any[]>;
 export type BeforeHook<T, A extends Array<any>> = Method2<T, A, A>;
 export type AfterHook<T, R = void> = Method2<T, R, R>;
 export type MiddlewareHook<T, A extends Array<any>, R = void> = Method3<T, Method<R>, A, R>;
+export type ClassDecorator<T extends object> = Method1<Class<T>, Class<T>>;
 
 function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
     let result = obj[key];
@@ -31,9 +32,9 @@ class MixerData<T extends object> {
     beforeHooks: {[P in keyof T]?:Array<BeforeHook<T, any>>} = {};
     afterHooks: {[P in keyof T]?:Array<AfterHook<T, any>>} = {};
     middlewareHooks: {[P in keyof T]?:Array<MiddlewareHook<T, any, any>>} = {};
-    origin: {[P in keyof T]?:T[P]&Method<any>} = {};
+    origin: {[P in keyof T]?:T[P] & Method<any>} = {};
 
-    get hookedMethodNames(){
+    get hookedMethodNames() {
         return _union(
             Object.keys(this.middlewareHooks),
             Object.keys(this.beforeHooks),
@@ -47,28 +48,55 @@ type Mixed<T extends object> = {
 
 type MixedClass<T extends object> = Class<T> & Mixed<T>;
 
-export function preConstruct<T extends object>(target: Class<T>, cb: ConstructorHook<T>): Class<T> {
-    const mixed = mix(target);
-    mixed.$mixerData.constructorHooks.push(cb);
-    return mixed;
+function chain2<T extends object>(f:ClassDecorator<T>, g:ClassDecorator<T>):ClassDecorator<T>{
+    return (cls:Class<T>) => g(f(cls));
+}
+export function chain<T extends object>(...fns:ClassDecorator<T>[]):ClassDecorator<T>{
+    return fns.reduce(chain2);
 }
 
-export function before<T extends object>(target: Class<T>, methodName: keyof T, cb: BeforeHook<T, any>): Class<T> {
-    const mixed = mix(target);
-    getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(cb);
-    return mixed;
+export function preConstruct<T extends object>(cb: ConstructorHook<T>): ClassDecorator<T>;
+export function preConstruct<T extends object>(cb: ConstructorHook<T>, target: Class<T>): Class<T>;
+export function preConstruct<T extends object>(cb: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
+    function curried(t: Class<T>) {
+        const mixed = mix(t);
+        mixed.$mixerData.constructorHooks.push(cb);
+        return mixed;
+    }
+    return target ? curried(target) : curried;
 }
 
-export function after<T extends object>(target: Class<T>, methodName: keyof T, cb: AfterHook<T, any>): Class<T> {
-    const mixed = mix(target);
-    getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(cb);
-    return mixed;
+export function before<T extends object>(cb: BeforeHook<T, any>, methodName: keyof T): ClassDecorator<T>;
+export function before<T extends object>(cb: BeforeHook<T, any>, methodName: keyof T, target: Class<T>): Class<T>;
+export function before<T extends object>(cb: BeforeHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
+    function curried(t: Class<T>) {
+        const mixed = mix(t);
+        getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(cb);
+        return mixed;
+    }
+    return target ? curried(target) : curried;
 }
 
-export function middleware<T extends object>(target: Class<T>, methodName: keyof T, cb: MiddlewareHook<T, any, any>): Class<T> {
-    const mixed = mix(target);
-    getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(cb);
-    return mixed;
+export function after<T extends object>(cb: AfterHook<T, any>, methodName: keyof T): ClassDecorator<T>;
+export function after<T extends object>(cb: AfterHook<T, any>, methodName: keyof T, target: Class<T>): Class<T>;
+export function after<T extends object>(cb: AfterHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
+    function curried(t: Class<T>) {
+        const mixed = mix(t);
+        getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(cb);
+        return mixed;
+    }
+    return target ? curried(target) : curried;
+}
+
+export function middleware<T extends object>(cb: MiddlewareHook<T, any, any>, methodName: keyof T): ClassDecorator<T>;
+export function middleware<T extends object>(cb: MiddlewareHook<T, any, any>, methodName: keyof T, target: Class<T>): Class<T>;
+export function middleware<T extends object>(cb: MiddlewareHook<T, any, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
+    function curried(t: Class<T>) {
+        const mixed = mix(t);
+        getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(cb);
+        return mixed;
+    }
+    return target ? curried(target) : curried;
 }
 
 function isMixed<T>(subj: any): subj is Mixed<T> {
@@ -164,13 +192,13 @@ function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, me
 function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
     const originalMethod: Method<any> = mixerMeta.origin[methodName]!;
     const middlewareHooks = mixerMeta.middlewareHooks[methodName];
-    return (middlewareHooks)? // should never be an empty array - either undefined or with hook(s)
+    return (middlewareHooks) ? // should never be an empty array - either undefined or with hook(s)
         middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1), methodArgs) :
         originalMethod.apply(target, methodArgs);
 }
 
-function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: Method<R>, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number){
-    return (...args: any[]):R => {
+function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: Method<R>, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number) {
+    return (...args: any[]): R => {
         return middlewareHooks.length <= idx ?
             originalMethod.apply(target, args) :
             middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1), args as A);
