@@ -125,15 +125,17 @@ function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ct
         (cb: ConstructorHook<T>) => cb(target, ctorArgs));
 
     mixerMeta.hookedMethodNames.forEach((methodName: keyof T) => {
-        mixerMeta.origin[methodName] = target[methodName]; // TODO check if same as prototype method
-        // TODO named function
-        Object.getPrototypeOf(target)[methodName] = function (this: T) {
-            let methodArgs: any[] = Array.prototype.slice.call(arguments);
-            methodArgs = runBeforeHooks(this, mixerMeta, methodName, methodArgs);
-            let methodResult = runMiddlewareHooksAndOrigin(this, mixerMeta, methodName, methodArgs);
-            methodResult = runAfterHooks(this, mixerMeta, methodName, methodResult);
-            return methodResult;
-        };
+        if (!mixerMeta.origin[methodName]) {
+            mixerMeta.origin[methodName] = target[methodName]; // TODO check if same as prototype method
+            // TODO named function
+            Object.getPrototypeOf(target)[methodName] = function (this: T) {
+                let methodArgs: any[] = Array.prototype.slice.call(arguments);
+                methodArgs = runBeforeHooks(this, mixerMeta, methodName, methodArgs);
+                let methodResult = runMiddlewareHooksAndOrigin(this, mixerMeta, methodName, methodArgs);
+                methodResult = runAfterHooks(this, mixerMeta, methodName, methodResult);
+                return methodResult;
+            };
+        }
     });
 }
 

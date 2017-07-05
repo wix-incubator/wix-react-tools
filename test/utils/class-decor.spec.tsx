@@ -272,6 +272,19 @@ describe("class decor API", () => {
         function checkDecorationStyles(first: Decorator, second: Decorator, sampleTest=false) {
             let UserClass: typeof _Base;
 
+            describe('when applied on base class', () => {
+                before('define classes', () => {
+                    Base = second(first(makeBaseClass(SPIES.superClassFunction)));
+                    class _UserClass extends Base {
+                        myMethod(foo: number): number {
+                            SPIES.childFunction(this, foo);
+                            return ORIGIN_RESULT;
+                        }
+                    }
+                    UserClass = _UserClass;
+                });
+                checkClass(sampleTest);
+            });
             describe('when direct apply on class', () => {
                 before('define classes', () => {
                     Base = makeBaseClass(SPIES.superClassFunction);
@@ -288,26 +301,12 @@ describe("class decor API", () => {
                 checkClass(sampleTest);
 
             });
-            describe('when applied on base class', () => {
-                before('define classes', () => {
-                    Base = second(first(makeBaseClass(SPIES.superClassFunction)));
-                    class _UserClass extends Base {
-                        myMethod(foo: number): number {
-                            SPIES.childFunction(this, foo);
-                            return ORIGIN_RESULT;
-                        }
-                    }
-                    UserClass = _UserClass;
-                });
-                checkClass(sampleTest);
-            });
 
             function checkClass(sampleTest=false) {
                 let obj1:_Base, obj2:_Base;
                 before('define classes', () => {
-                    // TODO uncomment and fix!
-                    obj2 = obj1 = new UserClass();
-                //    obj2 = new UserClass();
+                    obj1 = new UserClass();
+                    obj2 = new UserClass();
                 });
                 if (sampleTest){
                     checkMethod(() => obj1, 'single test');
