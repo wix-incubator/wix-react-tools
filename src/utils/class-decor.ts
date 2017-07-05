@@ -1,4 +1,5 @@
 import _union = require('lodash/union');
+import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 
 export type Class<T extends object> = new(...args: any[]) => T;
 type DumbClass = new(...args: any[]) => object;
@@ -124,7 +125,6 @@ function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ct
         (cb: ConstructorHook<T>) => cb(target, ctorArgs));
 
     mixerMeta.hookedMethodNames.forEach((methodName: keyof T) => {
-        // TODO check two instances
         mixerMeta.origin[methodName] = target[methodName]; // TODO check if same as prototype method
         // TODO named function
         Object.getPrototypeOf(target)[methodName] = function (this: T) {
@@ -137,14 +137,22 @@ function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ct
     });
 }
 
+function errorBeforeNtReturnedArray(methodArgs: any[]) {
+    let serialized = '(unSerializable)';
+    try {
+        serialized = JSON.stringify(methodArgs)
+    } catch (e) {
+    }
+    throw new Error('before hook did not return an array-like object:' + serialized)
+}
+
 function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
     const beforeHooks = mixerMeta.beforeHooks[methodName];
     if (beforeHooks) {
         beforeHooks.forEach((hook: BeforeHook<T, typeof methodArgs>) => {
-            const result = hook(target, methodArgs);
-            // TODO always override args, document in readme, throw if not array-like
-            if (Array.isArray(result)) {
-                methodArgs = result;
+            methodArgs = hook(target, methodArgs);
+            if (!_isArrayLikeObject(methodArgs)) {
+                errorBeforeNtReturnedArray(methodArgs);
             }
         });
     }

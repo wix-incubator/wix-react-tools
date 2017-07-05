@@ -161,7 +161,7 @@ returns: void
 
 # before
 
-registers a callback to be called before a class method is called
+registers a callback to be called before a class method is called. callback must return an arguments array.
 
 ## API
 
@@ -197,7 +197,7 @@ returns: modified/original arguments to be passed to the method
 
 # after
 
-registers a callback to be after a class method is called
+registers a callback to be after a class method is called. callback return value will override method's return value.
 
 ## API
 
