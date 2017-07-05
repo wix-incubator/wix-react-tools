@@ -190,7 +190,7 @@ describe("class decor API", () => {
 
         describe("priority", () => {
 
-            function beforeAfter<T extends _Base>(cls: Class<T>): Class<T> {
+            function beforeAfterDecor<T extends _Base>(cls: Class<T>): Class<T> {
                 cls = before<T>(cls, METHOD, (target: T, args: [number]) => {
                     SPIES.firstBefore(target, args);
                     return [args[0] + 1]
@@ -201,7 +201,7 @@ describe("class decor API", () => {
                 });
             }
 
-            function middleware<T extends _Base>(cls: Class<T>): Class<T> {
+            function middlewareDecor<T extends _Base>(cls: Class<T>): Class<T> {
                 return middleware<T>(cls, METHOD, (target: T, next: Function, args: [number]) => {
                     SPIES.lastBefore(target, args);
                     const res = next(args[0] + 1);
@@ -211,10 +211,10 @@ describe("class decor API", () => {
             }
 
             describe("before & after wraps middleware when applied first", () => {
-                checkDecorationStyles(beforeAfter, middleware, true);
+                checkDecorationStyles(beforeAfterDecor, middlewareDecor, true);
             });
             describe("before & after wraps middleware also when applied last", () => {
-                checkDecorationStyles(middleware, beforeAfter, true);
+                checkDecorationStyles(middlewareDecor, beforeAfterDecor, true);
             });
 
         });
