@@ -11,7 +11,6 @@ export type Method2<T1, T2, R = void> = (t1: T1, t2: T2) => R;
 export type Method3<T1, T2, T3, R = void> = (t1: T1, t2: T2, t3: T3) => R;
 export type Method4<T1, T2, T3, T4, R = void> = (t1: T1, t2: T2, t3: T3, t4: T4) => R;
 
-
 export type ConstructorHook<T extends object> = Method2<T, any[]>;
 export type BeforeHook<T, A extends Array<any>> = Method2<T, A, A>;
 export type AfterHook<T, R = void> = Method2<T, R, R>;
@@ -26,19 +25,11 @@ function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
 }
 
 class MixerData<T extends object> {
-    // get constructorHooks(): ConstructorHook<T>[] {
-    //     const value: ConstructorHook<T>[] = [];
-    //     Object.defineProperty(this, 'constructorHooks', {value});
-    //     return value;
-    // };
-
     // TODO @measure if worth making lazy
-    // @lazyField
     constructorHooks: ConstructorHook<T>[] = [];
     beforeHooks: {[P in keyof T]?:Array<BeforeHook<T, any>>} = {};
     afterHooks: {[P in keyof T]?:Array<AfterHook<T, any>>} = {};
     middlewareHooks: {[P in keyof T]?:Array<MiddlewareHook<T, any, any>>} = {};
-
     origin: {[P in keyof T]?:T[P]&Method<any>} = {};
 
     get hookedMethodNames(){
@@ -55,12 +46,14 @@ type Mixed<T extends object> = {
 
 type MixedClass<T extends object> = Class<T> & Mixed<T>;
 
+// TODO rename preConstructor
 export function registerForConstructor<T extends object>(target: Class<T>, cb: ConstructorHook<T>): Class<T> {
     const mixed = mix(target);
     mixed.$mixerData.constructorHooks.push(cb);
     return mixed;
 }
 
+// TODO rename before
 export function registerBefore<T extends object>(target: Class<T>, methodName: keyof T, cb: BeforeHook<T, any>): Class<T> {
     const mixed = mix(target);
     getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(cb);
@@ -129,8 +122,11 @@ function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
 
 
 function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ctorArgs: any[]) {
-    mixerMeta.constructorHooks && mixerMeta.constructorHooks.forEach((cb: ConstructorHook<T>) => cb(target, ctorArgs));
+    mixerMeta.constructorHooks && mixerMeta.constructorHooks.forEach(
+        (cb: ConstructorHook<T>) => cb(target, ctorArgs));
+
     mixerMeta.hookedMethodNames.forEach((methodName: keyof T) => {
+        // TODO check two instances
         mixerMeta.origin[methodName] = target[methodName]; // TODO check if same as prototype method
         // TODO named function
         Object.getPrototypeOf(target)[methodName] = function (this: T) {
@@ -148,6 +144,7 @@ function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, me
     if (beforeHooks) {
         beforeHooks.forEach((hook: BeforeHook<T, typeof methodArgs>) => {
             const result = hook(target, methodArgs);
+            // TODO always override args, document in readme, throw if not array-like
             if (Array.isArray(result)) {
                 methodArgs = result;
             }
@@ -160,15 +157,15 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Mix
     const originalMethod: Method<any> = mixerMeta.origin[methodName]!;
     const middlewareHooks = mixerMeta.middlewareHooks[methodName];
     return (middlewareHooks)? // should never be an empty array - either undefined or with hook(s)
-        middlewareHooks[0](target, wrapMiddleware(target, originalMethod, middlewareHooks, 1), methodArgs) :
+        middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1), methodArgs) :
         originalMethod.apply(target, methodArgs);
 }
 
-function wrapMiddleware<T extends object, A extends Array<any>, R>(target: T, originalMethod: Method<R>, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number){
+function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: Method<R>, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number){
     return (...args: any[]):R => {
         return middlewareHooks.length <= idx ?
             originalMethod.apply(target, args) :
-            middlewareHooks[idx](target, wrapMiddleware(target, originalMethod, middlewareHooks, idx + 1), args as A);
+            middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1), args as A);
     };
 }
 

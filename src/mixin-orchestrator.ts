@@ -82,10 +82,7 @@ export function orchastrated<C extends ReactConstructor<{}>>(cls:C):C{
         };
     }
     return cls;
-
 }
-
-
 
 export function registerForConstructor<T,TE  extends WithOrchestratorMeta<T> & T>(target:T,cb:lifeCycleRunnner<TE>):TE{
     const targetE = (target as any) as TE;
