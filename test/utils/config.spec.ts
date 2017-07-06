@@ -1,15 +1,16 @@
 import {expect} from "test-drive";
 import {getGlobalConfig, overrideGlobalConfig, setGlobalConfig, runInContext} from "../../src/utils/config";
 
-
 const sampleConfig = {
     foo: 'bar',
     biz: {baz: true}
 };
+
 const sampleConfig2 = {
     foo2: 'bar',
     biz: {baz2: true}
 };
+
 describe('config', () => {
     afterEach('cleanup', () => {
         overrideGlobalConfig({});
@@ -53,33 +54,72 @@ describe('config', () => {
     });
 
     describe('runInContext', () => {
-        it("overrides config for the supplied method", () => {
+        beforeEach('reset config to sampleConfig', () => {
             setGlobalConfig(sampleConfig);
-            let internalConfig = {};
-            runInContext(sampleConfig2, () => {
-                internalConfig = getGlobalConfig();
-            });
-            expect(internalConfig, 'inside runInContext').to.containSubset(sampleConfig2);
-            expect(getGlobalConfig(), 'after runInContext'+JSON.stringify(getGlobalConfig())).to.eql(sampleConfig);
+        });
+        it("returns result of internal method", () => {
+            const res = {};
+            expect(runInContext({}, () => res)).to.equal(res);
         });
 
-        it("cleans up after it\'s done", () => {
-            setGlobalConfig(sampleConfig);
-            runInContext({}, () => {
-                setGlobalConfig(sampleConfig2);
-            });
-            expect(getGlobalConfig(), 'after runInContext').to.eql(sampleConfig);
-        });
-
-        it("propagates errors and cleans up nonetheless", () => {
+        it("if method throws, propagates errors and cleans", () => {
             const err = Error('fake!');
-            setGlobalConfig(sampleConfig);
             expect(() =>
                 runInContext({foo: 123}, () => {
                     setGlobalConfig({foo: 456});
                     throw err;
                 })).to.throw(err);
             expect(sampleConfig, 'after runInContext').to.eql(sampleConfig);
+        });
+
+        it("overrides config for the supplied method only", () => {
+            expect(getGlobalConfig(), 'before runInContext').to.eql(sampleConfig);
+            runInContext(sampleConfig2, () => {
+                expect(getGlobalConfig(), 'inside runInContext').to.containSubset(sampleConfig2);
+            });
+            console.log('exected', sampleConfig);
+            expect(getGlobalConfig(), 'after runInContext').to.eql(sampleConfig);
+        });
+
+        it("cleans up changes made by the method after it\'s done", () => {
+            runInContext({}, () => {
+                setGlobalConfig(sampleConfig2);
+            });
+            expect(getGlobalConfig(), 'after runInContext').to.eql(sampleConfig);
+        });
+
+
+        it("if method throws in test mode, propagates errors and cleans up", () => {
+            const err = Error('fake!');
+            expect(() =>
+                runInContext({foo: 123}, () => {
+                    setGlobalConfig({foo: 456});
+                    throw err;
+                }, true)).to.throw(err);
+            expect(sampleConfig, 'after runInContext').to.eql(sampleConfig);
+        });
+
+        it("if method returns promise in test mode, cleans up only afterwards", () => {
+            const delay = new Promise(resolve => setTimeout(() => resolve(), 10));
+            const res = runInContext(sampleConfig2, () => delay, true);
+            expect(getGlobalConfig(), 'after runInContext but before promise is done').to.containSubset(sampleConfig2);
+            return res.then(() => {
+                expect(getGlobalConfig(), 'after promise is done').to.eql(sampleConfig);
+            });
+        });
+
+        it("if method returns promise in test mode, cleans up afterwards even if promise rejects", () => {
+            const err = Error('fake!');
+            const delay = new Promise(resolve => setTimeout(() => resolve(), 10)).then(() => {
+                throw err;
+            });
+
+            return runInContext(sampleConfig2, () => delay, true).then(() => {
+                throw new Error('promise should have rejected');
+            }, (reason: any) => {
+                expect(reason, 'thrown').to.equal(err);
+                expect(getGlobalConfig(), 'after promise rejected').to.eql(sampleConfig);
+            });
         });
     });
 });
