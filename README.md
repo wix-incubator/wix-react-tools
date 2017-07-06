@@ -59,20 +59,13 @@ runInContext({staticRendering:true},()=>{
 
 ```
 
-
-
-
 ### arguments:
 
 - config: a mixins config object
 - method: a method to run in this context
-    - if this method returns a promise, the context will remain active until the promise is resolved/rejected, you should use this option only in tests
 
-
-
-
-
-
+## testInContext
+same as runInConext, only that if the method argument returns a promise, the context will remain active until the promise is resolved/rejected, you should use this only in tests.
 
 
 # available base components
