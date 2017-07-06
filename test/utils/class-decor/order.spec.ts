@@ -4,20 +4,21 @@ import {
     after,
     before as beforeMethod,
     preConstruct,
-    middleware, chain
-} from "../../src/utils/class-decor";
+    middleware, chain,
+    ClassDecorator
+} from "../../../src/utils/class-decor";
 import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
-import {expectSpyChain} from '../test-drivers/spy-chain';
-import {getHeritage, resetAll, spyAll} from "../test-tools";
+import {expectSpyChain} from '../../test-drivers/spy-chain';
+import {resetAll, spyAll} from "../../test-tools";
 
 const ORIGIN_ARGUMENT = 111;
 const ORIGIN_RESULT = 222;
 const PARENT_RESULT = 333;
 const METHOD = 'myMethod' as any;
 
-// this class is used for type checking
-class _Base {
+// this class is used as base class and type for the tests
+class Base {
     constructor(public myNumber: number = 0) {
     }
 
@@ -26,10 +27,10 @@ class _Base {
     }
 
 }
-type Decorator = (c: Class<_Base>) => Class<_Base>;
+type Decorator = ClassDecorator<Base>;
 
-function makeBaseClass(spy?: sinon.SinonSpy): typeof _Base {
-    return class extends _Base {
+function makeBaseClass(spy?: sinon.SinonSpy): typeof Base {
+    return class extends Base {
         myMethod(num: number): number {
             spy!(num);
             return super.myMethod(num);
@@ -37,46 +38,13 @@ function makeBaseClass(spy?: sinon.SinonSpy): typeof _Base {
     };
 }
 
-describe("class decor API", () => {
-    let Base: typeof _Base;
-    describe("heritage side-effects", () => {
-
-        const decorate = chain<_Base>(
-            preConstruct(() => undefined),
-            beforeMethod(() => undefined, 'myMethod'),
-            after(() => undefined, 'myMethod'),
-            middleware(() => undefined, 'myMethod'));
-
-        // fixture class tree
-        const Foo = makeBaseClass();
-        @decorate @decorate @decorate
-        class Bar extends Foo {
-        }
-        @decorate @decorate @decorate
-        class Biz extends Bar {
-        }
-        class Baz extends Biz {
-        }
-        const NUM_USER_CLASSES = 3; // [Bar, Biz, Baz].length
-
-        it('only add one class to heritage', () => {
-            expect(getHeritage(Baz).length).to.eql(getHeritage(Foo).length + NUM_USER_CLASSES + 1);
-        });
-
-        it('does not change constructor name(s)', () => {
-            expect(new Bar().constructor.name, 'new Bar().constructor.name').to.equal('Bar');
-            expect(new Biz().constructor.name, 'new Biz().constructor.name').to.equal('Biz');
-            expect(new Baz().constructor.name, 'new Baz().constructor.name').to.equal('Baz');
-        });
-    });
-
+describe("class decor order", () => {
     describe("preConstruct", () => {
         let first: sinon.SinonSpy;
         let last: sinon.SinonSpy;
         let userConstructorSpy: sinon.SinonSpy;
 
         beforeEach('init Base class', () => {
-            Base = makeBaseClass();
             first = sinon.spy();
             last = sinon.spy();
             userConstructorSpy = sinon.spy();
@@ -84,9 +52,9 @@ describe("class decor API", () => {
 
         it('called on instance creation (direct apply on class)', () => {
 
-            @preConstruct<_Base>(last)
-            @preConstruct<_Base>(first)
-            class UserClass extends Base {
+            @preConstruct<Base>(last)
+            @preConstruct<Base>(first)
+            class UserClass extends makeBaseClass() {
                 constructor(myNumber: number) {
                     expect(first).to.have.callCount(0);
                     expect(last).to.have.callCount(0);
@@ -98,8 +66,8 @@ describe("class decor API", () => {
         });
         it('when applied on parent class, called on instance creation before user code constructor', () => {
 
-            const decorate = chain(preConstruct<_Base>(first), preConstruct<_Base>(last));
-            class UserClass extends decorate(Base) {
+            const decorate = chain(preConstruct<Base>(first), preConstruct<Base>(last));
+            class UserClass extends decorate(makeBaseClass()) {
                 constructor(myNumber: number) {
                     super(myNumber);
                     userConstructorSpy(this);
@@ -128,17 +96,17 @@ describe("class decor API", () => {
 
     describe("method hooks", () => {
         const SPIES = spyAll({
-            firstBefore: (target: _Base, args: [number]) => undefined,
-            lastBefore: (target: _Base, args: [number]) => undefined,
-            firstAfter: (target: _Base, res: number) => undefined,
-            lastAfter: (target: _Base, res: number) => undefined,
+            firstBefore: (target: Base, args: [number]) => undefined,
+            lastBefore: (target: Base, args: [number]) => undefined,
+            firstAfter: (target: Base, res: number) => undefined,
+            lastAfter: (target: Base, res: number) => undefined,
             superClassFunction: () => undefined,
-            childFunction: (target: _Base, arg: number) => undefined,
+            childFunction: (target: Base, arg: number) => undefined,
         });
 
         describe("priority", () => {
 
-            function beforeAfterDecor<T extends _Base>(cls: Class<T>): Class<T> {
+            function beforeAfterDecor<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
                     beforeMethod<T>((target: T, args: [number]) => {
                         SPIES.firstBefore(target, args);
@@ -150,7 +118,7 @@ describe("class decor API", () => {
                     }, METHOD))(cls);
             }
 
-            function middlewareDecor<T extends _Base>(cls: Class<T>): Class<T> {
+            function middlewareDecor<T extends Base>(cls: Class<T>): Class<T> {
                 return middleware<T>((target: T, next: Function, args: [number]) => {
                     SPIES.lastBefore(target, args);
                     const res = next(args[0] + 1);
@@ -169,7 +137,7 @@ describe("class decor API", () => {
         });
 
         describe("before and after", () => {
-            function outer<T extends _Base>(cls: Class<T>): Class<T> {
+            function outer<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
                     beforeMethod<T>((target: T, args: [number]) => {
                         SPIES.firstBefore(target, args);
@@ -181,7 +149,7 @@ describe("class decor API", () => {
                     }, METHOD))(cls);
             }
 
-            function inner<T extends _Base>(cls: Class<T>): Class<T> {
+            function inner<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
                     beforeMethod<T>((target: T, args: [number]) => {
                         SPIES.lastBefore(target, args);
@@ -198,7 +166,7 @@ describe("class decor API", () => {
         });
 
         describe("middleware", () => {
-            function outer<T extends _Base>(cls: Class<T>): Class<T> {
+            function outer<T extends Base>(cls: Class<T>): Class<T> {
                 return middleware<T>((target: T, next: Function, args: [number]) => {
                     SPIES.firstBefore(target, args);
                     const res = next(args[0] + 1);
@@ -207,7 +175,7 @@ describe("class decor API", () => {
                 }, METHOD, cls);
             }
 
-            function inner<T extends _Base>(cls: Class<T>): Class<T> {
+            function inner<T extends Base>(cls: Class<T>): Class<T> {
                 return middleware<T>((target: T, next: Function, args: [number]) => {
                     SPIES.lastBefore(target, args);
                     const res = next(args[0] + 1);
@@ -221,12 +189,12 @@ describe("class decor API", () => {
         });
 
         function checkDecorationStyles(first: Decorator, second: Decorator, sampleTest = false) {
-            let UserClass: typeof _Base;
+            let UserClass: typeof Base;
 
-            describe('when applied on base class', () => {
+            describe('when applied on parent', () => {
                 before('define classes', () => {
-                    Base = second(first(makeBaseClass(SPIES.superClassFunction)));
-                    class _UserClass extends Base {
+                    const Parent = second(first(makeBaseClass(SPIES.superClassFunction)));
+                    class _UserClass extends Parent {
                         myMethod(foo: number): number {
                             SPIES.childFunction(this, foo);
                             return ORIGIN_RESULT;
@@ -236,12 +204,28 @@ describe("class decor API", () => {
                 });
                 checkClass(sampleTest);
             });
-            describe('when direct apply on class', () => {
+            describe('when apply on child', () => {
                 before('define classes', () => {
-                    Base = makeBaseClass(SPIES.superClassFunction);
+                    const Parent = makeBaseClass(SPIES.superClassFunction);
                     @second
                     @first
-                    class _UserClass extends Base {
+                    class _UserClass extends Parent {
+                        myMethod(foo: number): number {
+                            SPIES.childFunction(this, foo);
+                            return ORIGIN_RESULT;
+                        }
+                    }
+                    UserClass = _UserClass;
+                });
+                checkClass(sampleTest);
+
+            });
+
+            describe('when apply on both parent and child', () => {
+                before('define classes', () => {
+                    const Parent = first(makeBaseClass(SPIES.superClassFunction));
+                    @second
+                    class _UserClass extends Parent {
                         myMethod(foo: number): number {
                             SPIES.childFunction(this, foo);
                             return ORIGIN_RESULT;
@@ -254,7 +238,7 @@ describe("class decor API", () => {
             });
 
             function checkClass(sampleTest = false) {
-                let obj1: _Base, obj2: _Base;
+                let obj1: Base, obj2: Base;
                 before('define classes', () => {
                     obj1 = new UserClass();
                     obj2 = new UserClass();
@@ -269,8 +253,7 @@ describe("class decor API", () => {
             }
         }
 
-
-        function checkMethod(objProvider: () => _Base, runId: string) {
+        function checkMethod(objProvider: () => Base, runId: string) {
             it(runId, () => {
                 resetAll(SPIES);
                 const obj = objProvider();
