@@ -55,45 +55,45 @@ export function chain<T extends object>(...fns:ClassDecorator<T>[]):ClassDecorat
     return fns.reduce(chain2);
 }
 
-export function preConstruct<T extends object>(cb: ConstructorHook<T>): ClassDecorator<T>;
-export function preConstruct<T extends object>(cb: ConstructorHook<T>, target: Class<T>): Class<T>;
-export function preConstruct<T extends object>(cb: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
+export function preConstruct<T extends object>(hook: ConstructorHook<T>): ClassDecorator<T>;
+export function preConstruct<T extends object>(hook: ConstructorHook<T>, target: Class<T>): Class<T>;
+export function preConstruct<T extends object>(hook: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried(t: Class<T>) {
         const mixed = mix(t);
-        mixed.$mixerData.constructorHooks.push(cb);
+        mixed.$mixerData.constructorHooks.push(hook);
         return mixed;
     }
     return target ? curried(target) : curried;
 }
 
-export function before<T extends object>(cb: BeforeHook<T, any>, methodName: keyof T): ClassDecorator<T>;
-export function before<T extends object>(cb: BeforeHook<T, any>, methodName: keyof T, target: Class<T>): Class<T>;
-export function before<T extends object>(cb: BeforeHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
+export function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, methodName: keyof T): ClassDecorator<T>;
+export function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, methodName: keyof T, target: Class<T>): Class<T>;
+export function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried(t: Class<T>) {
         const mixed = mix(t);
-        getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(cb);
+        getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(hook);
         return mixed;
     }
     return target ? curried(target) : curried;
 }
 
-export function after<T extends object>(cb: AfterHook<T, any>, methodName: keyof T): ClassDecorator<T>;
-export function after<T extends object>(cb: AfterHook<T, any>, methodName: keyof T, target: Class<T>): Class<T>;
-export function after<T extends object>(cb: AfterHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
+export function before<T extends object>(hook: BeforeHook<T, any>, methodName: keyof T): ClassDecorator<T>;
+export function before<T extends object>(hook: BeforeHook<T, any>, methodName: keyof T, target: Class<T>): Class<T>;
+export function before<T extends object>(hook: BeforeHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried(t: Class<T>) {
         const mixed = mix(t);
-        getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(cb);
+        getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(hook);
         return mixed;
     }
     return target ? curried(target) : curried;
 }
 
-export function middleware<T extends object>(cb: MiddlewareHook<T, any, any>, methodName: keyof T): ClassDecorator<T>;
-export function middleware<T extends object>(cb: MiddlewareHook<T, any, any>, methodName: keyof T, target: Class<T>): Class<T>;
-export function middleware<T extends object>(cb: MiddlewareHook<T, any, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
+export function after<T extends object>(hook: AfterHook<T, any>, methodName: keyof T): ClassDecorator<T>;
+export function after<T extends object>(hook: AfterHook<T, any>, methodName: keyof T, target: Class<T>): Class<T>;
+export function after<T extends object>(hook: AfterHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried(t: Class<T>) {
         const mixed = mix(t);
-        getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(cb);
+        getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(hook);
         return mixed;
     }
     return target ? curried(target) : curried;

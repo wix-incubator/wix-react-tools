@@ -87,7 +87,6 @@ describe('config', () => {
             expect(getGlobalConfig(), 'after runInContext').to.eql(sampleConfig);
         });
 
-
         it("if method throws in test mode, propagates errors and cleans up", () => {
             const err = Error('fake!');
             expect(() =>
