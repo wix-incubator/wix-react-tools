@@ -1,4 +1,4 @@
-# middleware:
+# middleware
 
 allows adding middlewares to methods, in order to control a method's:
  - Exception / error handling flow
@@ -7,7 +7,6 @@ allows adding middlewares to methods, in order to control a method's:
 
 Middlewares applied to base classes can wrap methods of classes inheriting from them.
 
-
 notes:
  - middlewares are expensive. If you only need to hook / manipulate a method's input or output, use the much more performant `before` / `after` hooks instead.
  - middlewares are only effective for synchronous methods. A purely a-synchronous method should be wrapped by hooking into its callback aregument or returned Promise/Stream/Iterator (using `before` or `after`, respectively).
@@ -15,13 +14,13 @@ notes:
 ## API
 
 arguments:
-- hook: callback after constructor
+- hook: middleware function
 - methodName: name of method to wrap
 - targetClass: class to modify
 
 returns: the modified class
 
-### callback method
+### middleware method
 
 arguments:
 - instance: the new object whose constructor was just called

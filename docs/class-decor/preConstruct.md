@@ -1,4 +1,4 @@
-# preConstruct:
+# preConstruct
 register callback to be called on instance creation.
 the callback receives the arguments of the constructor.
 
