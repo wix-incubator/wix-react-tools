@@ -20,24 +20,22 @@ class Logger{
 }
 ```
 # preConstruct:
-register mixin callback to be called on instance creation.
-the mixin receives the arguments of the constructor.
+register callback to be called on instance creation.
+the callback receives the arguments of the constructor.
 
 ## API
 
 arguments:
-- options: (optional) decorator options object
-- callback: callback after constructor
+- hook: callback after constructor
 - targetClass: class to modify
 
 returns: the modified class
 
-### callback method
+### hook method
 
 arguments:
 - instance: the new object whose constructor was just called
 - constructorArguments: the arguments that were passed to the constructor
-- instancePluginData: a data object for plugin data associated with the instance (can be activated through the mixer options);
 
 returns: void
 
@@ -46,23 +44,14 @@ The function is [curried](https://lodash.com/docs#curry), so it can be used as a
 
 ```ts
     preConstruct<T extends object>(
-        cb: ConstructorHook<T, void>,
+        hook: ConstructorHook<T>): ClassDecorator<T>;
+        
+    preConstruct<T extends object>(
+        hook: ConstructorHook<T>,
         target: Class<T>): Class<T>;
-        
-    preConstruct<T extends object>(
-        cb: ConstructorHook<T, void>): <ClassT extends Class<T>>(target:ClassT)=>ClassT;
-        
-    preConstruct<T extends object>(
-        options:Options,
-        cb: ConstructorHook<T>, 
-        target: Class<T>): Class<T>;
-        
-    preConstruct<T extends object>(
-        options:Options,
-        cb: ConstructorHook<T>): <ClassT extends Class<T>>(target:ClassT)=>ClassT;
  ```
 
- ## Example
+## Example
 
 using this decorator:
  ```ts
@@ -86,73 +75,72 @@ inited logger: MyLogger
 
 # middleware:
 
-allows adding middlewares to methods, changing input and output.
+allows adding middlewares to methods, in order to control a method's:
+ - Exception / error handling flow
+ - global context of execution (i.e wrap the original method in `runInContext` or mobx [action](https://mobx.js.org/refguide/action.html))
+ - filtering/implementation (a middleware may invoke a different business logic than the original method)
 
+notes:
+ - middlewares are expensive. If you only need to hook / manipulate a method's input or output, use the much more performant `before` / `after` hooks instead.
+ - middlewares are only effective for synchronous methods. A purely a-synchronous method should be wrapped by hooking into its callback aregument or returned Promise/Stream/Iterator (using `before` or `after`, respectively).
 
 ## API
 
 arguments:
+- hook: callback after constructor
+- methodName: name of method to wrap
 - targetClass: class to modify
-- methodName:  name of method to wrap
-- callback:    callback after constructor
-- options:     (optional) a mixer options object
 
 returns: the modified class
 
 ### callback method
 
 arguments:
-- instance: the target class whos constructor was just called
-- instancePluginData: a data object for plugin data associated with the instance (can be activated through the mixer options);
-- next: the unwrapped method (or a previous wrapping plugin)
+- instance: the new object whose constructor was just called
+- next: the next implementation in the middleware chain
 - methodArguments: the arguments that were passed to the method
 
-returns: void
+return: the result of the method
+
+### curry
+The function is [curried](https://lodash.com/docs#curry), so it can be used as a decorator after applying all arguments except for the class.
+
 ```ts
-    function middleware<T,D extends object>(
-                          targetClass:typeof T,
-                          methodName: string,
-                          callback:   (instance:T,
-                                    /* instancePluginData:D, if requested in options */
-                                       next:T[methodName],
-                                       ...methodArguments:any[])=>any,
-                          options?:Options);
+    export function middleware<T extends object>(
+        hook: MiddlewareHook<T, any, any>,
+        methodName: keyof T): ClassDecorator<T>;
 
+    export function middleware<T extends object>(
+        hook: MiddlewareHook<T, any, any>,
+        methodName: keyof T, target: Class<T>): Class<T>;
  ```
 
- ## Example
-
-
+## Example
+given this middleware:
  ```ts
- function mixin(cls:typeof Logger){
-    middleware(cls,
-                      'printMessage',
-                      function(instance: Logger,
-                               next: Logger.printMessage,
-                               ...methodArguments){
-      console.log('called on method with '+methodArguments[0]);
-      const result:string = next('goodbye');
-      console.log(result)
-      return 'wrapped=> '+result
-    });
- }
-
- const a = new Logger('MyLogger');
- //will print "inited logger: MyLogger"
-
- a.printMessage('hello');
- /*
- will return "wrapped=> message printed: goodbye"
-
- will print
- "called on method with hello"
- "goodbye"
- "message printed: goodbye"
- */
-
+function logMW(instance: Logger, next: Logger.printMessage, methodArguments){
+        console.log('called on method with '+methodArguments[0]);
+        const result:string = next('goodbye');
+        console.log(result)
+        return 'wrapped=> '+result
+}
+```
+and using this decorator:
+ ```ts
+function mixin(cls:typeof Logger){
+    return middleware(logMW, 'printMessage', cls);
+}
  ```
-
-
+ or (equivalent):
+```ts
+const mixin = middleware(logMW, 'printMessage');
+```
+with the `Logger` class as described above, will cause `logger.printMessage('hello')` to print:
+ - `"called on method with hello"`
+ - `"goodbye"`
+ - `"message printed: goodbye"`
+ 
+and to return `"wrapped=> message printed: goodbye"`
 
  # before, after
  before and after are a more performant way of creating mixins.
@@ -316,53 +304,3 @@ returns: modifed/original result
  "hello"
  */
 ```
-
-
-# Mixin Options
-
-## data key
-
-allows mixins to store data for a mixed class instance
-
-should be generated using generateKey
-
-### example
-
-```ts
-import {before,after,generateKey} from 'class-decor'
-
-
-function logMethodPerf(methodName:string){
-  return function(cls:typeof object){
-    const mixinDataKey = generateKey('perfLogger');
-
-    before(cls,
-                   methodName,
-                   function(instance:Logger,data,...methodArguments){
-                      data.before = Date.now();
-                      return methodArguments
-                    },
-                    {dataKey:mixinDataKey});
-
-
-    after(cls,
-                   methodName,
-                   function(instance:Logger,data,result){
-                      console.log(Data.now()-data.before)
-                      return result
-                    },
-                    {dataKey:mixinDataKey});
-  }
-
-}
-
-
-```
-
-
-
-## eager mode
-applies to: middleware, before, after
-
-allows adding the middleware even if the method does not exist on the class
-
