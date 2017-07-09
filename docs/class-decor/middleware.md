@@ -7,8 +7,9 @@ allows adding middlewares to methods, in order to control a method's:
 
 Middlewares applied to base classes can wrap methods of classes inheriting from them.
 
-notes:
- - middlewares are expensive. If you only need to hook / manipulate a method's input or output, use the much more performant `before` / `after` hooks instead.
+## alternative: `before` and `after`
+ - middlewares are simple but expensive. If you only need to hook / manipulate a method's input or output, use `before` / `after` hooks instead:
+    - by using `before` and `after` instead of `middleware` you will get a shallower call stack, better performance and better debugablity
  - middlewares are only effective for synchronous methods. A purely a-synchronous method should be wrapped by hooking into its callback aregument or returned Promise/Stream/Iterator (using `before` or `after`, respectively).
 
 ## API
@@ -44,7 +45,7 @@ The function is [curried](https://lodash.com/docs#curry), so it can be used as a
 
 ## Example
  ```ts
-function logMW(instance: Logger, next: Logger.printMessage, methodArguments){
+function logMW(instance: Logger, next: (n:string)=>string, methodArguments:[string]){
         console.log('called on method with '+methodArguments[0]);
         const result:string = next('goodbye');
         console.log(result)

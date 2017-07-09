@@ -3,9 +3,10 @@
 The class decor API allows easily and efficiently hooking into any instance method. 
 The main use case is to customize react lifecycle methods in class components.
 
- - [preConstruct](./preConstruct.md) - register callback to be called on instance creation
+ - [onInstance](./on-instance.md) - register callback to be called on instance creation
  - [middleware](./middleware.md) - allows adding middlewares to methods
- 
+ - [before](./before.md) - registers a callback to be called before a class method is called
+  
 the examples of the api below use the following user class:
 
 ```ts
@@ -20,11 +21,6 @@ class Logger{
   }
 }
 ```
-
- # before, after
- before and after are a more performant way of creating mixins.
-
- by applying mixins before and after methods instead of wrapping them we get a shallower call stack, better performance and better debugablity
 
 # before
 

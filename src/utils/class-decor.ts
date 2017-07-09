@@ -4,19 +4,11 @@ import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 export type Class<T extends object> = new(...args: any[]) => T;
 type DumbClass = new(...args: any[]) => object;
 
-// see https://github.com/Microsoft/TypeScript/issues/16931
-export type Method<R = void> = (...args: any[]) => R;
-export type Method0<R = void> = () => R;
-export type Method1<T1, R = void> = (t1: T1) => R;
-export type Method2<T1, T2, R = void> = (t1: T1, t2: T2) => R;
-export type Method3<T1, T2, T3, R = void> = (t1: T1, t2: T2, t3: T3) => R;
-export type Method4<T1, T2, T3, T4, R = void> = (t1: T1, t2: T2, t3: T3, t4: T4) => R;
-
-export type ConstructorHook<T extends object> = Method2<T, any[]>;
-export type BeforeHook<T, A extends Array<any>> = Method2<T, A, A>;
-export type AfterHook<T, R = void> = Method2<T, R, R>;
-export type MiddlewareHook<T, A extends Array<any>, R = void> = Method3<T, Method<R>, A, R>;
-export type ClassDecorator<T extends object> = Method1<Class<T>, Class<T>>;
+export type ConstructorHook<T extends object> = (instance:T, constructorArguments:any[])=>void;
+export type BeforeHook<T, A extends Array<any>> = (instance:T, methodArguments:A)=>A;
+export type AfterHook<T, R = void> = (instance:T, methodResult:R)=>R;
+export type MiddlewareHook<T, A extends Array<any>, R = void> = (instance:T, next:(methodArguments:A)=>R, methodArguments:A)=>R;
+export type ClassDecorator<T extends object> = (clazz:Class<T>)=> Class<T>;
 
 function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
     let result = obj[key];
@@ -32,7 +24,7 @@ class MixerData<T extends object> {
     beforeHooks: {[P in keyof T]?:Array<BeforeHook<T, any>>} = {};
     afterHooks: {[P in keyof T]?:Array<AfterHook<T, any>>} = {};
     middlewareHooks: {[P in keyof T]?:Array<MiddlewareHook<T, any, any>>} = {};
-    origin: {[P in keyof T]?:T[P] & Method<any>} = {};
+    origin: {[P in keyof T]?:T[P] & ((...args: any[])=>any)} = {};
 
     get hookedMethodNames() {
         return _union(
@@ -55,9 +47,9 @@ export function chain<T extends object>(...fns:ClassDecorator<T>[]):ClassDecorat
     return fns.reduce(chain2);
 }
 
-export function preConstruct<T extends object>(hook: ConstructorHook<T>): ClassDecorator<T>;
-export function preConstruct<T extends object>(hook: ConstructorHook<T>, target: Class<T>): Class<T>;
-export function preConstruct<T extends object>(hook: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
+export function onInstance<T extends object>(hook: ConstructorHook<T>): ClassDecorator<T>;
+export function onInstance<T extends object>(hook: ConstructorHook<T>, target: Class<T>): Class<T>;
+export function onInstance<T extends object>(hook: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried(t: Class<T>) {
         const mixed = mix(t);
         mixed.$mixerData.constructorHooks.push(hook);
@@ -190,14 +182,14 @@ function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, me
 }
 
 function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
-    const originalMethod: Method<any> = mixerMeta.origin[methodName]!;
+    const originalMethod: (...args: any[])=>any = mixerMeta.origin[methodName]!;
     const middlewareHooks = mixerMeta.middlewareHooks[methodName];
     return (middlewareHooks) ? // should never be an empty array - either undefined or with hook(s)
         middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1), methodArgs) :
         originalMethod.apply(target, methodArgs);
 }
 
-function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: Method<R>, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number) {
+function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: (...args: any[])=>R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number) {
     return (...args: any[]): R => {
         return middlewareHooks.length <= idx ?
             originalMethod.apply(target, args) :
