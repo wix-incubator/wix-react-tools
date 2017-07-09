@@ -77,7 +77,6 @@ describe('config', () => {
             runInContext(sampleConfig2, () => {
                 expect(getGlobalConfig(), 'inside runInContext').to.containSubset(sampleConfig2);
             });
-            console.log('exected', sampleConfig);
             expect(getGlobalConfig(), 'after runInContext').to.eql(sampleConfig);
         });
 
