@@ -12,10 +12,11 @@ const sampleConfig2 = {
 };
 
 describe('private-context', () => {
-    it('setPrivateContext, getPrivateContext', () => {
+    it('allows setting and then getting the private context by key', () => {
         setPrivateContext("ID0",sampleConfig);
-        expect(getPrivateContext("ID0"), 'after setting sampleConfig').to.containSubset(sampleConfig);
         setPrivateContext("ID1",sampleConfig2);
+
+        expect(getPrivateContext("ID0"), 'after setting sampleConfig').to.containSubset(sampleConfig);
         expect(getPrivateContext("ID1"), 'after setting sampleConfig2')
             .to.containSubset(sampleConfig2);
     });
