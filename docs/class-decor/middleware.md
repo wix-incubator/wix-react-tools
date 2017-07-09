@@ -43,7 +43,6 @@ The function is [curried](https://lodash.com/docs#curry), so it can be used as a
  ```
 
 ## Example
-given this middleware:
  ```ts
 function logMW(instance: Logger, next: Logger.printMessage, methodArguments){
         console.log('called on method with '+methodArguments[0]);
@@ -51,31 +50,17 @@ function logMW(instance: Logger, next: Logger.printMessage, methodArguments){
         console.log(result)
         return 'wrapped=> '+result
 }
-```
-and using this decorator:
- ```ts
-function mixin(cls:typeof Logger){
-    return middleware(logMW, 'printMessage', cls);
-}
- ```
- or (equivalent):
-```ts
-const mixin = middleware(logMW, 'printMessage');
-```
-with the following class:
-```ts
-@mixin
+  
+@middleware(logMW, 'printMessage')
 class Logger{
-  constructor(name:string){
-    console.log('inited logger: '+name);
-  }
   printMessage(text:string){
     console.log(text);
     return 'message printed: '+text;
   }
 }
+const logger = new Logger();
 ```
-will cause `logger.printMessage('hello')` to print:
+calling `logger.printMessage('hello')` will print (by order):
  - `"called on method with hello"`
  - `"goodbye"`
  - `"message printed: goodbye"`

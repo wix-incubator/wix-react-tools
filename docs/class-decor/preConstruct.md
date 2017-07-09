@@ -31,35 +31,20 @@ The function is [curried](https://lodash.com/docs#curry), so it can be used as a
  ```
 
 ## Example
-using this decorator:
 ```ts
-function mixin(cls:typeof Logger){
-    preConstruct(function(instance:Logger, constructorArguments){
-        console.log('called on constructor with "'+constructorArguments[0]+'"');
-    }, cls)
-}
-``` 
-or (equivalent):
-```ts
-const mixin = preConstruct(function(instance:Logger, constructorArguments){
+function init(instance:Logger, constructorArguments){
     console.log('called on constructor with "'+constructorArguments[0]+'"');
-});
-```
-with the following class:
-```ts
-@mixin
+}
+ 
+@preConstruct(init)
 class Logger{
   constructor(name:string){
     console.log('inited logger: '+name);
   }
-  printMessage(text:string){
-    console.log(text);
-    return 'message printed: '+text;
-  }
 }
 ```
-will cause `new Logger('MyLogger')` to print:
-```
-called on constructor with "MyLogger";
-inited logger: MyLogger
-```
+calling `new Logger('MyLogger')` will print (by order):
+ - `called on constructor with "MyLogger"`
+ - `inited logger: MyLogger`
+ 
+and return a new instance of the `Logger` class.
