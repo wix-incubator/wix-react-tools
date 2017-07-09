@@ -1,5 +1,7 @@
 import {expect} from "test-drive";
-import {getPrivateContext,setPrivateContext} from "../../src/utils/private-context";
+import {getPrivateContext,setPrivateContext,initPrivateContext} from "../../src/utils/private-context";
+
+let ids = ["ID0","ID1"];
 
 const sampleConfig = {
     foo: 'bar',
@@ -12,12 +14,23 @@ const sampleConfig2 = {
 };
 
 describe('private-context', () => {
-    it('allows setting and then getting the private context by key', () => {
-        setPrivateContext("ID0",sampleConfig);
-        setPrivateContext("ID1",sampleConfig2);
 
-        expect(getPrivateContext("ID0"), 'after setting sampleConfig').to.containSubset(sampleConfig);
-        expect(getPrivateContext("ID1"), 'after setting sampleConfig2')
+    beforeEach(()=>{
+        initPrivateContext();
+    });
+
+    it('allows setting and then getting the private context by key', () => {
+        setPrivateContext(ids[0],sampleConfig);
+        setPrivateContext(ids[1],sampleConfig2);
+
+        expect(getPrivateContext(ids[0]), 'after setting sampleConfig').to.containSubset(sampleConfig);
+        expect(getPrivateContext(ids[1]), 'after setting sampleConfig2')
             .to.containSubset(sampleConfig2);
+    });
+
+    it('allows init private context',()=>{
+        setPrivateContext(ids[0],sampleConfig);
+        initPrivateContext();
+        expect(getPrivateContext(ids[0])).to.equal(undefined);
     });
 });
