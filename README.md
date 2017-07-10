@@ -19,7 +19,7 @@ npm install react-bases
 
  - base components - built in baseComponents flavors
  - [mixins](./docs/mixins.md) - mixins to use to define your own case component
- - [class-decor](./docs/class-decor.md) - class decoration API
+ - [class-decor](./docs/class-decor/README.md) - class decoration API
  - [react-mixer](./docs/react-mixer.md) - specific react mixin creation API
 
 

@@ -77,7 +77,6 @@ describe('config', () => {
             runInContext(sampleConfig2, () => {
                 expect(getGlobalConfig(), 'inside runInContext').to.containSubset(sampleConfig2);
             });
-            console.log('exected', sampleConfig);
             expect(getGlobalConfig(), 'after runInContext').to.eql(sampleConfig);
         });
 
@@ -87,7 +86,6 @@ describe('config', () => {
             });
             expect(getGlobalConfig(), 'after runInContext').to.eql(sampleConfig);
         });
-
 
         it("if method throws in test mode, propagates errors and cleans up", () => {
             const err = Error('fake!');
