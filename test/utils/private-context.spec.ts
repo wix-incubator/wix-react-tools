@@ -32,4 +32,13 @@ describe('Private context', () => {
 
         expect(Object.keys(instance)).to.eql([]);
     });
+
+    it("doesn't create gazillion fields on an instance",()=>{
+        setEnumerable(true);    //to allow going through keys
+        const instance = {};
+        getPrivateContext(instance,ids[0]).foo="Hi";
+        getPrivateContext(instance,ids[1]).foo="Bye";
+
+        expect(Object.keys(instance).length).to.eql(1);
+    });
 });
