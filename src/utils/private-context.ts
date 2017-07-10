@@ -1,8 +1,8 @@
-const PRIVATE_CONTEXT = "private-context";
-import {getGlobalConfig,setGlobalConfig} from './config';
+import { getGlobalConfig, setGlobalConfig } from "./config";
 
-export const ENUMERABLE_FLAG = 'privateContextEnumerable';
-setGlobalConfig({[ENUMERABLE_FLAG]:false}); //default to false
+const PRIVATE_CONTEXT = "private-context";
+export const ENUMERABLE_FLAG = "privateContextEnumerable"; // This flag is used to expose private context as a field in the given instance in tests. Modify via config.
+setGlobalConfig({ [ENUMERABLE_FLAG]: false }); // default to false
 
 /**
  * Returns a private context per instance, per key.
@@ -17,9 +17,9 @@ export function getPrivateContext(targetObj: object, key: string) {
         // create a new private context
         Object.defineProperty(targetObject, PRIVATE_CONTEXT, { value: {}, enumerable: getGlobalConfig()[ENUMERABLE_FLAG] });
     }
-    //If key doesn't exist for that instance, create a new object for that key
-    if (!(targetObject)[PRIVATE_CONTEXT][key]) {
-        //init instance-key
+    // If key doesn't exist for that instance, create a new object for that key
+    if (!targetObject[PRIVATE_CONTEXT][key]) {
+        // init instance-key
         targetObject[PRIVATE_CONTEXT][key] = {};
     }
 
