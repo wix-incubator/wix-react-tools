@@ -36,8 +36,8 @@ describe('Private context', () => {
             const instance = {};
             getPrivateContext(instance,ids[0]).foo="Hi";
 
-            expect(()=>instance[Object.keys(instance)[0]] = "something").to.throw();
-            expect(getPrivateContext(instance,ids[0])).to.eql({foo:"Hi"});
+            const desc = Object.getOwnPropertyDescriptor(instance,Object.keys(instance)[0]);
+            expect(desc).to.containSubset({writable:false,configurable:false});
         });
     });
 });
