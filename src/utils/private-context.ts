@@ -4,16 +4,24 @@ import {getGlobalConfig,setGlobalConfig} from './config';
 export const ENUMERABLE_FLAG = 'privateContextEnumerable';
 setGlobalConfig({[ENUMERABLE_FLAG]:false}); //default to false
 
-export function getPrivateContext(targetObj: Object, id: string) {
-    if (!targetObj.hasOwnProperty(PRIVATE_CONTEXT)) {
+/**
+ * Returns a private context per instance, per key.
+ * @param targetObj object on which to add private context to. Typically use "this".
+ * @param key inside that private context
+ * @returns {any} requested private context
+ */
+export function getPrivateContext(targetObj: object, key: string) {
+    const targetObject = targetObj as any;
+
+    if (!targetObject.hasOwnProperty(PRIVATE_CONTEXT)) {
         // create a new private context
-        Object.defineProperty(targetObj, PRIVATE_CONTEXT, { value: {}, enumerable: getGlobalConfig()[ENUMERABLE_FLAG] });
+        Object.defineProperty(targetObject, PRIVATE_CONTEXT, { value: {}, enumerable: getGlobalConfig()[ENUMERABLE_FLAG] });
     }
     //If key doesn't exist for that instance, create a new object for that key
-    if (!targetObj[PRIVATE_CONTEXT][id]) {
+    if (!(targetObject)[PRIVATE_CONTEXT][key]) {
         //init instance-key
-        targetObj[PRIVATE_CONTEXT][id] = {};
+        targetObject[PRIVATE_CONTEXT][key] = {};
     }
 
-    return targetObj[PRIVATE_CONTEXT][id];
+    return targetObject[PRIVATE_CONTEXT][key];
 }
