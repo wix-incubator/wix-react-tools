@@ -32,10 +32,12 @@ describe('Private context', () => {
     });
 
     it("doesn't let you change an instance's private context",()=>{
-        const instance = {};
-        getPrivateContext(instance,ids[0]).foo="Hi";
+        runInContext({[ENUMERABLE_FLAG]:true},()=>{
+            const instance = {};
+            getPrivateContext(instance,ids[0]).foo="Hi";
 
-        expect(()=>instance["private-context"] = "something").to.throw();
-        expect(getPrivateContext(instance,ids[0])).to.eql({foo:"Hi"});
+            expect(()=>instance[Object.keys(instance)[0]] = "something").to.throw();
+            expect(getPrivateContext(instance,ids[0])).to.eql({foo:"Hi"});
+        });
     });
 });
