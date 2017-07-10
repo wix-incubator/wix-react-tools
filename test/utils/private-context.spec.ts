@@ -1,5 +1,5 @@
 import {expect} from "test-drive";
-import {getPrivateContext,setPrivateContext,initPrivateContext} from "../../src/utils/private-context";
+import {getPrivateContext} from "../../src/utils/private-context";
 
 let ids = ["ID0","ID1"];
 
@@ -15,22 +15,19 @@ const sampleConfig2 = {
 
 describe('private-context', () => {
 
-    beforeEach(()=>{
-        initPrivateContext();
+    it('serves private context per id per instance',()=>{
+        const instance = {};
+        getPrivateContext(instance,ids[0]).foo="Hi";
+        expect(getPrivateContext(instance,ids[0])).to.eql({foo:"Hi"});
+        expect(getPrivateContext(instance,ids[1])).to.eql({});  //Make sure new key generates a new object
+
+        expect(getPrivateContext({},ids[0])).to.eql({});    //Check that new instance doesn't return information given to other instance
     });
 
-    it('allows setting and then getting the private context by key', () => {
-        setPrivateContext(ids[0],sampleConfig);
-        setPrivateContext(ids[1],sampleConfig2);
+    it("doesn't show the added fields on original object",()=>{
+        const instance = {};
+        getPrivateContext(instance,ids[0]).foo="Hi";
 
-        expect(getPrivateContext(ids[0]), 'after setting sampleConfig').to.containSubset(sampleConfig);
-        expect(getPrivateContext(ids[1]), 'after setting sampleConfig2')
-            .to.containSubset(sampleConfig2);
-    });
-
-    it('allows init private context',()=>{
-        setPrivateContext(ids[0],sampleConfig);
-        initPrivateContext();
-        expect(getPrivateContext(ids[0])).to.equal(undefined);
+        expect(Object.keys(instance)).to.eql([]);
     });
 });
