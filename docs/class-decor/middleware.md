@@ -1,6 +1,6 @@
 # middleware
 
-allows adding middlewares to methods, in order to control a method's:
+add a middleware to a method, in order to control a method's:
  - Exception / error handling flow
  - global context of execution (i.e wrap the original method in `runInContext` or mobx [action](https://mobx.js.org/refguide/action.html))
  - filtering/implementation (a middleware may invoke a different business logic than the original method)
@@ -66,4 +66,4 @@ calling `logger.printMessage('hello')` will print (by order):
  - `"goodbye"`
  - `"message printed: goodbye"`
  
-and to return `"wrapped=> message printed: goodbye"`
+and return `"wrapped=> message printed: goodbye"`
