@@ -3,15 +3,6 @@ import {getPrivateContext, ENUMERABLE_FLAG} from "../../src/utils/private-contex
 import {runInContext} from "../../src/utils/config";
 
 let ids = ["ID0","ID1"];
-const sampleConfig = {
-    foo: 'bar',
-    biz: {baz: true}
-};
-
-const sampleConfig2 = {
-    foo2: 'bar',
-    biz: {baz2: true}
-};
 
 describe('Private context', () => {
     it('serves private context per id per instance',()=>{
