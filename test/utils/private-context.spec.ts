@@ -1,5 +1,5 @@
 import {expect} from "test-drive";
-import {getPrivateContext} from "../../src/utils/private-context";
+import {getPrivateContext, setEnumerable} from "../../src/utils/private-context";
 
 let ids = ["ID0","ID1"];
 const sampleConfig = {
@@ -12,7 +12,10 @@ const sampleConfig2 = {
     biz: {baz2: true}
 };
 
-describe('private-context', () => {
+describe('Private context', () => {
+    beforeEach(()=>{
+        setEnumerable(false);
+    });
 
     it('serves private context per id per instance',()=>{
         const instance = {};
