@@ -161,7 +161,7 @@ describe("class decor order", () => {
                     }, METHOD))(cls);
             }
 
-            // first  is outer, last is inner
+            // first is outer, last is inner
             checkDecorationStyles(outer, inner);
         });
 
