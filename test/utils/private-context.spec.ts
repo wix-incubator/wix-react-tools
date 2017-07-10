@@ -2,7 +2,6 @@ import {expect} from "test-drive";
 import {getPrivateContext} from "../../src/utils/private-context";
 
 let ids = ["ID0","ID1"];
-
 const sampleConfig = {
     foo: 'bar',
     biz: {baz: true}

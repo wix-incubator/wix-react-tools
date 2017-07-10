@@ -1,6 +1,6 @@
-export function getPrivateContext(targetObj:any,id:string){
+export function getPrivateContext(targetObj:Object,id:string){
     if (!targetObj.hasOwnProperty(id)) {
-        targetObj[id] = {};
+        Object.defineProperty(targetObj,id,{value:{},enumerable:false});
     }
     return targetObj[id];
 }
