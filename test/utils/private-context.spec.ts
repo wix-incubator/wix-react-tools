@@ -1,5 +1,6 @@
 import {expect} from "test-drive";
-import {getPrivateContext, setEnumerable} from "../../src/utils/private-context";
+import {getPrivateContext, ENUMERABLE_FLAG} from "../../src/utils/private-context";
+import {runInContext} from "../../src/utils/config";
 
 let ids = ["ID0","ID1"];
 const sampleConfig = {
@@ -13,10 +14,6 @@ const sampleConfig2 = {
 };
 
 describe('Private context', () => {
-    beforeEach(()=>{
-        setEnumerable(false);
-    });
-
     it('serves private context per id per instance',()=>{
         const instance = {};
         getPrivateContext(instance,ids[0]).foo="Hi";
@@ -34,11 +31,12 @@ describe('Private context', () => {
     });
 
     it("doesn't create gazillion fields on an instance",()=>{
-        setEnumerable(true);    //to allow going through keys
-        const instance = {};
-        getPrivateContext(instance,ids[0]).foo="Hi";
-        getPrivateContext(instance,ids[1]).foo="Bye";
+        runInContext({[ENUMERABLE_FLAG]:true},()=>{
+            const instance = {};
+            getPrivateContext(instance,ids[0]).foo="Hi";
+            getPrivateContext(instance,ids[1]).foo="Bye";
 
-        expect(Object.keys(instance).length).to.eql(1);
+            expect(Object.keys(instance).length).to.eql(1);
+        });
     });
 });
