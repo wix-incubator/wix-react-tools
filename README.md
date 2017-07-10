@@ -22,6 +22,7 @@ npm install react-bases
  - [class-decor](./docs/class-decor/README.md) - class decoration API
  - [react-mixer](./docs/react-mixer.md) - specific react mixin creation API
  - [config](./docs/config.md) - global and local config
+ - [private-context](./docs/private-context.md) - private context per instance, per key
 
 
 # available base components

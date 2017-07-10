@@ -2,7 +2,7 @@
 
 global and local config allow passing data/flags to mixins in a specific render context (e.g. a specific server side page render)
 
-## avaialble configurations:
+## available configurations:
 our mixins support the following flags:
 - staticRendering: boolean, false by default, when true mixins will not activate event listeners/reactions
 - debug: boolean
