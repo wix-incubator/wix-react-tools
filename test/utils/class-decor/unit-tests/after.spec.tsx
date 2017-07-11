@@ -34,20 +34,4 @@ describe("after mixin", () => {
             clientRenderer.render(<Duck />, container);
         }).not.to.throw();
     });
-
-    xit("doesn't let you add hooks for functions that don't exist in react component lifecycle interface", () => {
-        @after<any>((instance, methodReturn) => {
-            return methodReturn;
-        }, "unknownLifecycleMethod")
-        class Duck extends React.Component {
-            render() {
-                return null; //dummy
-            }
-        }
-
-        expect(() => {
-            const { container } = clientRenderer.render(<div />);
-            clientRenderer.render(<Duck />, container);
-        }).to.throw();
-    });
 });
