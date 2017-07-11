@@ -192,7 +192,7 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Mix
 function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: (...args: any[])=>R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number) {
     return (...args: any[]): R => {
         return middlewareHooks.length <= idx ?
-            originalMethod.apply(target, args) :
+            (originalMethod && originalMethod.apply(target, args)) :
             middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1), args as A);
     };
 }
