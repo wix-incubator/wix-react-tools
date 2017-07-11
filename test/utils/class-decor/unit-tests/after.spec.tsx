@@ -15,7 +15,7 @@ describe("after mixin", () => {
         class Duck {}
         expect(() => {
             let duck = new Duck();
-            duck.duckWillQuack();
+            (duck as any).duckWillQuack();
         }).not.to.throw();
     });
 
