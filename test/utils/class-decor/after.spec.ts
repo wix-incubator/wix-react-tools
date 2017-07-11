@@ -72,7 +72,7 @@ describe("after decorator", () => {
             const res = inst.returnsValue();
 
             expect(console.warn).to.have.callCount(1);
-            expect(console.warn).to.have.been.calledWith('returnsValue Did you forget to return a value?');
+            expect(console.warn).to.have.been.calledWith('@after returnsValue Did you forget to return a value?');
             expect(res).to.equal(undefined);
         });
     });
