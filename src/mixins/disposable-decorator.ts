@@ -4,12 +4,12 @@ export interface DisposableCompMixin extends React.Component{
     readonly disposer: Disposers;
 }
 
-export const disposable = chain(
+export const disposable = chain<DisposableCompMixin>(
     after<DisposableCompMixin>((instance, methodReturn) => {
         instance.disposer.disposeAll();
         return methodReturn;
     }, "componentWillUnmount"),
-    onInstance(instance => {
-        (instance as any).disposer = new Disposers();
+    onInstance<any>(instance => {
+        instance.disposer = new Disposers();
     })
 );
