@@ -27,33 +27,31 @@ describe("after decorator", () => {
             console.warn = warn;
         });
 
-        class Foo {
-            returnsValue() {
-                return {};
+        function overrideMethodReturnedValueWithUndefined() {
+            @afterMethod<Foo>(() => undefined, 'returnsValue')
+            class Foo {
+                returnsValue() {
+                    return {};
+                }
             }
+            const inst = new Foo();
+
+            const res = inst.returnsValue();
+
+            expect(res).to.equal(undefined);
         }
 
         it("should prompt a warning when in dev mode", () => {
-            runInContext({ devMode: true }, () => {
-                const inst = new (afterMethod(() => undefined, 'returnsValue', Foo))();
+            runInContext({ devMode: true }, overrideMethodReturnedValueWithUndefined);
 
-                const res = inst.returnsValue();
-
-                expect(console.warn).to.have.callCount(1);
-                expect(console.warn).to.have.been.calledWith('@after returnsValue Did you forget to return a value?');
-                expect(res).to.equal(undefined);
-            });
+            expect(console.warn).to.have.callCount(1);
+            expect(console.warn).to.have.been.calledWith('@after returnsValue Did you forget to return a value?');
         });
 
         it("should not prompt a warning when not in dev mode", () => {
-            runInContext({ devMode: false }, () => {
-                const inst = new (afterMethod(() => undefined, 'returnsValue', Foo))();
+            runInContext({ devMode: false }, overrideMethodReturnedValueWithUndefined);
 
-                const res = inst.returnsValue();
-
-                expect(console.warn).to.have.callCount(0);
-                expect(res).to.equal(undefined);
-            });
+            expect(console.warn).to.have.callCount(0);
         });
     });
 });
