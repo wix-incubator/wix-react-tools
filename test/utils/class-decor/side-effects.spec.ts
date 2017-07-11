@@ -6,17 +6,17 @@ import {
     onInstance} from "../../../src/utils/class-decor";
 import {chain, middleware} from "../../../src/utils/class-decor";
 
-const METHOD = 'myMethod' as any;
+const METHOD = 'myMethod';
 
 class Foo {
     myMethod(){}
 }
 describe("class decor side-effect", () => {
         const decorate = chain<Foo>(
-            onInstance(() => undefined),
-            beforeMethod(() => undefined, METHOD),
-            after(() => undefined, METHOD),
-            middleware(() => undefined, METHOD));
+            onInstance<Foo>(() => undefined),
+            beforeMethod<Foo>(() => undefined, METHOD),
+            after<Foo>(() => undefined, METHOD),
+            middleware<Foo>(() => undefined, METHOD));
 
         // fixture class tree
         @decorate @decorate @decorate

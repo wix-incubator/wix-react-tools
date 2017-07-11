@@ -8,7 +8,7 @@ export type ConstructorHook<T extends object> = (instance:T, constructorArgument
 export type BeforeHook<T, A extends Array<any>> = (instance:T, methodArguments:A)=>A;
 export type AfterHook<T, R = void> = (instance:T, methodResult:R)=>R;
 export type MiddlewareHook<T, A extends Array<any>, R = void> = (instance:T, next:(methodArguments:A)=>R, methodArguments:A)=>R;
-export type ClassDecorator<T extends object> = (clazz:Class<T>)=> Class<T>;
+export type ClassDecorator<T extends object> = <T1 extends T>(clazz:Class<T1>)=> Class<T1>;
 
 function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
     let result = obj[key];
@@ -41,7 +41,7 @@ type Mixed<T extends object> = {
 type MixedClass<T extends object> = Class<T> & Mixed<T>;
 
 function chain2<T extends object>(f:ClassDecorator<T>, g:ClassDecorator<T>):ClassDecorator<T>{
-    return (cls:Class<T>) => g(f(cls));
+    return <T1 extends T>(cls:Class<T1>) => g(f(cls));
 }
 export function chain<T extends object>(...fns:ClassDecorator<T>[]):ClassDecorator<T>{
     return fns.reduce(chain2);
@@ -50,7 +50,7 @@ export function chain<T extends object>(...fns:ClassDecorator<T>[]):ClassDecorat
 export function onInstance<T extends object>(hook: ConstructorHook<T>): ClassDecorator<T>;
 export function onInstance<T extends object>(hook: ConstructorHook<T>, target: Class<T>): Class<T>;
 export function onInstance<T extends object>(hook: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
-    function curried(t: Class<T>) {
+    function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mix(t);
         mixed.$mixerData.constructorHooks.push(hook);
         return mixed;
@@ -61,7 +61,7 @@ export function onInstance<T extends object>(hook: ConstructorHook<T>, target?: 
 export function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, methodName: keyof T): ClassDecorator<T>;
 export function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, methodName: keyof T, target: Class<T>): Class<T>;
 export function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
-    function curried(t: Class<T>) {
+    function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mix(t);
         getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(hook);
         return mixed;
@@ -72,7 +72,7 @@ export function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, 
 export function before<T extends object>(hook: BeforeHook<T, any>, methodName: keyof T): ClassDecorator<T>;
 export function before<T extends object>(hook: BeforeHook<T, any>, methodName: keyof T, target: Class<T>): Class<T>;
 export function before<T extends object>(hook: BeforeHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
-    function curried(t: Class<T>) {
+    function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mix(t);
         getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(hook);
         return mixed;
@@ -83,7 +83,7 @@ export function before<T extends object>(hook: BeforeHook<T, any>, methodName: k
 export function after<T extends object>(hook: AfterHook<T, any>, methodName: keyof T): ClassDecorator<T>;
 export function after<T extends object>(hook: AfterHook<T, any>, methodName: keyof T, target: Class<T>): Class<T>;
 export function after<T extends object>(hook: AfterHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
-    function curried(t: Class<T>) {
+    function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mix(t);
         getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(hook);
         return mixed;
