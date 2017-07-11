@@ -1,17 +1,24 @@
 import { expect, sinon } from 'test-drive-react';
 import { after as afterMethod } from "../../../src/utils/class-decor";
-import { overrideGlobalConfig } from "../../../src/utils/config";
+import { runInContext } from "../../../src/utils/config";
 
 describe("after decorator", () => {
-    describe("with devMode enabled", () => {
-        before("setup", () => {
-            overrideGlobalConfig({
-                devMode: true
-            });
-        });
+    it("lets you add hooks for non-existent functions - after", () => {
+        @afterMethod<Duck>((instance, methodReturn) => {
+            return methodReturn;
+        }, "duckWillQuack")
+        class Duck {
+            duckWillQuack: () => void;
+        }
+        let duck = new Duck();
 
+        expect(() => {
+            duck.duckWillQuack();
+        }).not.to.throw();
+    });
+
+    describe("warning on overriding values with undefined", () => {
         let warn = console.warn;
-
         beforeEach("replace console.warn with spy", () => {
             console.warn = sinon.spy();
         });
@@ -20,67 +27,32 @@ describe("after decorator", () => {
             console.warn = warn;
         });
 
-        after("reset global config", () => {
-            overrideGlobalConfig({});
-        });
-
-        function returnsUndefined(clazz: Foo, methodResult: string):void {}
-
-        function returnsValue(clazz: Foo, methodResult: string):string {
-            return 'value';
-        }
-
         class Foo {
-            returnsUndefined(): void {}
-
             returnsValue() {
                 return {};
             }
         }
 
-        it("should not prompt a warning when component returns undefined and decorator returns a different result", () => {
-            const inst = new (afterMethod(returnsValue, 'returnsUndefined', class extends Foo{}))();
+        it("should prompt a warning when in dev mode", () => {
+            runInContext({ devMode: true }, () => {
+                const inst = new (afterMethod(() => undefined, 'returnsValue', Foo))();
 
-            const res = inst.returnsUndefined();
+                const res = inst.returnsValue();
 
-            expect(console.warn).to.have.callCount(0);
-            expect(res).to.equal('value');
+                expect(console.warn).to.have.callCount(1);
+                expect(console.warn).to.have.been.calledWith('@after returnsValue Did you forget to return a value?');
+                expect(res).to.equal(undefined);
+            });
         });
 
-        it("should not prompt a warning when method and decorator return different values (not undefined)", () => {
-            const inst = new (afterMethod(returnsValue, 'returnsValue', class extends Foo{}))();
+        it("should not prompt a warning when not in dev mode", () => {
+            runInContext({ devMode: false }, () => {
+                const inst = new (afterMethod(() => undefined, 'returnsValue', Foo))();
 
-            const res = inst.returnsValue();
+                const res = inst.returnsValue();
 
-            expect(console.warn).to.have.callCount(0);
-            expect(res).to.equal('value'); // remove?
-        });
-
-        it("should not prompt when both method and decorator return undefined", () => {
-            debugger;
-            const inst = new (afterMethod(returnsUndefined, 'returnsUndefined', class extends Foo{}))();
-
-            const res = inst.returnsUndefined();
-
-            expect(console.warn).to.have.callCount(0);
-            expect(res).to.equal(undefined);
-        });
-
-        it("should prompt a warning when method returns a value and the decorator returns undefined", () => {
-            const inst = new (afterMethod(returnsUndefined, 'returnsValue', class extends Foo{}))();
-
-            const res = inst.returnsValue();
-
-            expect(console.warn).to.have.callCount(1);
-            expect(console.warn).to.have.been.calledWith('@after returnsValue Did you forget to return a value?');
-            expect(res).to.equal(undefined);
-        });
-    });
-
-    describe("with devMode disabled", () => {
-        before("setup", () => {
-            overrideGlobalConfig({
-                devMode: false
+                expect(console.warn).to.have.callCount(0);
+                expect(res).to.equal(undefined);
             });
         });
     });

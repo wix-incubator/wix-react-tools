@@ -188,12 +188,12 @@ function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(
 
 function runAfterHooks<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodResult: any) {
     const afterHooks = mixerMeta.afterHooks[methodName];
-    const globalConfig = getGlobalConfig();
+    const devMode = getGlobalConfig().devMode;
 
     if (afterHooks) {
         afterHooks.forEach((hook: AfterHook<T, typeof methodResult>) => {
             const hookMethodResult = hook(target, methodResult);
-            if (globalConfig.devMode && methodResult !== undefined && hookMethodResult === undefined) {
+            if (devMode && methodResult !== undefined && hookMethodResult === undefined) {
                 console.warn(`@after ${methodName} Did you forget to return a value?`);
             }
             methodResult = hookMethodResult;
