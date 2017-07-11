@@ -1,6 +1,7 @@
 import {expect} from "test-drive";
-import {getPrivateContext, ENUMERABLE_FLAG} from "../../src/utils/private-context";
+import {getPrivateContext} from "../../src/utils/private-context";
 import {runInContext} from "../../src/utils/config";
+import {Flags} from "../../src/utils/flags";
 
 let ids = ["ID0","ID1"];
 
@@ -22,7 +23,7 @@ describe('Private context', () => {
     });
 
     it("doesn't create gazillion fields on an instance",()=>{
-        runInContext({[ENUMERABLE_FLAG]:true},()=>{
+        runInContext({[Flags.ENUMERABLE_FLAG]:true},()=>{
             const instance = {};
             getPrivateContext(instance,ids[0]).foo="Hi";
             getPrivateContext(instance,ids[1]).foo="Bye";
@@ -32,7 +33,7 @@ describe('Private context', () => {
     });
 
     it("doesn't let you change an instance's private context",()=>{
-        runInContext({[ENUMERABLE_FLAG]:true},()=>{
+        runInContext({[Flags.ENUMERABLE_FLAG]:true},()=>{
             const instance = {};
             getPrivateContext(instance,ids[0]).foo="Hi";
 
