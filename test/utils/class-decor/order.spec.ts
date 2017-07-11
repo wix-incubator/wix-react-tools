@@ -3,7 +3,7 @@ import {
     Class,
     after,
     before as beforeMethod,
-    preConstruct,
+    onInstance,
     middleware, chain,
     ClassDecorator
 } from "../../../src/utils/class-decor";
@@ -39,7 +39,7 @@ function makeBaseClass(spy?: sinon.SinonSpy): typeof Base {
 }
 
 describe("class decor order", () => {
-    describe("preConstruct", () => {
+    describe("onInstance", () => {
         let first: sinon.SinonSpy;
         let last: sinon.SinonSpy;
         let userConstructorSpy: sinon.SinonSpy;
@@ -52,8 +52,8 @@ describe("class decor order", () => {
 
         it('called on instance creation (direct apply on class)', () => {
 
-            @preConstruct<Base>(last)
-            @preConstruct<Base>(first)
+            @onInstance<Base>(last)
+            @onInstance<Base>(first)
             class UserClass extends makeBaseClass() {
                 constructor(myNumber: number) {
                     expect(first).to.have.callCount(0);
@@ -66,7 +66,7 @@ describe("class decor order", () => {
         });
         it('when applied on parent class, called on instance creation before user code constructor', () => {
 
-            const decorate = chain(preConstruct<Base>(first), preConstruct<Base>(last));
+            const decorate = chain(onInstance<Base>(first), onInstance<Base>(last));
             class UserClass extends decorate(makeBaseClass()) {
                 constructor(myNumber: number) {
                     super(myNumber);
@@ -161,7 +161,7 @@ describe("class decor order", () => {
                     }, METHOD))(cls);
             }
 
-            // first  is outer, last is inner
+            // first is outer, last is inner
             checkDecorationStyles(outer, inner);
         });
 

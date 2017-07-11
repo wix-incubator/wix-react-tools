@@ -57,15 +57,15 @@ d.disposeAll() // prints foo, bar, baz
 executes all registered disposers and removes them from memory.
 
 
-### DisposeableCompMixin
+### DisposableCompMixin
 ```ts
- interface DisposeableCompMixin {
+ interface DisposableCompMixin {
     readonly disposer: Disposers;
 }
 ```
 
 ### @disposable decorator
-**requires decorated class to implement DisposeableCompMixin**
+**requires decorated class to implement DisposableCompMixin**
 
 Sets up this.disposer and takes care of clean-up when component unmounts;
 

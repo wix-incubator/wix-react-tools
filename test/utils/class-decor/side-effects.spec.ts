@@ -3,10 +3,10 @@ import {getHeritage} from "../../test-tools";
 import {
     after,
     before as beforeMethod,
-    preConstruct} from "../../../src/utils/class-decor";
+    onInstance} from "../../../src/utils/class-decor";
 import {chain, middleware} from "../../../src/utils/class-decor";
 
-const METHOD = 'myMethod' as any;
+const METHOD = 'myMethod';
 
 class Foo {
     myMethod(){}
