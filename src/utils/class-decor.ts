@@ -186,13 +186,13 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Mix
     const middlewareHooks = mixerMeta.middlewareHooks[methodName];
     return (middlewareHooks) ? // should never be an empty array - either undefined or with hook(s)
         middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1), methodArgs) :
-        originalMethod.apply(target, methodArgs);
+        (originalMethod && originalMethod.apply(target, methodArgs));
 }
 
 function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: (...args: any[])=>R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number) {
     return (...args: any[]): R => {
         return middlewareHooks.length <= idx ?
-            originalMethod.apply(target, args) :
+            (originalMethod && originalMethod.apply(target, args)) :
             middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1), args as A);
     };
 }
