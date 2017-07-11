@@ -13,10 +13,10 @@ class Foo {
 }
 describe("class decor side-effect", () => {
     const decorate = chain<Foo>(
-        preConstruct(() => undefined),
-        beforeMethod(() => undefined, METHOD),
-        after(() => undefined, METHOD),
-        middleware(() => undefined, METHOD));
+        onInstance<Foo>(() => undefined),
+        beforeMethod<Foo>(() => undefined, METHOD),
+        after<Foo>(() => undefined, METHOD),
+        middleware<Foo>(() => undefined, METHOD));
 
     // fixture class tree
     @decorate @decorate @decorate
