@@ -1,5 +1,6 @@
 import _union = require('lodash/union');
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
+import { getGlobalConfig } from '../utils/config';
 
 export type Class<T extends object> = new(...args: any[]) => T;
 type DumbClass = new(...args: any[]) => object;
@@ -97,19 +98,7 @@ function isMixed<T>(subj: any): subj is Mixed<T> {
 
 function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
     if (isMixed<T>(clazz)) {
-        // TODO override $mixerData to allow multiple child classes
-        // TODO handle inheritance tree of decorators
-        /*
-         @mix1
-         class Super {}
-
-         @mix2
-         class Child1 extends Super{}
-
-
-         class Child2 extends Super{} // mix2 applies!
-
-         */
+        // https://github.com/wix/react-bases/issues/10
         return clazz;
     }
     class Extended extends (clazz as any as DumbClass) {
@@ -199,10 +188,17 @@ function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(
 
 function runAfterHooks<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodResult: any) {
     const afterHooks = mixerMeta.afterHooks[methodName];
+    const devMode = getGlobalConfig().devMode;
+
     if (afterHooks) {
         afterHooks.forEach((hook: AfterHook<T, typeof methodResult>) => {
-            methodResult = hook(target, methodResult);
+            const hookMethodResult = hook(target, methodResult);
+            if (devMode && methodResult !== undefined && hookMethodResult === undefined) {
+                console.warn(`@after ${methodName} Did you forget to return a value?`);
+            }
+            methodResult = hookMethodResult;
         });
     }
+
     return methodResult;
 }

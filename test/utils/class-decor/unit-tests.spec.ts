@@ -29,18 +29,4 @@ describe("Unit tests - method hooks", () => {
             duck.duckWillQuack();
         }).not.to.throw();
     });
-
-    it("lets you add hooks for non-existent functions - after", () => {
-        @after<Duck>((instance, methodReturn) => {
-            return methodReturn;
-        }, "duckWillQuack")
-        class Duck {
-            duckWillQuack: () => void;
-        }
-        let duck = new Duck();
-
-        expect(() => {
-            duck.duckWillQuack();
-        }).not.to.throw();
-    });
 });
