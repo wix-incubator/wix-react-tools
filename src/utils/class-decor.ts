@@ -184,9 +184,19 @@ function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, me
 function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
     const originalMethod: (...args: any[])=>any = mixerMeta.origin[methodName]!;
     const middlewareHooks = mixerMeta.middlewareHooks[methodName];
-    return (middlewareHooks) ? // should never be an empty array - either undefined or with hook(s)
-        middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1), methodArgs) :
-        originalMethod.apply(target, methodArgs);
+    let retVal;
+    if (middlewareHooks) { // should never be an empty array - either undefined or with hook(s)
+        retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1), methodArgs)
+    }else{
+        if (originalMethod){
+            retVal = originalMethod.apply(target, methodArgs);
+        }else{
+            //TODO make this into ifExists feature
+            // throw new Error(`Tried to run original function ${methodName}, but it does not exist for ${target}`);
+        }
+
+    }
+    return retVal;
 }
 
 function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: (...args: any[])=>R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number) {
