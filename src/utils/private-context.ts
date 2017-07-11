@@ -8,7 +8,7 @@ setGlobalConfig({ [ENUMERABLE_FLAG]: false }); // default to false
  * Returns a private context per instance, per key.
  * @param targetObj object on which to add private context to. Typically use "this".
  * @param key inside that private context
- * @returns {any} requested private context
+ * @returns {any} the requested private context object. This object is essentially an empty {} until it gets fields inserted into it
  */
 export function getPrivateContext(targetObj: object, key: string) {
     const targetObject = targetObj as any;
