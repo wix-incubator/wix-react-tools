@@ -1,22 +1,19 @@
-import {Disposers} from "../utils/disposers";
-import {ReactConstructor} from '../utils/types';
-export interface DisposeableCompMixin {
+import { Disposers } from "../utils/disposers";
+import { ReactConstructor } from "../utils/types";
+import { after, onInstance, chain } from "../utils/class-decor";
+export interface DisposableCompMixin {
     readonly disposer: Disposers;
 }
 
-export function disposable<T extends ReactConstructor<DisposeableCompMixin>>(Class: T): T {
-    return class DisposeableComponent extends Class{
-        constructor(...args:any[]){
-            super(...args);
-            (this as any).disposer = new Disposers();
-            const oldWillUnmount = this.componentWillUnmount;
-            this.componentWillUnmount = function componentWillUnmount(this: DisposeableCompMixin) {
-                oldWillUnmount && oldWillUnmount();
-                this.disposer.disposeAll();
-            }
-        }
-    };
-}
+export const disposable = chain(
+    after<any>((instance, methodReturn) => {
+        (instance as any).disposer.disposeAll();
+        return methodReturn;
+    }, "componentWillUnmount"),
+    onInstance(instance => {
+        (instance as any).disposer = new Disposers();
+    })
+);
 
 // draft of lazy optimization that will not override (=rename) class :
 /*
@@ -25,7 +22,7 @@ export function disposable<T extends ReactConstructor<DisposeableCompMixin>>(Cla
  const prototypeDisposerProperty = {
  enumerable: true,
  configurable: false,
- get(this: DisposeableCompMixin){
+ get(this: DisposableCompMixin){
  Object.defineProperty(this, 'disposer', {
  enumerable: true,
  configurable: false,
@@ -36,10 +33,10 @@ export function disposable<T extends ReactConstructor<DisposeableCompMixin>>(Cla
  }
  };
 
- function disposable2<T extends { new(...args: any[]): DisposeableCompMixin & React.Component<any, any> }>(Class: T): T {
+ function disposable2<T extends { new(...args: any[]): DisposableCompMixin & React.Component<any, any> }>(Class: T): T {
  Object.defineProperty(Class.prototype, 'disposer', prototypeDisposerProperty);
  const oldWillUnmount = Class.prototype.componentWillUnmount;
- Object.defineProperty(Class.prototype, 'componentWillUnmount', function (this: DisposeableCompMixin) {
+ Object.defineProperty(Class.prototype, 'componentWillUnmount', function (this: DisposableCompMixin) {
  oldWillUnmount && oldWillUnmount();
  if (Object.getOwnPropertyDescriptor(this, 'disposer')) {
  this.disposer.dispose();

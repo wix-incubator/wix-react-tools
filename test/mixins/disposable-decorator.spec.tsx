@@ -10,7 +10,7 @@ interface Props {
 }
 
 @disposable
-class DisposeableComp extends React.Component<Props, any> {
+class DisposableComp extends React.Component<Props, any> {
 
     readonly disposer: Disposers;
 
@@ -32,7 +32,7 @@ describe("disposable decorator", () => {
         let sinonSpy = sinon.spy();
         const {container} = clientRenderer.render(<div></div>);
 
-        clientRenderer.render(<div><DisposeableComp hook={sinonSpy}></DisposeableComp></div>, container);
+        clientRenderer.render(<div><DisposableComp hook={sinonSpy}></DisposableComp></div>, container);
         expect(sinonSpy).to.have.callCount(0);
 
         clientRenderer.render(<div></div>, container);
