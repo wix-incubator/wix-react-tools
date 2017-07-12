@@ -40,7 +40,7 @@ describe("Unit tests - method hooks", () => {
     });
 
     it("warns you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
-        @middleware<Duck>((instance, next, args) => {
+        @middleware<Duck>(function badLeeroyBrown(){
             //Don't call next()
         }, "duckWillQuack")
         class Duck {
@@ -50,7 +50,10 @@ describe("Unit tests - method hooks", () => {
 
         runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:true},()=>{
             duck.duckWillQuack();
-            expect(console.warn).to.have.been.calledWith('@middleware for Duck.duckWillQuack() did not call next');
+            expect(console.warn).to.have.callCount(1);
+            expect(console.warn).to.have.been.calledWithMatch(/\@middleware/);
+            expect(console.warn).to.have.been.calledWithMatch(/badLeeroyBrown/);
+            expect(console.warn).to.have.been.calledWithMatch(/Duck.duckWillQuack/);
         });
     });
 
@@ -65,12 +68,12 @@ describe("Unit tests - method hooks", () => {
 
         runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:true},()=>{
             duck.duckWillQuack();
-            expect(console.warn).to.have.not.been.called;
+            expect(console.warn).to.have.callCount(0);
         });
     });
 
     it("doesn't warn you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned OFF)", () => {
-        @middleware<Duck>((instance, next, args) => {
+        @middleware<Duck>(() => {
             //Don't call next()
         }, "duckWillQuack")
         class Duck {
@@ -80,7 +83,7 @@ describe("Unit tests - method hooks", () => {
 
         runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:false},()=>{
             duck.duckWillQuack();
-            expect(console.warn).to.have.not.been.called;
+            expect(console.warn).to.have.callCount(0);
         });
     });
 });

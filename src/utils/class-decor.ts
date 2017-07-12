@@ -170,6 +170,18 @@ function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, me
     }
     return methodArgs;
 }
+class MiddlewareTracker{
+    lastMiddlewareRunning = 0;
+    reportNextMiddleware(index:number){
+        this.lastMiddlewareRunning=Math.max(index,this.lastMiddlewareRunning);
+    };
+}
+
+// to simplify code, use this instead of an active tracker
+const dummyTracker = {
+    lastMiddlewareRunning: Number.MAX_VALUE,
+    reportNextMiddleware(index:number){}
+};
 
 function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
     const originalMethod: (...args: any[])=>any = mixerMeta.origin[methodName]!;
@@ -177,28 +189,26 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Mix
     let retVal;
     if (middlewareHooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
-        let lastMiddlewareRunning = 0;
-        function reportNextMiddleware(index:number):void{
-            lastMiddlewareRunning=Math.max(index,lastMiddlewareRunning);
-        }
+        let tracker:MiddlewareTracker = (getGlobalConfig<FlagsContext>().middlewareWarnWhenChainBreaking) ? new MiddlewareTracker() : dummyTracker;
         //Run middleware:
-        retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1,reportNextMiddleware), methodArgs);
-        if (lastMiddlewareRunning<middlewareHooks.length && getGlobalConfig<FlagsContext>().middlewareWarnWhenChainBreaking){
-            console.warn(`@middleware ${middlewareHooks[lastMiddlewareRunning].name} for ${target.constructor.name}.${methodName}() did not call next`);
+        retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1,tracker), methodArgs);
+        if (tracker.lastMiddlewareRunning < middlewareHooks.length){
+            console.warn(`@middleware ${middlewareHooks[tracker.lastMiddlewareRunning].name} for ${target.constructor.name}.${methodName}() did not call next`);
         }
-    }else{
+    } else {
         // No middleware - only original function
         retVal = (originalMethod && originalMethod.apply(target, methodArgs));
     }
     return retVal;
 }
 
-function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: (...args: any[])=>R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number,reportNextMiddleware:(n:number)=>void) {
+function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod:
+    (...args: any[])=>R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number, tracker:MiddlewareTracker) {
     return (...args: any[]): R => {
-        reportNextMiddleware(idx);
+        tracker.reportNextMiddleware(idx);
         return middlewareHooks.length <= idx ?
             (originalMethod && originalMethod.apply(target, args)) :
-            middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1,reportNextMiddleware), args as A);
+            middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1, tracker), args as A);
     };
 }
 
