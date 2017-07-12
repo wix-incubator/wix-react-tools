@@ -175,13 +175,14 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Mix
     const originalMethod: (...args: any[])=>any = mixerMeta.origin[methodName]!;
     const middlewareHooks = mixerMeta.middlewareHooks[methodName];
     let retVal;
-    if (middlewareHooks) { // should never be an empty array - either undefined or with hook(s)
-        //keep track of last middleware running by ID to determine chain breakage:
-        let lastMiddlewareRunning = 0;
-        function reportNextMiddleware(index:number):void{
-            lastMiddlewareRunning=Math.max(index,lastMiddlewareRunning);
-        }
 
+    //keep track of last middleware running by ID to determine chain breakage:
+    let lastMiddlewareRunning = 0;
+    function reportNextMiddleware(index:number):void{
+        lastMiddlewareRunning=Math.max(index,lastMiddlewareRunning);
+    }
+
+    if (middlewareHooks) { // should never be an empty array - either undefined or with hook(s)
         //Run middleware:
         retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1,reportNextMiddleware), methodArgs);
 

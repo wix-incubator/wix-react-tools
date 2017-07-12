@@ -56,7 +56,7 @@ describe("Unit tests - method hooks", () => {
 
     it("doesn't warn you when a middleware DOES call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
         @middleware<Duck>((instance, next, args) => {
-            return next();
+            next(args);
         }, "duckWillQuack")
         class Duck {
             duckWillQuack: () => void;
