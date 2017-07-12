@@ -1,5 +1,5 @@
 import { expect, sinon } from 'test-drive-react';
-import { after as afterMethod, runInContext, Flags } from "../../../src/";
+import { after as afterMethod, runInContext, FlagsContext } from "../../../src/";
 
 describe("after decorator", () => {
     it("lets you add hooks for non-existent functions - after", () => {
@@ -41,14 +41,14 @@ describe("after decorator", () => {
         }
 
         it("should prompt a warning when in dev mode", () => {
-            runInContext({ [Flags.DEV_MODE]: true }, overrideMethodReturnedValueWithUndefined);
+            runInContext<FlagsContext>({ devMode: true }, overrideMethodReturnedValueWithUndefined);
 
             expect(console.warn).to.have.callCount(1);
             expect(console.warn).to.have.been.calledWith('@after returnsValue Did you forget to return a value?');
         });
 
         it("should not prompt a warning when not in dev mode", () => {
-            runInContext({ [Flags.DEV_MODE]: false }, overrideMethodReturnedValueWithUndefined);
+            runInContext<FlagsContext>({ devMode: false }, overrideMethodReturnedValueWithUndefined);
 
             expect(console.warn).to.have.callCount(0);
         });

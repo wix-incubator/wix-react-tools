@@ -1,7 +1,16 @@
-import {expect} from "test-drive-react";
-import {before as beforeMethod, middleware, runInContext,Flags} from "../../../src/";
+import {expect, sinon} from "test-drive-react";
+import {before as beforeMethod, middleware, runInContext, FlagsContext} from "../../../src/";
 
 describe("Unit tests - method hooks", () => {
+    let warn = console.warn;
+    beforeEach("replace console.warn with spy", () => {
+        console.warn = sinon.spy();
+    });
+
+    afterEach("reset console.warn", () => {
+        console.warn = warn;
+    });
+
     it("lets you add hooks for non-existent functions - before", () => {
         @beforeMethod<Duck>((instance, methodArgs) => {
             return methodArgs;
@@ -39,10 +48,9 @@ describe("Unit tests - method hooks", () => {
         }
         let duck = new Duck();
 
-        runInContext({[Flags.ENABLE_CHAIN_BREAKING_FLAG]:false},()=>{
-            expect(() => {
-                duck.duckWillQuack();
-            }).to.throw();
+        runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:false},()=>{
+            duck.duckWillQuack();
+            expect(console.warn).to.have.not.been.called;
         });
     });
 });
