@@ -1,6 +1,5 @@
 import {expect} from "test-drive";
-import {getPrivateContext, ENUMERABLE_FLAG,runInContext} from "../../src/";
-import {Flags} from "../../src/utils/flags";
+import {getPrivateContext,runInContext,Flags} from "../../src/";
 
 let ids = ["ID0","ID1"];
 
