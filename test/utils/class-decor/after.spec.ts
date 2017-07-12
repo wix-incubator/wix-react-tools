@@ -1,5 +1,5 @@
 import { expect, sinon } from 'test-drive-react';
-import { after as afterMethod } from "../../../src/utils/class-decor";
+import { after as afterMethod } from "../../../src/";
 import { runInContext } from "../../../src/utils/config";
 
 describe("after decorator", () => {

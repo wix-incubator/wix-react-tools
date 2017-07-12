@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { expect, sinon, simulate, ClientRenderer, waitFor } from 'test-drive-react';
-import { ObservableComponent, when, resetCounters } from '../../../src/bases/observable-component';
+import { ObservableComponent, when, resetCounters } from '../../../src/';
 import { observable } from 'mobx';
 import {testHooks,person,withPerson} from './types';
 
-const testAnchor: string = 'Test-root'
+const testAnchor: string = 'Test-root';
 
 describe('when', () => {
     const clientRenderer = new ClientRenderer();
@@ -21,7 +21,7 @@ describe('when', () => {
                 name: 'enter name here',
                 age: -1,
                 smell: 'bad'
-            }
+            };
 
             render() {
                 this.props.onRender!(this);
@@ -38,7 +38,7 @@ describe('when', () => {
         }
 
         it('should properly name "when" reactions', () => {
-            const { select, waitForDom, container, result } = clientRenderer.render(<TestComp></TestComp>);
+            const { select, waitForDom, container, result } = clientRenderer.render(<TestComp/>);
             const comp: any = result;
 
 
@@ -47,9 +47,9 @@ describe('when', () => {
 
         it('should be called after an observed prop has been modified', () => {
             const whenSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onWhen={whenSpy}></TestComp>);
+            const { select, waitForDom, container } = clientRenderer.render(<TestComp onWhen={whenSpy}/>);
 
-            clientRenderer.render(<TestComp onWhen={whenSpy} smell="worse"></TestComp>, container);
+            clientRenderer.render(<TestComp onWhen={whenSpy} smell="worse"/>, container);
 
             expect(whenSpy).to.have.been.calledOnce;
         });
@@ -57,10 +57,10 @@ describe('when', () => {
 
         it('should work repeatedly', () => {
             const whenSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onWhen={whenSpy}></TestComp>);
+            const { select, waitForDom, container } = clientRenderer.render(<TestComp onWhen={whenSpy}/>);
 
-            clientRenderer.render(<TestComp onWhen={whenSpy} smell="worse"></TestComp>, container);
-            clientRenderer.render(<TestComp onWhen={whenSpy} smell="yuck"></TestComp>, container);
+            clientRenderer.render(<TestComp onWhen={whenSpy} smell="worse"/>, container);
+            clientRenderer.render(<TestComp onWhen={whenSpy} smell="yuck"/>, container);
 
             expect(whenSpy).to.have.been.calledTwice;
         });
@@ -68,17 +68,17 @@ describe('when', () => {
 
         it('should not be called for properties it is not watching', () => {
             const whenSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onWhen={whenSpy}></TestComp>);
+            const { select, waitForDom, container } = clientRenderer.render(<TestComp onWhen={whenSpy}/>);
 
-            clientRenderer.render(<TestComp onWhen={whenSpy} name="worse"></TestComp>, container);
-            clientRenderer.render(<TestComp onWhen={whenSpy} name="yuck"></TestComp>, container);
+            clientRenderer.render(<TestComp onWhen={whenSpy} name="worse"/>, container);
+            clientRenderer.render(<TestComp onWhen={whenSpy} name="yuck"/>, container);
 
             expect(whenSpy).to.have.not.been.called;
         });
 
         it('should dispose of reactions when unmounting', () => {
             let comp: TestComp;
-            const { select, waitForDom, container } = clientRenderer.render(<div><TestComp onRender={function (component) { comp = component }}></TestComp></div>);
+            const { select, waitForDom, container } = clientRenderer.render(<div><TestComp onRender={function (component) { comp = component }}/></div>);
 
             clientRenderer.render(<div></div>);
             waitForDom(() => {
@@ -101,7 +101,7 @@ describe('when', () => {
             }
             static defaultProps: complexTestProps = {
                 onRender: () => { }
-            }
+            };
 
             render() {
                 this.props.onRender!(this);
@@ -122,8 +122,8 @@ describe('when', () => {
             const whenSpy = sinon.spy();
             const testMan:person = observable({
                 smell:'bad'
-            })
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}></TestComp>);
+            });
+            const { select, waitForDom, container } = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}/>);
 
             testMan.smell = 'worse';
 
@@ -139,8 +139,8 @@ describe('when', () => {
             const testMan2:person = observable({
                 smell:'good'
             });
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}></TestComp>);
-            clientRenderer.render(<TestComp man={testMan2} onWhen={whenSpy}></TestComp>,container);
+            const { select, waitForDom, container } = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}/>);
+            clientRenderer.render(<TestComp man={testMan2} onWhen={whenSpy}/>,container);
 
             testMan2.smell = 'worse';
 
@@ -153,8 +153,8 @@ describe('when', () => {
             const testMan:person = observable({
                 smell:'bad',
                 age:90
-            })
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}></TestComp>);
+            });
+            const { select, waitForDom, container } = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}/>);
 
             testMan.age = 91;
 
