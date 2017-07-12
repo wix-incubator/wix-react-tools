@@ -50,7 +50,7 @@ describe("Unit tests - method hooks", () => {
 
         runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:true},()=>{
             duck.duckWillQuack();
-            expect(console.warn).to.have.been.calledWith('@middleware did not call next');
+            expect(console.warn).to.have.been.calledWith('@middleware for Duck.duckWillQuack() did not call next');
         });
     });
 

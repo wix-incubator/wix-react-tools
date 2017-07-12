@@ -186,7 +186,7 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Mix
         retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1,reportNextMiddleware), methodArgs);
 
         if (lastMiddlewareRunning<middlewareHooks.length && getGlobalConfig<FlagsContext>().middlewareWarnWhenChainBreaking){
-            console.warn(`@middleware did not call next`);
+            console.warn(`@middleware for ${target.constructor.name}.${methodName}() did not call next`);
         }
     }else{
         // No middleware - only original function
