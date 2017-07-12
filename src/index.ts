@@ -7,4 +7,5 @@ export * from './mixins/global-id-decorator';
 export * from './utils/class-decor';
 export * from './utils/config';
 export * from './utils/disposers';
+export * from './utils/flags';
 export * from './utils/private-context';
