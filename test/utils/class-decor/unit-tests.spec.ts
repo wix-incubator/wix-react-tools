@@ -39,7 +39,7 @@ describe("Unit tests - method hooks", () => {
         }).not.to.throw();
     });
 
-    xit("warns you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
+    it("warns you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
         @middleware<Duck>((instance, next, args) => {
             //Don't call next()
         }, "duckWillQuack")
@@ -54,7 +54,7 @@ describe("Unit tests - method hooks", () => {
         });
     });
 
-    xit("doesn't warn you when a middleware DOES call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
+    it("doesn't warn you when a middleware DOES call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
         @middleware<Duck>((instance, next, args) => {
             return next();
         }, "duckWillQuack")
@@ -69,7 +69,7 @@ describe("Unit tests - method hooks", () => {
         });
     });
 
-    xit("doesn't warn you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned OFF)", () => {
+    it("doesn't warn you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned OFF)", () => {
         @middleware<Duck>((instance, next, args) => {
             //Don't call next()
         }, "duckWillQuack")

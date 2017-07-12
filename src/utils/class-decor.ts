@@ -174,16 +174,33 @@ function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, me
 function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
     const originalMethod: (...args: any[])=>any = mixerMeta.origin[methodName]!;
     const middlewareHooks = mixerMeta.middlewareHooks[methodName];
-    return (middlewareHooks) ? // should never be an empty array - either undefined or with hook(s)
-        middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1), methodArgs) :
-        (originalMethod && originalMethod.apply(target, methodArgs));
+    let retVal;
+    if (middlewareHooks) { // should never be an empty array - either undefined or with hook(s)
+        //keep track of last middleware running by ID to determine chain breakage:
+        let lastMiddlewareRunning = 0;
+        function reportNextMiddleware(index:number):void{
+            lastMiddlewareRunning=Math.max(index,lastMiddlewareRunning);
+        }
+
+        //Run middleware:
+        retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1,reportNextMiddleware), methodArgs);
+
+        if (lastMiddlewareRunning<middlewareHooks.length && getGlobalConfig<FlagsContext>().middlewareWarnWhenChainBreaking){
+            console.warn(`@middleware did not call next`);
+        }
+    }else{
+        // No middleware - only original function
+        retVal = (originalMethod && originalMethod.apply(target, methodArgs));
+    }
+    return retVal;
 }
 
-function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: (...args: any[])=>R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number) {
+function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: (...args: any[])=>R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number,reportNextMiddleware:(n:number)=>void) {
     return (...args: any[]): R => {
+        reportNextMiddleware(idx);
         return middlewareHooks.length <= idx ?
             (originalMethod && originalMethod.apply(target, args)) :
-            middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1), args as A);
+            middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1,reportNextMiddleware), args as A);
     };
 }
 
