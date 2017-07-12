@@ -1,5 +1,5 @@
 import { expect } from "test-drive-react";
-import { before as beforeMethod, after, middleware } from "../../../src/utils/class-decor";
+import { before as beforeMethod, after, middleware } from "../../../src/";
 
 describe("Unit tests - method hooks", () => {
     it("lets you add hooks for non-existent functions - before", () => {
