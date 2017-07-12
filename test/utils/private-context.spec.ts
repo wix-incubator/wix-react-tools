@@ -3,20 +3,20 @@ import {getPrivateContext, ENUMERABLE_FLAG} from "../../src/utils/private-contex
 import {runInContext} from "../../src/utils/config";
 
 let ids = ["ID0","ID1"];
-
+type State = {foo?:string};
 describe('Private context', () => {
     it('serves private context per id per instance',()=>{
         const instance = {};
-        getPrivateContext(instance,ids[0]).foo="Hi";
-        expect(getPrivateContext(instance,ids[0])).to.eql({foo:"Hi"});
-        expect(getPrivateContext(instance,ids[1])).to.eql({});  //Make sure new key generates a new object
+        getPrivateContext<State>(instance,ids[0]).foo="Hi";
+        expect(getPrivateContext<State>(instance,ids[0])).to.eql({foo:"Hi"});
+        expect(getPrivateContext<State>(instance,ids[1])).to.eql({});  //Make sure new key generates a new object
 
-        expect(getPrivateContext({},ids[0])).to.eql({});    //Check that new instance doesn't return information given to other instance
+        expect(getPrivateContext<State>({},ids[0])).to.eql({});    //Check that new instance doesn't return information given to other instance
     });
 
     it("doesn't show the added fields on original object",()=>{
         const instance = {};
-        getPrivateContext(instance,ids[0]).foo="Hi";
+        getPrivateContext<State>(instance,ids[0]).foo="Hi";
 
         expect(Object.keys(instance)).to.eql([]);
     });
@@ -24,8 +24,8 @@ describe('Private context', () => {
     it("doesn't create gazillion fields on an instance",()=>{
         runInContext({[ENUMERABLE_FLAG]:true},()=>{
             const instance = {};
-            getPrivateContext(instance,ids[0]).foo="Hi";
-            getPrivateContext(instance,ids[1]).foo="Bye";
+            getPrivateContext<State>(instance,ids[0]).foo="Hi";
+            getPrivateContext<State>(instance,ids[1]).foo="Bye";
 
             expect(Object.keys(instance).length).to.eql(1);
         });
@@ -34,7 +34,7 @@ describe('Private context', () => {
     it("doesn't let you change an instance's private context",()=>{
         runInContext({[ENUMERABLE_FLAG]:true},()=>{
             const instance = {};
-            getPrivateContext(instance,ids[0]).foo="Hi";
+            getPrivateContext<State>(instance,ids[0]).foo="Hi";
 
             const desc = Object.getOwnPropertyDescriptor(instance,Object.keys(instance)[0]);
             expect(desc).to.containSubset({writable:false,configurable:false});
