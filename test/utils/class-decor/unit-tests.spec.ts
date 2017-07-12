@@ -39,7 +39,37 @@ describe("Unit tests - method hooks", () => {
         }).not.to.throw();
     });
 
-    it("warns you when a middleware doesn't call its 'next' function (iff enableChainBreaking is turned off)", () => {
+    xit("warns you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
+        @middleware<Duck>((instance, next, args) => {
+            //Don't call next()
+        }, "duckWillQuack")
+        class Duck {
+            duckWillQuack: () => void;
+        }
+        let duck = new Duck();
+
+        runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:true},()=>{
+            duck.duckWillQuack();
+            expect(console.warn).to.have.been.calledWith('@middleware did not call next');
+        });
+    });
+
+    xit("doesn't warn you when a middleware DOES call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
+        @middleware<Duck>((instance, next, args) => {
+            return next();
+        }, "duckWillQuack")
+        class Duck {
+            duckWillQuack: () => void;
+        }
+        let duck = new Duck();
+
+        runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:true},()=>{
+            duck.duckWillQuack();
+            expect(console.warn).to.have.not.been.called;
+        });
+    });
+
+    xit("doesn't warn you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned OFF)", () => {
         @middleware<Duck>((instance, next, args) => {
             //Don't call next()
         }, "duckWillQuack")
