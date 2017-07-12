@@ -4,6 +4,7 @@ import {renderToString} from "react-dom/server";
 import {CreateElementNext, ElementType} from "../../src/";
 import {ReactNode} from "react";
 import {ClientRenderer, expect} from "test-drive-react";
+import {runInContext} from "../../src/utils/config";
 
 describe('react-decor', () => {
 
@@ -14,15 +15,15 @@ describe('react-decor', () => {
     it('example', () => {
         function overrideClassesHook<P extends {className?:string}>(
             instance: React.Component<{ classOverride?: string }, any>,
+            next: CreateElementNext<P>,
             type:ElementType<P>,
             props:P,
-            children: Array<ReactNode>,
-            next: CreateElementNext<P>) {
+            children: Array<ReactNode>) {
 
             if (instance.props.classOverride) {
                 props.className = instance.props.classOverride;
             }
-            return next(type, props, children);
+            return next(type, props, ...children);
         }
 
         @registerForCreateElement(overrideClassesHook)
@@ -41,10 +42,10 @@ describe('react-decor', () => {
     xit('old WIP example', () => {
         function hook<P extends {className?:string}>(
             instance: React.Component<any, any>,
+            next: CreateElementNext<P>,
             type:ElementType<P>,
             props:P,
-            children: Array<ReactNode>,
-            next: CreateElementNext<P>) {
+            children: Array<ReactNode>) {
 
             if (instance.props.className) {
                 props.className = instance.props.className + (props.className ? ' ' + props.className : '');
@@ -56,12 +57,12 @@ describe('react-decor', () => {
         class MyComp extends React.Component<{ className: string }, {}> {
             render() {
                 return <div className="rootClassName">
-                    <div className="otherClassName"></div>
+                    <div className="otherClassName"/>
                 </div>
             }
         }
 
-        renderToString(<MyComp className="App"></MyComp>)
+        renderToString(<MyComp className="App"/>)
 
 // will return:
         /* <div className="App rootClassName">

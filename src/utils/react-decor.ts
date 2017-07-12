@@ -1,4 +1,4 @@
-import {Class, ClassDecorator} from "./class-decor";
+import {chain, Class, ClassDecorator, before as beforeMethod, after as afterMethod} from "./class-decor";
 import * as React from "react";
 import {
     CElement,
@@ -9,23 +9,36 @@ import {
     SFC, SFCElement
 } from "react";
 
+export type RenderResult = JSX.Element | null | false;
 export type Rendered<P extends object> = {
-    props:P;
-    render(): JSX.Element | null | false;
+    props: P;
+    render(): RenderResult;
 };
 
 // TODO: make union based of all different overloaded signatures of createElement
-export type CreateElementHook<T extends Rendered<any>> = <P = object>(
-                                    instance: T,
-                                    type: ElementType<P>,
-                                    props: P,
-                                    children: Array<ReactNode>,
-                                    next: CreateElementNext<P>) => ElementReturnType<P>;
+export type CreateElementHook<T extends Rendered<any>> =
+    <P = object>(instance: T,
+                 next: CreateElementNext<P>,
+                 type: ElementType<P>,
+                 props: P,
+                 children: Array<ReactNode>) => ElementReturnType<P>;
 
 export type CreateElementNext<P> = (type: ElementType<P>, props?: P, ...children: Array<ReactNode>) => ReactElement<P>;
 
-export type ElementType<P> = keyof ReactHTML | keyof ReactSVG | string | SFC<P> | ComponentClass<P> | ClassType<P, ClassicComponent<P, ComponentState>, ClassicComponentClass<P>>;
-export type ElementReturnType<P> = ReactHTMLElement<any> | ReactSVGElement | DOMElement<P, any> | SFCElement<P> | ReactElement<P> | CElement<P, ClassicComponent<P, ComponentState>>;
+export type ElementType<P> =
+    keyof ReactHTML
+    | keyof ReactSVG
+    | string
+    | SFC<P>
+    | ComponentClass<P>
+    | ClassType<P, ClassicComponent<P, ComponentState>, ClassicComponentClass<P>>;
+export type ElementReturnType<P> =
+    ReactHTMLElement<any>
+    | ReactSVGElement
+    | DOMElement<P, any>
+    | SFCElement<P>
+    | ReactElement<P>
+    | CElement<P, ClassicComponent<P, ComponentState>>;
 
 /*
 
@@ -59,8 +72,24 @@ export type ElementReturnType<P> = ReactHTMLElement<any> | ReactSVGElement | DOM
  ...children: ReactNode[]): ReactElement<P>;
 
  */
+
+const original: typeof React.createElement = React.createElement;
+
+// TODO: throw error if hook returned undefined
+
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
-    return null as any;
+    return chain(beforeMethod<T>((instance:T, args:never[]) => {
+        // monkey-patch React.createElement with our hook
+        function boundHook<P = object>(type: ElementType<P>, props: P, ...children: Array<ReactNode>) {
+            return hook(instance, original, type, props, children);
+        }
+        (React as any).createElement = boundHook;
+        return args;
+    }, 'render'), afterMethod<T>((instance:T, lastRes:RenderResult) => {
+        // un-patch React.createElement
+        (React as any).createElement = original;
+        return lastRes;
+    }, 'render'));
 }
 
 /*
