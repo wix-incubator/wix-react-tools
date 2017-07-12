@@ -1,32 +1,24 @@
 # add
 
-add a utility method to a class. this is done using the prototype and is the most performant option, it is unsuitable for lifecycle methods as it is overriden by methods with the same name on the class (or inheriting classes).  
+add public methods to a class. this is done using the prototype and is the most performant option, it is unsuitable for lifecycle methods as it is overriden by methods with the same name on the class (or inheriting classes).  
 
 This is the best way to add traits to classes. 
 
 ## API
 
 arguments:
-- method: the method to add
-- methodName:  name of method as it will appear in the class
+- methods: an object containing the methods to add
 - targetClass: class to modify
 
 returns: the modified class
 
-### method
-
-arguments: defined by the method's logic
-
-returns: the result of the method
+### methods
+a plain object with string keys and function values.
 
 
 ```ts
-function add<T extends object, P extends keyof T>(
-    method: Function & T[P],
-    methodName: P, c:Class<T>):Class<T>;
-function add<T extends object, P extends keyof T>(
-    method: Function & T[P],
-    methodName: P):(c:Class<T>)=>Class<T>;
+function add<T extends {[k:string]:Function}>(mixin: T):<T1 extends T>(clazz:Class<T1>)=> Class<T1>;
+function add<T extends {[k:string]:Function}, T1 extends T>(mixin: T, clazz:Class<T1>):Class<T1>;
  ```
 
 ## Example
@@ -37,7 +29,7 @@ function printMessage(text:string){
     return 'message printed: '+text;
 }
 
-@add(printMessage, 'printMessage')
+@add({ printMessage })
 class Logger(){
     printMessage:(text:string)=>string;
 }
