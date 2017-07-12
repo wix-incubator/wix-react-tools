@@ -75,13 +75,15 @@ export type ElementReturnType<P> =
 
 const original: typeof React.createElement = React.createElement;
 
-// TODO: throw error if hook returned undefined
-
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
     return chain(beforeMethod<T>((instance:T, args:never[]) => {
         // monkey-patch React.createElement with our hook
         function boundHook<P = object>(type: ElementType<P>, props: P, ...children: Array<ReactNode>) {
-            return hook(instance, original, type, props, children);
+            const hookResult = hook(instance, original, type, props, children);
+            if (hookResult === undefined){
+                throw new Error('@registerForCreateElement Error: hook returned undefined');
+            }
+            return hookResult;
         }
         (React as any).createElement = boundHook;
         return args;

@@ -13,12 +13,11 @@ describe('react-decor', () => {
 
 
     it('example', () => {
-        function overrideClassesHook<P extends {className?:string}>(
-            instance: React.Component<{ classOverride?: string }, any>,
-            next: CreateElementNext<P>,
-            type:ElementType<P>,
-            props:P,
-            children: Array<ReactNode>) {
+        function overrideClassesHook<P extends { className?: string }>(instance: React.Component<{ classOverride?: string }, any>,
+                                                                       next: CreateElementNext<P>,
+                                                                       type: ElementType<P>,
+                                                                       props: P,
+                                                                       children: Array<ReactNode>) {
 
             if (instance.props.classOverride) {
                 props.className = instance.props.classOverride;
@@ -30,22 +29,33 @@ describe('react-decor', () => {
         class MyComp extends React.Component<{ classOverride: string }, {}> {
             render() {
                 return <div data-automation-id="1" className="rootClassName">
-                    <div data-automation-id="2"  className="otherClassName"/>
+                    <div data-automation-id="2" className="otherClassName"/>
                 </div>
             }
         }
-        const { select } = clientRenderer.render(<MyComp classOverride="App"/>);
+        const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
         expect(select('1')).to.have.property('className', 'App');
         expect(select('2')).to.have.property('className', 'App');
     });
 
+    it('throws when hook returns undefined', () => {
+        @registerForCreateElement((() => {
+        }) as any)
+        class MyComp extends React.Component {
+            render() {
+                return <div/>
+            }
+        }
+        // expect the error to have a message with these two strings: `@registerForCreateElement` , `undefined`
+        expect(() => clientRenderer.render(<MyComp/>)).to.throw(Error, /(?=.*\@registerForCreateElement.*)(?=.*undefined.*)/);
+    });
+
     xit('old WIP example', () => {
-        function hook<P extends {className?:string}>(
-            instance: React.Component<any, any>,
-            next: CreateElementNext<P>,
-            type:ElementType<P>,
-            props:P,
-            children: Array<ReactNode>) {
+        function hook<P extends { className?: string }>(instance: React.Component<any, any>,
+                                                        next: CreateElementNext<P>,
+                                                        type: ElementType<P>,
+                                                        props: P,
+                                                        children: Array<ReactNode>) {
 
             if (instance.props.className) {
                 props.className = instance.props.className + (props.className ? ' ' + props.className : '');
