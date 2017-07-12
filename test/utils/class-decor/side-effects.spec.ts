@@ -2,17 +2,18 @@ import { expect, sinon } from "test-drive-react";
 import { getHeritage } from "../../test-tools";
 import { after, before as beforeMethod, onInstance, chain, middleware } from "../../../src/";
 
-const METHOD = 'myMethod';
+const METHOD = "myMethod";
 
 class Foo {
-    myMethod(){}
+    myMethod() {}
 }
 describe("class decor side-effect", () => {
     const decorate = chain<Foo>(
         onInstance<Foo>(() => undefined),
         beforeMethod<Foo>(() => undefined, METHOD),
         after<Foo>(() => undefined, METHOD),
-        middleware<Foo>(() => undefined, METHOD));
+        middleware<Foo>(() => undefined, METHOD)
+    );
 
     // fixture class tree
     @decorate @decorate @decorate
@@ -25,24 +26,24 @@ describe("class decor side-effect", () => {
     }
     const NUM_USER_CLASSES = 3; // [Bar, Biz, Baz].length
 
-    it('only add one class to heritage', () => {
+    it("only add one class to heritage", () => {
         expect(getHeritage(Baz).length).to.eql(getHeritage(Foo).length + NUM_USER_CLASSES + 1);
     });
 
-    it('does not change constructor name(s)', () => {
-        expect(new Bar().constructor.name, 'new Bar().constructor.name').to.equal('Bar');
-        expect(new Biz().constructor.name, 'new Biz().constructor.name').to.equal('Biz');
-        expect(new Baz().constructor.name, 'new Baz().constructor.name').to.equal('Baz');
+    it("does not change constructor name(s)", () => {
+        expect(new Bar().constructor.name, "new Bar().constructor.name").to.equal("Bar");
+        expect(new Biz().constructor.name, "new Biz().constructor.name").to.equal("Biz");
+        expect(new Baz().constructor.name, "new Baz().constructor.name").to.equal("Baz");
     });
 
     xdescribe("after decorator", () => {
         class Blah {
-            myMethod():void {}
+            myMethod(): void {}
         }
 
         it("should not override a method on the class itself", () => {
-            const spy = sinon.spy()
-            const inst = new (after(spy, 'myMethod', Blah))();
+            const spy = sinon.spy();
+            const inst = new (after(spy, "myMethod", Blah))();
             inst.myMethod();
 
             expect(spy).to.have.callCount(1);
