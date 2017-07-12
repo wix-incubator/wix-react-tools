@@ -1,5 +1,5 @@
-import { expect } from "test-drive-react";
-import { before as beforeMethod, after, middleware } from "../../../src/";
+import {expect} from "test-drive-react";
+import {before as beforeMethod, middleware, runInContext} from "../../../src/";
 
 describe("Unit tests - method hooks", () => {
     it("lets you add hooks for non-existent functions - before", () => {
@@ -28,5 +28,21 @@ describe("Unit tests - method hooks", () => {
         expect(() => {
             duck.duckWillQuack();
         }).not.to.throw();
+    });
+
+    it("warns you when a middleware doesn't call its 'next' function (iff enableChainBreaking is turned off)", () => {
+        @middleware<Duck>((instance, next, args) => {
+            //Don't call next()
+        }, "duckWillQuack")
+        class Duck {
+            duckWillQuack: () => void;
+        }
+        let duck = new Duck();
+
+        runInContext({enableChainBreaking:false},()=>{
+            expect(() => {
+                duck.duckWillQuack();
+            }).to.throw();
+        });
     });
 });
