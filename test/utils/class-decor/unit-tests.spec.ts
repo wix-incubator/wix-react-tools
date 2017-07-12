@@ -1,5 +1,5 @@
 import {expect} from "test-drive-react";
-import {before as beforeMethod, middleware, runInContext} from "../../../src/";
+import {before as beforeMethod, middleware, runInContext,Flags} from "../../../src/";
 
 describe("Unit tests - method hooks", () => {
     it("lets you add hooks for non-existent functions - before", () => {
@@ -39,7 +39,7 @@ describe("Unit tests - method hooks", () => {
         }
         let duck = new Duck();
 
-        runInContext({enableChainBreaking:false},()=>{
+        runInContext({[Flags.ENABLE_CHAIN_BREAKING_FLAG]:false},()=>{
             expect(() => {
                 duck.duckWillQuack();
             }).to.throw();

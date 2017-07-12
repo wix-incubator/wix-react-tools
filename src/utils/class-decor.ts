@@ -1,6 +1,7 @@
 import _union = require('lodash/union');
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import { getGlobalConfig } from '../utils/config';
+import {Flags} from "./flags";
 
 export type Class<T extends object> = new(...args: any[]) => T;
 type DumbClass = new(...args: any[]) => object;
@@ -188,7 +189,7 @@ function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(
 
 function runAfterHooks<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodResult: any) {
     const afterHooks = mixerMeta.afterHooks[methodName];
-    const devMode = getGlobalConfig().devMode;
+    const devMode = getGlobalConfig()[Flags.DEV_MODE];
 
     if (afterHooks) {
         afterHooks.forEach((hook: AfterHook<T, typeof methodResult>) => {
