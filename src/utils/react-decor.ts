@@ -9,6 +9,8 @@ import {
     SFC, SFCElement
 } from "react";
 
+import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
+
 export type RenderResult = JSX.Element | null | false;
 export type Rendered<P extends object> = {
     props: P;
@@ -74,29 +76,27 @@ export type ElementReturnType<P> =
  */
 
 const original: typeof React.createElement = React.createElement;
+// for root replication use React.cloneElement()
 
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
-    return chain(beforeMethod<T>((instance:T, args:never[]) => {
+    return beforeMethod<T>((instance:T, args:never[]) => {
+        // TODO move boundHook to class-level (keep track of instance outside)
         // monkey-patch React.createElement with our hook
-        function boundHook<P = object>(type: ElementType<P>, props: P, ...children: Array<ReactNode>) {
-            const hookResult = hook(instance, original, type, props, children);
-            if (hookResult === undefined){
-                throw new Error('@registerForCreateElement Error: hook returned undefined');
+        function boundHook<P = object>(type: ComponentClass<P>, props: P, ...children: Array<ReactNode>) {
+            // check if original render is over, then clean up and call original
+            if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === instance) {
+                const hookResult = hook(instance, original, type, props, children);
+                if (hookResult === undefined) { // TODO React.isValidElement()
+                    throw new Error('@registerForCreateElement Error: hook returned undefined');
+                }
+                return hookResult;
+            } else {
+                // clean up hook
+                (React as any).createElement = original;
+                return original(type, props, ...children);
             }
-            return hookResult;
         }
         (React as any).createElement = boundHook;
         return args;
-    }, 'render'), afterMethod<T>((instance:T, lastRes:RenderResult) => {
-        // un-patch React.createElement
-        (React as any).createElement = original;
-        return lastRes;
-    }, 'render'));
+    }, 'render');
 }
-
-/*
- @registerForCreateElement((a,bb,c,d)=>{})
- class Comp extends...
-
-
- */

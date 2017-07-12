@@ -50,6 +50,46 @@ describe('react-decor', () => {
         expect(() => clientRenderer.render(<MyComp/>)).to.throw(Error, /(?=.*\@registerForCreateElement.*)(?=.*undefined.*)/);
     });
 
+    it('cleans up hook even if render throws', () => {
+        @registerForCreateElement((() => { throw new Error('weeeeeee!!');}) as any)
+        class MyComp extends React.Component {
+            render() {
+                return <div/>
+            }
+        }
+        // expect the error to have a message with these two strings: `@registerForCreateElement` , `undefined`
+        expect(() => clientRenderer.render(<MyComp/>), 'render MyComp').to.throw(Error);
+        expect(() => clientRenderer.render(<div/>), 'render after MyComp').not.to.throw(Error);
+    });
+
+    it('multiple hooks work together', () => {
+        function FooHook<P extends { foo?: string }>(instance: React.Component,
+                                                                       next: CreateElementNext<P>,
+                                                                       type: ElementType<P>,
+                                                                       props: P,
+                                                                       children: Array<ReactNode>) {
+            props.foo = 'foo';
+            return next(type, props, ...children);
+        }
+        function BarHook<P extends { bar?: string }>(instance: React.Component,
+                                                     next: CreateElementNext<P>,
+                                                     type: ElementType<P>,
+                                                     props: P,
+                                                     children: Array<ReactNode>) {
+            props.bar = 'bar';
+            return next(type, props, ...children);
+        }
+        @registerForCreateElement(FooHook)
+        @registerForCreateElement(BarHook)
+        class MyComp extends React.Component {
+            render() {
+                return <div data-automation-id="1"/>
+            }
+        }
+        const {select} = clientRenderer.render(<MyComp/>);
+        expect(select('1')).to.have.property('foo', 'foo').and.to.have.property('bar', 'bar');
+    });
+
     xit('old WIP example', () => {
         function hook<P extends { className?: string }>(instance: React.Component<any, any>,
                                                         next: CreateElementNext<P>,
