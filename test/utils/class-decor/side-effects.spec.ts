@@ -1,10 +1,6 @@
-import {expect, sinon} from 'test-drive-react';
-import {getHeritage} from "../../test-tools";
-import {
-    after,
-    before as beforeMethod,
-    onInstance} from "../../../src/utils/class-decor";
-import {chain, middleware} from "../../../src/utils/class-decor";
+import { expect, sinon } from "test-drive-react";
+import { getHeritage } from "../../test-tools";
+import { after, before as beforeMethod, onInstance, chain, middleware } from "../../../src/";
 
 const METHOD = 'myMethod';
 

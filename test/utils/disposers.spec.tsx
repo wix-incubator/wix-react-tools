@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {expect, sinon} from 'test-drive-react';
-import {Disposers, UNCAUGHT_DISPOSER_ERROR_MESSAGE} from "../../src/utils/disposers";
+import {Disposers} from "../../src/";
 
 describe("Disposers", () => {
       it('registers named disposers ', () => {

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {expect, sinon, ClientRenderer} from 'test-drive-react';
-import {disposable} from "../../src/mixins/disposable-decorator";
-import {Disposers} from "../../src/utils/disposers";
+import {Disposers,disposable} from "../../src/";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 
 

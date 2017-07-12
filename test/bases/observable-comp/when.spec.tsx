@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { expect, sinon, simulate, ClientRenderer, waitFor } from 'test-drive-react';
-import { ObservableComponent, when, resetCounters } from '../../../src/bases/observable-component';
+import { ObservableComponent, when, resetCounters } from '../../../src/';
 import { observable } from 'mobx';
 import {testHooks,person,withPerson} from './types';
 
