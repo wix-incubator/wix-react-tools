@@ -1,6 +1,6 @@
 import { expect, sinon } from "test-drive-react";
 import { getHeritage } from "../../test-tools";
-import { after, before as beforeMethod, onInstance, chain, middleware } from "../../../src/";
+import { after, before, onInstance, chain, middleware } from "../../../src/";
 
 const METHOD = "myMethod";
 
@@ -10,7 +10,7 @@ class Foo {
 describe("class decor side-effect", () => {
     const decorate = chain<Foo>(
         onInstance<Foo>(() => undefined),
-        beforeMethod<Foo>(() => undefined, METHOD),
+        before<Foo>(() => undefined, METHOD),
         after<Foo>(() => undefined, METHOD),
         middleware<Foo>(() => undefined, METHOD)
     );

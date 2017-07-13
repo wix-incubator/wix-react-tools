@@ -1,4 +1,4 @@
-import {Class} from "../src/utils/class-decor";
+import {Class} from "../src/";
 import {sinon} from 'test-drive-react';
 
 // a type that adds spy type to each field
@@ -14,6 +14,10 @@ export function spyAll<T extends { [k: string]: Function }>(obj: T): Spied<T> {
 
 export function resetAll<T extends { [k: string]: Function }>(obj: Spied<T>): void {
     Object.keys(obj).forEach((k: keyof T) => obj[k].reset());
+}
+
+export function restoreAll<T extends { [k: string]: Function }>(obj: Spied<T>): void {
+    Object.keys(obj).forEach((k: keyof T) => obj[k].restore());
 }
 
 export function getHeritage(clazz: Class<any>): Array<Class<any>> {

@@ -33,18 +33,17 @@ The function is [curried](https://lodash.com/docs#curry), so it can be used as a
 
 ## Example
 ```ts
-function init(instance:Logger, constructorArguments){
-    console.log('called on constructor with "'+constructorArguments[0]+'"');
+function init(instance: Logger, constructorArguments: [string]) {
+    console.log('called on constructor with "' + constructorArguments[0] + '"');
 }
- 
 @onInstance(init)
-class Logger{
-  constructor(name:string){
-    console.log('inited logger: '+name);
-  }
+class Logger {
+    constructor(name: string) {
+        console.log('inited logger: ' + name);
+    }
 }
 ```
-calling `new Logger('MyLogger')` will print (by order):
+calling `new Logger('MyLogger')` will print (by no particular order):
  - `called on constructor with "MyLogger"`
  - `inited logger: MyLogger`
  

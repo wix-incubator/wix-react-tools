@@ -50,7 +50,7 @@ class Logger{
 const logger = new Logger();
 ```
 calling `logger.printMessage('hello')` will print (by order):
- - `"called on method with hello"`
+ - `"called before method with hello"`
  - `"goodbye"`
  
 and to return `"message printed: goodbye"`

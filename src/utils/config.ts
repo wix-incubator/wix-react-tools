@@ -10,12 +10,12 @@ let dirty = true;
 let publicState: Readonly<Dictionary> = {};
 
 
-export function overrideGlobalConfig(config: Dictionary): void {
+export function overrideGlobalConfig<T extends object = Dictionary>(config: T): void {
     internalState = deepClone(config);
     dirty = true;
 }
 
-export function setGlobalConfig(config: Dictionary): void {
+export function setGlobalConfig<T extends object = Dictionary>(config: T): void {
     deepMergeClone(internalState, config);
     dirty = true;
 }
@@ -27,7 +27,7 @@ export function getGlobalConfig<T extends object = Dictionary>(): T {
     return publicState as T;
 }
 
-export function runInContext(config: Dictionary, func: Function, test = false) {
+export function runInContext<T extends object = Dictionary>(config: T, func: Function, test = false) {
     const cleanup = overrideGlobalConfig.bind(null, deepClone(internalState));
     let result: any = null;
     dirty = true;
@@ -97,4 +97,4 @@ function deepMergeClone(dest: Dictionary, src: Dictionary, path: string[] = []):
 // make module a singleton
 
 declare let module: any;
-module.exports = ifndef('rect-base-global-config-0', module.exports);
+module.exports = ifndef('react-base-global-config-0', module.exports);
