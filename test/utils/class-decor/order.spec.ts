@@ -2,7 +2,7 @@ import {expect, sinon} from 'test-drive-react';
 import {
     Class,
     after,
-    before as beforeMethod,
+    before,
     onInstance,
     middleware, chain,
     ClassDecorator
@@ -108,7 +108,7 @@ describe("class decor order", () => {
 
             function beforeAfterDecor<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
-                    beforeMethod<T>((target: T, args: [number]) => {
+                    before<T>((target: T, args: [number]) => {
                         SPIES.firstBefore(target, args);
                         return [args[0] + 1]
                     }, METHOD),
@@ -139,7 +139,7 @@ describe("class decor order", () => {
         describe("before and after", () => {
             function outer<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
-                    beforeMethod<T>((target: T, args: [number]) => {
+                    before<T>((target: T, args: [number]) => {
                         SPIES.firstBefore(target, args);
                         return [args[0] + 1]
                     }, METHOD),
@@ -151,7 +151,7 @@ describe("class decor order", () => {
 
             function inner<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
-                    beforeMethod<T>((target: T, args: [number]) => {
+                    before<T>((target: T, args: [number]) => {
                         SPIES.lastBefore(target, args);
                         return [args[0] + 1]
                     }, METHOD),
@@ -192,7 +192,7 @@ describe("class decor order", () => {
             let UserClass: typeof Base;
 
             describe('when applied on parent', () => {
-                before('define classes', () => {
+                beforeEach('define classes', () => {
                     const Parent = second(first(makeBaseClass(SPIES.superClassFunction)));
                     class _UserClass extends Parent {
                         myMethod(foo: number): number {
@@ -205,7 +205,7 @@ describe("class decor order", () => {
                 checkClass(sampleTest);
             });
             describe('when apply on child', () => {
-                before('define classes', () => {
+                beforeEach('define classes', () => {
                     const Parent = makeBaseClass(SPIES.superClassFunction);
                     @second
                     @first
@@ -222,7 +222,7 @@ describe("class decor order", () => {
             });
 
             describe('when apply on both parent and child', () => {
-                before('define classes', () => {
+                beforeEach('define classes', () => {
                     const Parent = first(makeBaseClass(SPIES.superClassFunction));
                     @second
                     class _UserClass extends Parent {
@@ -239,7 +239,7 @@ describe("class decor order", () => {
 
             function checkClass(sampleTest = false) {
                 let obj1: Base, obj2: Base;
-                before('define classes', () => {
+                beforeEach('define classes', () => {
                     obj1 = new UserClass();
                     obj2 = new UserClass();
                 });

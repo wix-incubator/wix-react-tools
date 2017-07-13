@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {before as beforeMethod, middleware, runInContext, FlagsContext} from "../../../src/";
+import {before, middleware, runInContext, FlagsContext} from "../../../src/";
 
 describe("Unit tests - method hooks", () => {
     let warn = console.warn;
@@ -12,7 +12,7 @@ describe("Unit tests - method hooks", () => {
     });
 
     it("lets you add hooks for non-existent functions - before", () => {
-        @beforeMethod<Duck>((instance, methodArgs) => {
+        @before<Duck>((instance, methodArgs) => {
             return methodArgs;
         }, "duckWillQuack")
         class Duck {
