@@ -1,4 +1,4 @@
-import {Class} from "../src/utils/class-decor";
+import {Class} from "../src/";
 import {sinon} from 'test-drive-react';
 
 // a type that adds spy type to each field

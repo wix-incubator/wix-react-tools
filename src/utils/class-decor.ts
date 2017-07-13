@@ -1,16 +1,16 @@
 import _union = require('lodash/union');
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
-import { getGlobalConfig } from './config';
+import {getGlobalConfig} from './config';
 import {FlagsContext} from "./flags";
 
 export type Class<T extends object> = new(...args: any[]) => T;
 type DumbClass = new(...args: any[]) => object;
 
-export type ConstructorHook<T extends object> = (instance:T, constructorArguments:any[])=>void;
-export type BeforeHook<T, A extends Array<any>> = (instance:T, methodArguments:A)=>A;
-export type AfterHook<T, R = void> = (instance:T, methodResult:R)=>R;
-export type MiddlewareHook<T, A extends Array<any>, R = void> = (instance:T, next:(methodArguments:A)=>R, methodArguments:A)=>R;
-export type ClassDecorator<T extends object> = <T1 extends T>(clazz:Class<T1>)=> Class<T1>;
+export type ConstructorHook<T extends object> = (instance: T, constructorArguments: any[]) => void;
+export type BeforeHook<T, A extends Array<any>> = (instance: T, methodArguments: A) => A;
+export type AfterHook<T, R = void> = (instance: T, methodResult: R) => R;
+export type MiddlewareHook<T, A extends Array<any>, R = void> = (instance: T, next: (methodArguments: A) => R, methodArguments: A) => R;
+export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 
 function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
     let result = obj[key];
@@ -26,7 +26,7 @@ class MixerData<T extends object> {
     beforeHooks: {[P in keyof T]?:Array<BeforeHook<T, any>>} = {};
     afterHooks: {[P in keyof T]?:Array<AfterHook<T, any>>} = {};
     middlewareHooks: {[P in keyof T]?:Array<MiddlewareHook<T, any, any>>} = {};
-    origin: {[P in keyof T]?:T[P] & ((...args: any[])=>any)} = {};
+    origin: {[P in keyof T]?:T[P] & ((...args: any[]) => any)} = {};
 
     get hookedMethodNames() {
         return _union(
@@ -38,14 +38,15 @@ class MixerData<T extends object> {
 
 type Mixed<T extends object> = {
     $mixerData: MixerData<T>
+    prototype: T;
 };
 
 type MixedClass<T extends object> = Class<T> & Mixed<T>;
 
-function chain2<T extends object>(f:ClassDecorator<T>, g:ClassDecorator<T>):ClassDecorator<T>{
-    return <T1 extends T>(cls:Class<T1>) => g(f(cls));
+function chain2<T extends object>(f: ClassDecorator<T>, g: ClassDecorator<T>): ClassDecorator<T> {
+    return <T1 extends T>(cls: Class<T1>) => g(f(cls));
 }
-export function chain<T extends object>(...fns:ClassDecorator<T>[]):ClassDecorator<T>{
+export function chain<T extends object>(...fns: ClassDecorator<T>[]): ClassDecorator<T> {
     return fns.reduce(chain2);
 }
 
@@ -57,6 +58,7 @@ export function onInstance<T extends object>(hook: ConstructorHook<T>, target?: 
         mixed.$mixerData.constructorHooks.push(hook);
         return mixed;
     }
+
     return target ? curried(target) : curried;
 }
 
@@ -68,6 +70,7 @@ export function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, 
         getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(hook);
         return mixed;
     }
+
     return target ? curried(target) : curried;
 }
 
@@ -79,6 +82,7 @@ export function before<T extends object>(hook: BeforeHook<T, any>, methodName: k
         getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(hook);
         return mixed;
     }
+
     return target ? curried(target) : curried;
 }
 
@@ -90,8 +94,26 @@ export function after<T extends object>(hook: AfterHook<T, any>, methodName: key
         getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(hook);
         return mixed;
     }
+
     return target ? curried(target) : curried;
 }
+
+export function add<T extends { [k: string]: Function }>(mixin: T): ClassDecorator<T>;
+export function add<T extends { [k: string]: Function }, T1 extends T>(mixin: T, target: Class<T1>): Class<T1>;
+export function add<T extends { [k: string]: Function }, T1 extends T>(mixin: T, target?: Class<T1>): Class<T1> | ClassDecorator<T> {
+    function curried<T1 extends T>(t: Class<T1>) {
+        const mixed = mix(t);
+        Object.keys(mixin).forEach((k: keyof T) => {
+            if (!mixed.prototype[k]) {
+                mixed.prototype[k] = mixin[k];
+            }
+        });
+        return mixed;
+    }
+
+    return target ? curried(target) : curried;
+}
+
 
 function isMixed<T>(subj: any): subj is Mixed<T> {
     return subj.isMixed;
@@ -105,6 +127,7 @@ function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
     class Extended extends (clazz as any as DumbClass) {
         static isMixed: boolean = true;
         static readonly $mixerData: MixerData<T>;
+
         constructor(...args: any[]) {
             super(...args);
             // if not inherited by another class, remove itself so to not pollute instance's name
@@ -167,29 +190,31 @@ function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, me
     }
     return methodArgs;
 }
-class MiddlewareTracker{
+class MiddlewareTracker {
     lastMiddlewareRunning = 0;
-    reportNextMiddleware(index:number){
-        this.lastMiddlewareRunning=Math.max(index,this.lastMiddlewareRunning);
+
+    reportNextMiddleware(index: number) {
+        this.lastMiddlewareRunning = Math.max(index, this.lastMiddlewareRunning);
     };
 }
 
 // to simplify code, use this instead of an active tracker
 const dummyTracker = {
     lastMiddlewareRunning: Number.MAX_VALUE,
-    reportNextMiddleware(index:number){}
+    reportNextMiddleware(index: number){
+    }
 };
 
 function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
-    const originalMethod: (...args: any[])=>any = mixerMeta.origin[methodName]!;
+    const originalMethod: (...args: any[]) => any = mixerMeta.origin[methodName]!;
     const middlewareHooks = mixerMeta.middlewareHooks[methodName];
     let retVal;
     if (middlewareHooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
-        let tracker:MiddlewareTracker = (getGlobalConfig<FlagsContext>().middlewareWarnWhenChainBreaking) ? new MiddlewareTracker() : dummyTracker;
+        let tracker: MiddlewareTracker = (getGlobalConfig<FlagsContext>().middlewareWarnWhenChainBreaking) ? new MiddlewareTracker() : dummyTracker;
         //Run middleware:
-        retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1,tracker), methodArgs);
-        if (tracker.lastMiddlewareRunning < middlewareHooks.length){
+        retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1, tracker), methodArgs);
+        if (tracker.lastMiddlewareRunning < middlewareHooks.length) {
             console.warn(`@middleware ${middlewareHooks[tracker.lastMiddlewareRunning].name} for ${target.constructor.name}.${methodName}() did not call next`);
         }
     } else {
@@ -199,8 +224,7 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Mix
     return retVal;
 }
 
-function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod:
-    (...args: any[])=>R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number, tracker:MiddlewareTracker) {
+function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(target: T, originalMethod: (...args: any[]) => R, middlewareHooks: Array<MiddlewareHook<T, A, R>>, idx: number, tracker: MiddlewareTracker) {
     return (...args: any[]): R => {
         tracker.reportNextMiddleware(idx);
         return middlewareHooks.length <= idx ?

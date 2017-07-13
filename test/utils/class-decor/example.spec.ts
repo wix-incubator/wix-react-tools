@@ -1,5 +1,5 @@
 import {resetAll, spyAll} from "../../test-tools";
-import {middleware, onInstance, before, after} from "../../../src/utils/class-decor";
+import {middleware, onInstance, before, after, add} from "../../../src/";
 import {expect} from "test-drive";
 
 describe('class-decor documentation examples', () => {
@@ -122,7 +122,6 @@ describe('class-decor documentation examples', () => {
         });
     });
 
-/*
     describe('add', () => {
         it('directly on class', () => {
             function printMessage(text:string){
@@ -142,5 +141,4 @@ describe('class-decor documentation examples', () => {
             expect(result).to.eql('message printed: hello');
         });
     });
-    */
 });
