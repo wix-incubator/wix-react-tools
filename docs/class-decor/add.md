@@ -30,10 +30,9 @@ function printMessage(text:string){
 }
 
 @add({ printMessage })
-class Logger(){
-    printMessage:(text:string)=>string;
+class Logger{
+    printMessage: (text:string)=>string;
 }
-
 const logger = new Logger();
 ```
 calling `logger.printMessage('hello')` will print:

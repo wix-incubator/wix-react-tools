@@ -1,6 +1,6 @@
 import _union = require('lodash/union');
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
-import { getGlobalConfig } from '../utils/config';
+import { getGlobalConfig } from './config';
 import {FlagsContext} from "./flags";
 
 export type Class<T extends object> = new(...args: any[]) => T;
@@ -104,20 +104,11 @@ function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
     }
     class Extended extends (clazz as any as DumbClass) {
         static isMixed: boolean = true;
-
         static readonly $mixerData: MixerData<T>;
-
         constructor(...args: any[]) {
-            let that: T;
-            if (new.target === Extended) {
-                that = new clazz(...args) as any as T;
-            } else {
-                super(...args);
-                that = this as any as T;
-            }
+            super(...args);
             // if not inherited by another class, remove itself so to not pollute instance's name
-            activateMixins(that, Extended.$mixerData, args);
-            return that;
+            activateMixins(this as any as T, Extended.$mixerData, args);
         }
     }
     Object.defineProperty(Extended, '$mixerData', {
@@ -125,6 +116,12 @@ function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
         enumerable: false,
         writable: false,
         value: new MixerData<T>()
+    });
+    // TODO remove this ineffective dirty fix, see https://github.com/wix/react-bases/issues/50
+    Object.defineProperty(Extended, 'name', {
+        enumerable: false,
+        writable: false,
+        value: clazz.name
     });
     return Extended as any;
 }

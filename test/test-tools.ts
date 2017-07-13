@@ -16,6 +16,10 @@ export function resetAll<T extends { [k: string]: Function }>(obj: Spied<T>): vo
     Object.keys(obj).forEach((k: keyof T) => obj[k].reset());
 }
 
+export function restoreAll<T extends { [k: string]: Function }>(obj: Spied<T>): void {
+    Object.keys(obj).forEach((k: keyof T) => obj[k].restore());
+}
+
 export function getHeritage(clazz: Class<any>): Array<Class<any>> {
     const res = [];
     while (clazz !== Object) {
