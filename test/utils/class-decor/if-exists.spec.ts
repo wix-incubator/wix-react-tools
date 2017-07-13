@@ -42,7 +42,6 @@ describe('middleware, before, after', () => {
             myMethod:()=>void;
         }
         const logger = new Logger();
-        logger.myMethod();
         expect(logger.myMethod).to.equal(undefined);
     });
 
@@ -51,7 +50,7 @@ describe('middleware, before, after', () => {
         @before.ifExists(beforeHook, 'myMethod')
         @after.ifExists(afterHook, 'myMethod')
         class Logger {
-            myMethod = ()=>{};
+            myMethod(){};
         }
         const logger = new Logger();
         logger.myMethod();
