@@ -6,7 +6,7 @@ import {
     onInstance,
     middleware, chain,
     ClassDecorator
-} from "../../../src/utils/class-decor";
+} from "../../../src/";
 import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
 import {expectSpyChain} from '../../test-drivers/spy-chain';

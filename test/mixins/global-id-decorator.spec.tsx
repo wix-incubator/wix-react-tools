@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { expect, ClientRenderer } from 'test-drive-react';
-import { GlobalID, reset, applyMixin } from '../../src/mixins/global-id-decorator';
+import { GlobalID, reset, applyMixin } from '../../src/';
 import {inBrowser} from "mocha-plugin-env/dist/src";
 
 
