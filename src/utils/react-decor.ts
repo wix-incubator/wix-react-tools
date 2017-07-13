@@ -1,4 +1,4 @@
-import {chain, Class, ClassDecorator, before as beforeMethod, after as afterMethod} from "./class-decor";
+import {chain, Class, ClassDecorator, before, after as afterMethod} from "./class-decor";
 import * as React from "react";
 import {
     CElement,
@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
+import {mix, MixerData} from "./mixer";
 
 export type RenderResult = JSX.Element | null | false;
 export type Rendered<P extends object> = {
@@ -78,25 +79,57 @@ export type ElementReturnType<P> =
 const original: typeof React.createElement = React.createElement;
 // for root replication use React.cloneElement()
 
-export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
-    return beforeMethod<T>((instance:T, args:never[]) => {
-        // TODO move boundHook to class-level (keep track of instance outside)
+function cleanUpHook(type: React.ComponentClass, props: any, children: Array<ReactNode>) {
+    (React as any).createElement = original;
+    return original(type, props, ...children);
+}
+
+interface ReactMixerData<T extends Rendered<any>> extends MixerData<T> {
+    createElementHooks:Array<CreateElementHook<T>>;
+}
+
+function isReactMixerData<T extends Rendered<any>>(arg:MixerData<T>): arg is ReactMixerData<T>{
+    return !!(arg as ReactMixerData<T>).createElementHooks;
+}
+
+function makeBeforeRenderHook<T extends Rendered<any>>(mixerData:ReactMixerData<T>) {
+    return (instance: T, args: never[]) => {
+        // TODO move boundHook to class-level (keep track of instance in mixerData)
         // monkey-patch React.createElement with our hook
         function boundHook<P = object>(type: ComponentClass<P>, props: P, ...children: Array<ReactNode>) {
             // check if original render is over, then clean up and call original
             if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === instance) {
-                const hookResult = hook(instance, original, type, props, children);
+
+
+                const hookResult = mixerData.createElementHooks[0](instance, original, type, props, children);
+
+
                 if (hookResult === undefined) { // TODO React.isValidElement()
                     throw new Error('@registerForCreateElement Error: hook returned undefined');
                 }
                 return hookResult;
             } else {
-                // clean up hook
-                (React as any).createElement = original;
-                return original(type, props, ...children);
+                return cleanUpHook(type, props, children);
             }
         }
+
         (React as any).createElement = boundHook;
         return args;
-    }, 'render');
+    }
+}
+
+export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
+    return function decorator<T1 extends T>(t: Class<T1>) {
+        const mixed = mix(t);
+        const mixerData = mixed.$mixerData;
+        if (isReactMixerData(mixerData)){
+            mixerData.createElementHooks.push(hook);
+            return mixed;
+        } else {
+            let reactMD = mixerData as ReactMixerData<T1>;
+            reactMD.createElementHooks = [hook];
+            const beforeRenderHook = makeBeforeRenderHook(reactMD);
+            return before(beforeRenderHook, 'render')(mixed);
+        }
+    };
 }
