@@ -63,20 +63,20 @@ describe('react-decor', () => {
     });
 
     it('multiple hooks work together', () => {
-        function FooHook<P extends { foo?: string }>(instance: React.Component,
+        function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component,
                                                                        next: CreateElementNext<P>,
                                                                        type: ElementType<P>,
                                                                        props: P,
                                                                        children: Array<ReactNode>) {
-            props.foo = 'foo';
+            props['data-foo'] = 'foo';
             return next(type, props, ...children);
         }
-        function BarHook<P extends { bar?: string }>(instance: React.Component,
+        function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component,
                                                      next: CreateElementNext<P>,
                                                      type: ElementType<P>,
                                                      props: P,
                                                      children: Array<ReactNode>) {
-            props.bar = 'bar';
+            props['data-bar'] = 'bar';
             return next(type, props, ...children);
         }
         @registerForCreateElement(FooHook)
@@ -87,7 +87,8 @@ describe('react-decor', () => {
             }
         }
         const {select} = clientRenderer.render(<MyComp/>);
-        expect(select('1')).to.have.property('foo', 'foo').and.to.have.property('bar', 'bar');
+        expect(select('1')).to.have.attribute('data-foo', 'foo');
+        expect(select('1')).to.have.attribute('data-bar', 'bar');
     });
 
     xit('old WIP example', () => {
