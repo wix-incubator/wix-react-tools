@@ -21,6 +21,7 @@ function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
 }
 
 class MixerData<T extends object> {
+    constructor(public originalClass:Class<T>){}
     // TODO @measure if worth making lazy
     constructorHooks: ConstructorHook<T>[] = [];
     beforeHooks: {[P in keyof T]?:Array<BeforeHook<T, any>>} = {};
@@ -138,7 +139,7 @@ function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
         configurable: false,
         enumerable: false,
         writable: false,
-        value: new MixerData<T>()
+        value: new MixerData<T>(clazz)
     });
     // TODO remove this ineffective dirty fix, see https://github.com/wix/react-bases/issues/50
     Object.defineProperty(Extended, 'name', {
