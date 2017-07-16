@@ -12,7 +12,20 @@ export type BeforeHook<T, A extends Array<any>> = (instance: T, methodArguments:
 export type AfterHook<T, R = void> = (instance: T, methodResult: R) => R;
 export type MiddlewareHook<T, A extends Array<any>, R = void> = (instance: T, next: (methodArguments: A) => R, methodArguments: A) => R;
 
-export function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
+
+export function customMixin<T extends object, M extends MixedClass<T>>
+(init: <C extends MixedClass<T>>(m: C) => C & M, isValid: (m: MixedClass<T>) => m is M): <C extends Class<T>>(clazz: C) => C & M {
+    return <C extends Class<T>>(clazz: C) => {
+        const result = mix<T, C>(clazz);
+        if (isValid(result)) {
+            return result;
+        } else {
+            return init(result);
+        }
+    }
+}
+
+export function mix<T extends object, C extends Class<T>>(clazz: C): C & MixedClass<T> {
     // de-dup class creation
     if (isMixed<T>(clazz)) {
         // https://github.com/wix/react-bases/issues/10
