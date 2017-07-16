@@ -51,7 +51,7 @@ describe('react-decor', () => {
             }
         }
         // expect the error to have a message with these two strings: `@registerForCreateElement` , `undefined`
-        expect(() => clientRenderer.render(<MyComp/>), 'render MyComp').to.throw(Error, 'weeeeeee!!');
+        expect(() => clientRenderer.render(<MyComp/>), 'render MyComp').to.throw(Error, 'weeeeeee');
         expect(() => clientRenderer.render(<div/>), 'render after MyComp').not.to.throw(Error);
     });
 

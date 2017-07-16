@@ -13,6 +13,7 @@ export type AfterHook<T, R = void> = (instance: T, methodResult: R) => R;
 export type MiddlewareHook<T, A extends Array<any>, R = void> = (instance: T, next: (methodArguments: A) => R, methodArguments: A) => R;
 
 export function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
+    // de-dup class creation
     if (isMixed<T>(clazz)) {
         // https://github.com/wix/react-bases/issues/10
         return clazz;
