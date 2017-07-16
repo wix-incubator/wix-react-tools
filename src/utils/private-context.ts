@@ -9,7 +9,8 @@ const PRIVATE_CONTEXT = "private-context";
  * @param key inside that private context
  * @returns {any} the requested private context object. This object is essentially an empty {} until it gets fields inserted into it
  */
-export function getPrivateContext(targetObj: object, key: string) {
+// TODO use global unique key, see https://github.com/wix/react-bases/issues/55
+export function getPrivateContext<T extends object = any>(targetObj: object, key: string):T {
     const targetObject = targetObj as any;
 
     if (!targetObject.hasOwnProperty(PRIVATE_CONTEXT)) {

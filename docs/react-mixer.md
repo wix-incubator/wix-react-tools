@@ -21,8 +21,7 @@ returns: the modified class
 ### callback method
 
 arguments:
-- instance: the target class whos render is now running
-- instancePluginData: a data object for plugin data associated with the instance (can be activated through the mixer options);
+- instance: the component whose render is now running
 - type: the type of Element to be created
 - props: the props of the Element to be created
 - children: the children prop argument
