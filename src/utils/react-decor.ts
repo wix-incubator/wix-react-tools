@@ -1,4 +1,4 @@
-import {chain, Class, ClassDecorator, before, after as afterMethod} from "./class-decor";
+import {Class, before, ClassDecorator} from "./class-decor";
 import * as React from "react";
 import {
     Attributes,
@@ -82,8 +82,8 @@ function isReactMix<T extends Rendered<any>>(arg: MixedClass<T>): arg is ReactMi
     return !!(arg as ReactMixedClass<T>).$mixerData.createElementHooks;
 }
 
-function initReactMix<C extends MixedClass<Rendered<any>>>(mixed: MixedClass<Rendered<any>>):C & ReactMixedClass<Rendered<any>> {
-    const reactMixed = mixed as ReactMixedClass<Rendered<any>>;
+function initReactMix<C extends MixedClass<Rendered<any>>>(mixed: C):C & ReactMixedClass<Rendered<any>> {
+    const reactMixed = mixed as C & ReactMixedClass<Rendered<any>>;
     reactMixed.$mixerData.createElementHooks = [];
     const boundProxy = createElementProxy.bind(reactMixed.$mixerData);
     function reactDecorBeforeRenderHook(instance: Rendered<any>, args: never[]){
@@ -91,10 +91,10 @@ function initReactMix<C extends MixedClass<Rendered<any>>>(mixed: MixedClass<Ren
         (React as any).createElement = boundProxy;
         return args;
     }
-    return before(reactDecorBeforeRenderHook, 'render')(reactMixed) as C & ReactMixedClass<Rendered<any>>;
+    return before(reactDecorBeforeRenderHook, 'render')(reactMixed) as typeof reactMixed;
 }
-
-const reactMix = customMixin<Rendered<any>, ReactMixedClass<Rendered<any>>>(initReactMix, isReactMix);
+const reactMix : <C extends Class<Rendered<any>>>(clazz:C)=>C & ReactMixedClass<Rendered<any>>
+    = customMixin.bind(null, initReactMix, isReactMix);
 
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
     return function registerForCreateElementDecorator<C extends Class<T>>(t: C):C {

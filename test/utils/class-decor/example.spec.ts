@@ -1,6 +1,7 @@
 import {resetAll, spyAll} from "../../test-tools";
-import {middleware, onInstance, before, after, add} from "../../../src/";
+import {middleware, before, after} from "../../../src/";
 import {expect} from "test-drive";
+import {add, onInstance} from "../../../src/";
 
 describe('class-decor documentation examples', () => {
     const console = spyAll({
