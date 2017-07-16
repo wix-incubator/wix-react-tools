@@ -1,7 +1,7 @@
 import { getGlobalConfig, setGlobalConfig } from "./config";
 import { FlagsContext } from "./flags";
 
-const PRIVATE_CONTEXT = "private-context";
+const PRIVATE_CONTEXT = "$private-context";
 
 /**
  * Returns a private context per instance, per key.

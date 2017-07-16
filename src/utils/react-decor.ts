@@ -1,4 +1,4 @@
-import {chain, Class, ClassDecorator, before, after as afterMethod} from "./class-decor";
+import {before, ClassDecorator} from "./class-decor/";
 import * as React from "react";
 import {
     Attributes,
@@ -12,7 +12,7 @@ import {
 } from "react";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
-import {mix, MixedClass, MixerData} from "./mixer";
+import {Class, customMixin, MixedClass, MixerData} from "./class-decor/mixer";
 
 export type RenderResult = JSX.Element | null | false;
 export type Rendered<P extends object> = {
@@ -82,26 +82,24 @@ function isReactMix<T extends Rendered<any>>(arg: MixedClass<T>): arg is ReactMi
     return !!(arg as ReactMixedClass<T>).$mixerData.createElementHooks;
 }
 
-function initReactMix<T extends Rendered<any>>(hook: CreateElementHook<T>, mixed: MixedClass<T>) {
-    const reactMixed = mixed as ReactMixedClass<T>;
-    reactMixed.$mixerData.createElementHooks = [hook];
+function initReactMix<C extends MixedClass<Rendered<any>>>(mixed: C):C & ReactMixedClass<Rendered<any>> {
+    const reactMixed = mixed as C & ReactMixedClass<Rendered<any>>;
+    reactMixed.$mixerData.createElementHooks = [];
     const boundProxy = createElementProxy.bind(reactMixed.$mixerData);
-    function reactDecorBeforeRenderHook(instance: T, args: never[]){
+    function reactDecorBeforeRenderHook(instance: Rendered<any>, args: never[]){
         reactMixed.$mixerData.lastRendering = instance;
         (React as any).createElement = boundProxy;
         return args;
     }
-    return before(reactDecorBeforeRenderHook, 'render')(reactMixed);
+    return before(reactDecorBeforeRenderHook, 'render')(reactMixed) as typeof reactMixed;
 }
+const reactMix : <C extends Class<Rendered<any>>>(clazz:C)=>C & ReactMixedClass<Rendered<any>>
+    = customMixin.bind(null, initReactMix, isReactMix);
 
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
-    return function registerForCreateElementDecorator<T1 extends T>(t: Class<T1>) {
-        const mixed = mix(t);
-        if (isReactMix(mixed)){
-            mixed.$mixerData.createElementHooks.push(hook);
-            return mixed;
-        } else {
-            return initReactMix<T1>(hook, mixed);
-        }
+    return function registerForCreateElementDecorator<C extends Class<T>>(t: C):C {
+        const mixed = reactMix(t);
+        mixed.$mixerData.createElementHooks.push(hook);
+        return mixed;
     };
 }

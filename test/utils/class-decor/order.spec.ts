@@ -1,6 +1,5 @@
 import {expect, sinon} from 'test-drive-react';
 import {
-    Class,
     after,
     before,
     onInstance,
@@ -11,6 +10,7 @@ import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
 import {expectSpyChain} from '../../test-drivers/spy-chain';
 import {resetAll, spyAll} from "../../test-tools";
+import {Class} from "../../../src/utils/class-decor/mixer";
 
 const ORIGIN_ARGUMENT = 111;
 const ORIGIN_RESULT = 222;
