@@ -4,8 +4,28 @@ import _union = require('lodash/union');
 import {getGlobalConfig} from "../config";
 import {FlagsContext} from "../flags";
 
-const NOOP = () => {
-};
+export function initChildClass<T extends object>(edgeClassData: EdgeClassData<T>, proto:T) {
+    hookedMethodNames(edgeClassData.mixerMeta).forEach((methodName: keyof T) => {
+        // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
+        if (proto[methodName]) {
+            edgeClassData.origin[methodName] = proto[methodName]
+        } else if (createIfNotExist(edgeClassData.mixerMeta, methodName)) {
+            edgeClassData.origin[methodName] = emptyMethod;
+        } else {
+            return;
+        }
+        // TODO named function
+        proto[methodName] = function (this: T) {
+            let methodArgs: any[] = Array.prototype.slice.call(arguments);
+            methodArgs = runBeforeHooks(this, edgeClassData.mixerMeta, methodName, methodArgs);
+            let methodResult = runMiddlewareHooksAndOrigin(this, edgeClassData, methodName, methodArgs);
+            methodResult = runAfterHooks(this, edgeClassData.mixerMeta, methodName, methodResult);
+            return methodResult;
+        };
+    });
+}
+
+function emptyMethod(){}
 
 function createIfNotExist<T extends object>(_this: ClassDecorData<T>, methodName: keyof T): boolean {
     const parent = _this.getParentOf(isClassDecorMixin);
@@ -24,27 +44,6 @@ function hookedMethodNames<T extends object>(_this: ClassDecorData<T>): Array<ke
         Object.keys(_this.middlewareHooks),
         Object.keys(_this.beforeHooks),
         Object.keys(_this.afterHooks)) as Array<keyof T>;
-}
-
-export function initChildClass<T extends object>(edgeClassData: EdgeClassData<T>, proto:T) {
-    hookedMethodNames(edgeClassData.mixerMeta).forEach((methodName: keyof T) => {
-        // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
-        if (proto[methodName]) {
-            edgeClassData.origin[methodName] = proto[methodName]
-        } else if (createIfNotExist(edgeClassData.mixerMeta, methodName)) {
-            edgeClassData.origin[methodName] = NOOP;
-        } else {
-            return;
-        }
-        // TODO named function
-        proto[methodName] = function (this: T) {
-            let methodArgs: any[] = Array.prototype.slice.call(arguments);
-            methodArgs = runBeforeHooks(this, edgeClassData.mixerMeta, methodName, methodArgs);
-            let methodResult = runMiddlewareHooksAndOrigin(this, edgeClassData, methodName, methodArgs);
-            methodResult = runAfterHooks(this, edgeClassData.mixerMeta, methodName, methodResult);
-            return methodResult;
-        };
-    });
 }
 
 function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
