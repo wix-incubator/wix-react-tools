@@ -15,7 +15,6 @@ setGlobalConfig<FlagsContext>({ devMode: false }); //Defines devMode flags as fa
 
 The following are all of the project's flags: 
 
-| flag    	| purpose                                                       	|   	|   	|   	|
-|---------	|---------------------------------------------------------------	|---	|---	|---	|
-| devMode 	| expose internal working and show warning to improve debugging 	|   	|   	|   	|
-|         	|                                                               	|   	|   	|   	|
+| flag    	| purpose                                                       	|
+|---------	|---------------------------------------------------------------	|
+| devMode 	| expose internal working and show warning to improve debugging 	|
