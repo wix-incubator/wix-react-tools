@@ -59,8 +59,7 @@ interface ReactMixerData<T extends Rendered<any>> extends MixerData<T> {
     lastRendering:T;
 }
 
-export type ReactMixedClass<T extends Rendered<any>> = Class<T> & {$mixerData: ReactMixerData<T>};
-
+type ReactMixedClass<T extends Rendered<any>> = Class<T> & {$mixerData: ReactMixerData<T>};
 
 function createElementProxy<T extends Rendered<any>, P extends HTMLAttributes<HTMLElement>>(
     this:ReactMixerData<T>, type: ElementType<P>, props: Attributes & Partial<P> = {}, ...children: Array<ReactNode>) {

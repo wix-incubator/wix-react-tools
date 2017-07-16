@@ -1,8 +1,9 @@
 import {registerForCreateElement, CreateElementArgs} from "../../src/";
 import * as React from "react";
 import {ClientRenderer, expect} from "test-drive-react";
+import {inBrowser} from "mocha-plugin-env/dist/src";
 
-describe('react-decor', () => {
+describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
 
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
