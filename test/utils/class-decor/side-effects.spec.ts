@@ -27,8 +27,8 @@ describe("class decor side-effect", () => {
     }
     const NUM_USER_CLASSES = 3; // [Bar, Biz, Baz].length
 
-    it("only add one class to heritage", () => {
-        expect(getHeritage(Baz).length).to.eql(getHeritage(Foo).length + NUM_USER_CLASSES + 1);
+    it("only add one class to heritage per decorated level (2 total)", () => {
+        expect(getHeritage(Baz).length, 'getHeritage(Baz).length').to.eql(getHeritage(Foo).length + NUM_USER_CLASSES + 2);
     });
 
     it("does not change constructor name(s)", () => {
@@ -52,6 +52,18 @@ describe("class decor side-effect", () => {
             @after(hooks.spySuper, METHOD)
             class _Super{}
             Super = _Super;
+        });
+
+        it("init of parent class do not leak to children", () => {
+            @after(hooks.spy1, METHOD)
+            class Child1 extends Super{
+
+            }
+            new Super();
+            const c1Inst = new Child1();
+
+            c1Inst.myMethod();
+            expect(hooks.spySuper, 'after c1Inst.myMethod()').to.have.callCount(1);
         });
 
         it("multiple children of decorated class do not mess each other up", () => {
@@ -89,7 +101,9 @@ describe("class decor side-effect", () => {
             class Child2 extends Super {
             }
 
+            new Super();
             const c1Inst = new Child1();
+         //   debugger;
             c1Inst.myMethod();
             expect(hooks.spySuper, 'after c1Inst.myMethod()').to.have.callCount(1);
             expect(hooks.spy1, 'after c1Inst.myMethod()').to.have.callCount(1);

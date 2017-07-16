@@ -1,32 +1,14 @@
 import {ConstructorHook, customMixin, MixedClass, MixerData, mix, Class} from "./mixer";
 import {getPrivateContext} from "../private-context";
-import {initChildClass} from "./apply-method-decorations";
+import {
+    AfterHook,
+    BeforeHook,
+    EdgeClassData, initChildClass, isClassDecorMixin, MiddlewareHook,
+    MixedClassDecor
+} from "./apply-method-decorations";
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 
-export type BeforeHook<T, A extends Array<any>> = (instance: T, methodArguments: A) => A;
-export type AfterHook<T, R = void> = (instance: T, methodResult: R) => R;
-export type MiddlewareHook<T, A extends Array<any>, R = void> = (instance: T, next: (methodArguments: A) => R, methodArguments: A) => R;
-
-export type Flagged = {
-    ifExists?: boolean;
-}
-
-export interface ClassDecorData<T extends object> extends MixerData<T> {
-    beforeHooks: {[P in keyof T]?:Array<Flagged & BeforeHook<T, any>>};
-    afterHooks: {[P in keyof T]?:Array<Flagged & AfterHook<T, any>>};
-    middlewareHooks: {[P in keyof T]?:Array<Flagged & MiddlewareHook<T, any, any>>};
-}
-
-export interface EdgeClassData<T extends object> {
-    mixerMeta: ClassDecorData<T>;
-    origin: {[P in keyof T]?:T[P] & ((...args: any[]) => any)};
-}
-export type MixedClassDecor<T extends object> = Class<T> & { $mixerData: ClassDecorData<T> };
-
-export function isClassDecorMixin<T extends object>(arg: MixedClass<T>): arg is MixedClassDecor<T> {
-    return !!(arg as MixedClassDecor<T>).$mixerData.beforeHooks;
-}
 
 const privateContextKey = 'class-decor-private-key'; //TODO Symbol or something
 function initMixedClassDecor<T extends object, C extends MixedClass<T>>(mixed: C): C & MixedClassDecor<object> {

@@ -15,9 +15,10 @@ export function customMixin<T extends object, M extends MixedClass<any>, C exten
 
 export function mix<T extends object, C extends Class<T>>(clazz: C): C & MixedClass<T> {
     // de-dup class creation
-    if (isMixedClass<T>(clazz)) {
+    // but don't de-dup if $mixerData was inherited
+    if (clazz.hasOwnProperty('$mixerData')) {
         // https://github.com/wix/react-bases/issues/10
-        return clazz;
+        return clazz as C & MixedClass<T>;
     }
     class Extended extends (clazz as any as DumbClass) {
         static isMixed: boolean = true;
@@ -33,7 +34,7 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C & MixedCl
         configurable: false,
         enumerable: false,
         writable: false,
-        value: new MixerData<T>(Extended as any)
+        value: new MixerData<T>(Extended as any, clazz as any)
     });
     // TODO remove this ineffective dirty fix, see https://github.com/wix/react-bases/issues/50
     Object.defineProperty(Extended, 'name', {
@@ -54,9 +55,9 @@ export class MixerData<T extends object> {
     readonly superData: MixerData<Partial<T>>;
     constructorHooks: ConstructorHook<T>[] = [];
 
-    constructor(public mixinClass: MixedClass<T>) {
-        if (isMixedClass(mixinClass)) {
-            this.superData = mixinClass.$mixerData;
+    constructor(public mixinClass: MixedClass<T>, originClass: Class<T>) {
+        if (isMixedClass(originClass)) {
+            this.superData = originClass.$mixerData;
         }
     }
 
