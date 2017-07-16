@@ -2,7 +2,6 @@ import { getGlobalConfig, setGlobalConfig } from "./config";
 import { FlagsContext } from "./flags";
 
 const PRIVATE_CONTEXT = "private-context";
-setGlobalConfig<FlagsContext>({ privateContextEnumerable: false }); // default to false
 
 /**
  * Returns a private context per instance, per key.
@@ -16,7 +15,7 @@ export function getPrivateContext<T extends object = any>(targetObj: object, key
 
     if (!targetObject.hasOwnProperty(PRIVATE_CONTEXT)) {
         // create a new private context
-        Object.defineProperty(targetObject, PRIVATE_CONTEXT, { value: {}, enumerable: getGlobalConfig<FlagsContext>().privateContextEnumerable });
+        Object.defineProperty(targetObject, PRIVATE_CONTEXT, { value: {}, enumerable: getGlobalConfig<FlagsContext>().devMode });
     }
     // If key doesn't exist for that instance, create a new object for that key
     if (!targetObject[PRIVATE_CONTEXT][key]) {

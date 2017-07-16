@@ -23,6 +23,7 @@ npm install react-bases
  - [react-mixer](./docs/react-mixer.md) - specific react mixin creation API
  - [config](./docs/config.md) - global and local config
  - [private-context](./docs/private-context.md) - private context per instance, per key
+ - [flags](./docs/flags.md) - library flags and how to use them
 
 
 # available base components

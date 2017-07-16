@@ -21,7 +21,7 @@ describe('Private context', () => {
     });
 
     it("doesn't create gazillion fields on an instance",()=>{
-        runInContext<FlagsContext>({privateContextEnumerable:true},()=>{
+        runInContext<FlagsContext>({devMode:true},()=>{
             const instance = {};
             getPrivateContext<State>(instance,ids[0]).foo="Hi";
             getPrivateContext<State>(instance,ids[1]).foo="Bye";
@@ -31,7 +31,7 @@ describe('Private context', () => {
     });
 
     it("doesn't let you change an instance's private context",()=>{
-        runInContext<FlagsContext>({privateContextEnumerable:true},()=>{
+        runInContext<FlagsContext>({devMode:true},()=>{
             const instance = {};
             getPrivateContext<State>(instance,ids[0]).foo="Hi";
 
