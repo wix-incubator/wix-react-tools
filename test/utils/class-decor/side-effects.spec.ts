@@ -103,7 +103,6 @@ describe("class decor side-effect", () => {
 
             new Super();
             const c1Inst = new Child1();
-         //   debugger;
             c1Inst.myMethod();
             expect(hooks.spySuper, 'after c1Inst.myMethod()').to.have.callCount(1);
             expect(hooks.spy1, 'after c1Inst.myMethod()').to.have.callCount(1);

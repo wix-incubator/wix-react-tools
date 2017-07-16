@@ -27,29 +27,48 @@ export type MixedClassDecor<T extends object> = Class<T> & { $mixerData: ClassDe
 export function isClassDecorMixin<T extends object>(arg: MixedClass<T>): arg is MixedClassDecor<T> {
     return !!(arg as MixedClassDecor<T>).$mixerData.beforeHooks;
 }
+const wrappedFlag = '$class-decor-wrapped-method'; //TODO Symbol or something
+
+function emptyMethod(){}
+
+type WrappedMethod<F extends Function = Function> = F & {
+    ['$class-decor-wrapped-method']:true;
+    originalMethod?:F;
+}
+
+function wrapMethod<T extends object, P extends keyof T>(edgeClassData: EdgeClassData<T>, methodName: P, originalMethod?: T[P]):WrappedMethod{
+    // TODO dynamically named function
+    const result = function wrappedClassDecorMethod(this: T) {
+        let methodArgs: any[] = Array.prototype.slice.call(arguments);
+        methodArgs = runBeforeHooks(this, edgeClassData.mixerMeta, methodName, methodArgs);
+        let methodResult = runMiddlewareHooksAndOrigin(this, edgeClassData.mixerMeta, originalMethod || emptyMethod, methodName, methodArgs);
+        methodResult = runAfterHooks(this, edgeClassData.mixerMeta, methodName, methodResult);
+        return methodResult;
+    } as any as WrappedMethod;
+    result[wrappedFlag] = true;
+    if (originalMethod) {
+        result.originalMethod = originalMethod;
+    }
+    return result;
+}
+
+function unwrapMethod(method:Function | WrappedMethod): Function| undefined{
+    if ((method as WrappedMethod)[wrappedFlag]){
+        return (method as WrappedMethod).originalMethod;
+    }
+    return method;
+}
 
 export function initChildClass<T extends object>(edgeClassData: EdgeClassData<T>, proto:T) {
     hookedMethodNames(edgeClassData.mixerMeta).forEach((methodName: keyof T) => {
         // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
         if (proto[methodName]) {
-            edgeClassData.origin[methodName] = proto[methodName]
+            proto[methodName] = wrapMethod(edgeClassData, methodName, unwrapMethod(proto[methodName]));
         } else if (createIfNotExist(edgeClassData.mixerMeta, methodName)) {
-            edgeClassData.origin[methodName] = emptyMethod;
-        } else {
-            return;
+            proto[methodName] = wrapMethod(edgeClassData, methodName);
         }
-        // TODO named function
-        proto[methodName] = function (this: T) {
-            let methodArgs: any[] = Array.prototype.slice.call(arguments);
-            methodArgs = runBeforeHooks(this, edgeClassData.mixerMeta, methodName, methodArgs);
-            let methodResult = runMiddlewareHooksAndOrigin(this, edgeClassData, methodName, methodArgs);
-            methodResult = runAfterHooks(this, edgeClassData.mixerMeta, methodName, methodResult);
-            return methodResult;
-        };
     });
 }
-
-function emptyMethod(){}
 
 function createIfNotExist<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): boolean {
     const parent = classData.getParentOf(isClassDecorMixin);
@@ -137,9 +156,8 @@ const dummyTracker = {
     }
 };
 
-function runMiddlewareHooksAndOrigin<T extends object>(target: T, edgeClassData: EdgeClassData<T>, methodName: keyof T, methodArgs: any[]) {
-    const originalMethod: (...args: any[]) => any = edgeClassData.origin[methodName]!;
-    const hooks = middlewareHooks(edgeClassData.mixerMeta, methodName);
+function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: ClassDecorData<T>, originalMethod:(...args:any[])=>any, methodName: keyof T, methodArgs: any[]) {
+    const hooks = middlewareHooks(mixerMeta, methodName);
     let retVal;
     if (hooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
