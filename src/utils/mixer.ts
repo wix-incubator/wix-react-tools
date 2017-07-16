@@ -3,6 +3,8 @@ import {FlagsContext} from "./flags";
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import _union = require('lodash/union');
 
+const NOOP = ()=>{};
+
 export type Class<T extends object> = new(...args: any[]) => T;
 type DumbClass = new(...args: any[]) => object;
 export type ConstructorHook<T extends object> = (instance: T, constructorArguments: any[]) => void;
@@ -29,7 +31,7 @@ export function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
         configurable: false,
         enumerable: false,
         writable: false,
-        value: new MixerData<T>()
+        value: new MixerData<T>(clazz)
     });
     // TODO remove this ineffective dirty fix, see https://github.com/wix/react-bases/issues/50
     Object.defineProperty(Extended, 'name', {
@@ -42,16 +44,37 @@ export function mix<T extends object>(clazz: Class<T>): MixedClass<T> {
 
 export type MixedClass<T extends object> = Class<T> & Mixed<T>;
 
+export type Flagged = {
+    ifExists?: boolean;
+}
+
 export class MixerData<T extends object> {
-    // TODO @measure if worth making lazy
-    constructorHooks: ConstructorHook<T>[] = [];
-    beforeHooks: {[P in keyof T]?:Array<BeforeHook<T, any>>} = {};
-    afterHooks: {[P in keyof T]?:Array<AfterHook<T, any>>} = {};
-    middlewareHooks: {[P in keyof T]?:Array<MiddlewareHook<T, any, any>>} = {};
+    readonly superData: MixerData<Partial<T>>;
+    activated?: boolean;
+    constructorHooks: Flagged & ConstructorHook<T>[] = [];
+    beforeHooks: {[P in keyof T]?:Array<Flagged & BeforeHook<T, any>>} = {};
+    afterHooks: {[P in keyof T]?:Array<Flagged & AfterHook<T, any>>} = {};
+    middlewareHooks: {[P in keyof T]?:Array<Flagged & MiddlewareHook<T, any, any>>} = {};
     origin: {[P in keyof T]?:T[P] & ((...args: any[]) => any)} = {};
 
-    get hookedMethodNames() {
+    constructor(public originalClass: Class<T>) {
+        if (isMixedClass(originalClass)) {
+            this.superData = originalClass.$mixerData;
+        }
+    }
+
+    createIfNotExist(methodName: keyof T): boolean {
+        return (this.superData && this.superData.createIfNotExist(methodName)) ||
+            _union(
+                this.beforeHooks[methodName],
+                this.middlewareHooks[methodName],
+                this.afterHooks[methodName]
+            ).some((hook) => !hook.ifExists);
+    }
+
+    get hookedMethodNames(): Array<keyof T> {
         return _union(
+            (this.superData && this.superData.hookedMethodNames),
             Object.keys(this.middlewareHooks),
             Object.keys(this.beforeHooks),
             Object.keys(this.afterHooks)) as Array<keyof T>;
@@ -63,18 +86,29 @@ export type Mixed<T extends object> = {
     prototype: T;
 };
 
-
-export function isMixed<T>(subj: any): subj is Mixed<T> {
-    return subj.isMixed;
+function isMixedClass<T extends object>(clazz: Class<T>): clazz is MixedClass<T> {
+    return !!(clazz as MixedClass<T>).$mixerData;
 }
 
+function isMixed<T>(subj: any): subj is Mixed<T> {
+    return subj.isMixed;
+}
 function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ctorArgs: any[]) {
     mixerMeta.constructorHooks && mixerMeta.constructorHooks.forEach(
         (cb: ConstructorHook<T>) => cb(target, ctorArgs));
 
-    mixerMeta.hookedMethodNames.forEach((methodName: keyof T) => {
-        if (!mixerMeta.origin[methodName]) {
-            mixerMeta.origin[methodName] = target[methodName]; // TODO check if same as prototype method
+    if (!mixerMeta.activated) {
+        mixerMeta.activated = true;
+
+        mixerMeta.hookedMethodNames.forEach((methodName: keyof T) => {
+            // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
+            if (target[methodName]) {
+                mixerMeta.origin[methodName] = target[methodName]
+            } else if (mixerMeta.createIfNotExist(methodName)) {
+                mixerMeta.origin[methodName] = NOOP;
+            } else {
+                return;
+            }
             // TODO named function
             Object.getPrototypeOf(target)[methodName] = function (this: T) {
                 let methodArgs: any[] = Array.prototype.slice.call(arguments);
@@ -83,8 +117,8 @@ function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ct
                 methodResult = runAfterHooks(this, mixerMeta, methodName, methodResult);
                 return methodResult;
             };
-        }
-    });
+        });
+    }
 }
 
 function errorBeforeNtReturnedArray(methodArgs: any[]) {
@@ -129,7 +163,7 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Mix
     let retVal;
     if (middlewareHooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
-        let tracker: MiddlewareTracker = (getGlobalConfig<FlagsContext>().middlewareWarnWhenChainBreaking) ? new MiddlewareTracker() : dummyTracker;
+        let tracker: MiddlewareTracker = (getGlobalConfig<FlagsContext>().devMode) ? new MiddlewareTracker() : dummyTracker;
         //Run middleware:
         retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1, tracker), methodArgs);
         if (tracker.lastMiddlewareRunning < middlewareHooks.length) {

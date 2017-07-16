@@ -2,9 +2,7 @@ import {AfterHook, BeforeHook, ConstructorHook, MiddlewareHook, mix} from "./mix
 
 export type Class<T extends object> = new(...args: any[]) => T;
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
-type Flagged = {
-    ifExists?: boolean;
-}
+
 function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
     let result = obj[key];
     if (!result) {
