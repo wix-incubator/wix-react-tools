@@ -33,7 +33,6 @@ class MixerData<T extends object> {
 
     constructor(public originalClass: Class<T>) {
         if (isMixedClass(originalClass)) {
-            debugger;
             this.superData = originalClass.$mixerData;
         }
     }
