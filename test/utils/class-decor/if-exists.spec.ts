@@ -1,4 +1,4 @@
-import {middleware, before, after} from "../../../src/utils/class-decor";
+import {middleware, before, after} from "../../../src/";
 import {expect, sinon} from "test-drive";
 
 describe('middleware, before, after', () => {

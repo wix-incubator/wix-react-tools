@@ -1,7 +1,3 @@
-import {getGlobalConfig} from './config';
-import {FlagsContext} from "./flags";
-import _union = require('lodash/union');
-
 export type Class<T extends object> = new(...args: any[]) => T;
 type DumbClass = new(...args: any[]) => object;
 
@@ -19,7 +15,7 @@ export function customMixin<T extends object, M extends MixedClass<any>, C exten
 
 export function mix<T extends object, C extends Class<T>>(clazz: C): C & MixedClass<T> {
     // de-dup class creation
-    if (isMixed<T>(clazz)) {
+    if (isMixedClass<T>(clazz)) {
         // https://github.com/wix/react-bases/issues/10
         return clazz;
     }
@@ -48,15 +44,15 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C & MixedCl
     return Extended as any;
 }
 
-export type MixedClass<T extends object> = Class<T> & Mixed<T>;
+export type MixedClass<T extends object> = Class<T> & {
+    $mixerData: MixerData<T>
+    prototype: T;
+};
 
-export type Flagged = {
-    ifExists?: boolean;
-}
 
 export class MixerData<T extends object> {
     readonly superData: MixerData<Partial<T>>;
-    constructorHooks: Flagged & ConstructorHook<T>[] = [];
+    constructorHooks: ConstructorHook<T>[] = [];
 
     constructor(public mixinClass: MixedClass<T>) {
         if (isMixedClass(mixinClass)) {
@@ -75,18 +71,10 @@ export class MixerData<T extends object> {
     }
 }
 
-export type Mixed<T extends object> = {
-    $mixerData: MixerData<T>
-    prototype: T;
-};
-
 function isMixedClass<T extends object>(clazz: Class<T>): clazz is MixedClass<T> {
     return !!(clazz as MixedClass<T>).$mixerData;
 }
 
-function isMixed<T>(subj: any): subj is Mixed<T> {
-    return subj.isMixed;
-}
 function activateMixins<T extends object>(target: T, mixerMeta: MixerData<T>, ctorArgs: any[]) {
     mixerMeta.constructorHooks && mixerMeta.constructorHooks.forEach(
         (cb: ConstructorHook<T>) => cb(target, ctorArgs));

@@ -4,7 +4,7 @@ export * from './bases/observable-component';
 export * from './mixins/disposable-decorator';
 export * from './mixins/global-id-decorator';
 //utils
-export * from './utils/class-decor';
+export * from './utils/class-decor/';
 export * from './utils/react-decor';
 export * from './utils/config';
 export * from './utils/disposers';
