@@ -1,6 +1,7 @@
 import {expect, sinon} from "test-drive-react";
 import {getHeritage, resetAll, spyAll} from "../../test-tools";
 import {after, before, onInstance, chain, middleware} from "../../../src/";
+import {Class} from "../../../src/utils/class-decor/mixer";
 
 const METHOD = "myMethod";
 
@@ -42,29 +43,28 @@ describe("class decor side-effect", () => {
             spy1: ()=>{},
             spy2: ()=>{}
         });
-        let Child1: typeof Foo;
-        let Child2: typeof Foo;
+        let Super : Class<any>;
         afterEach("reset console.warn", () => {
             resetAll(hooks);
         });
 
         beforeEach('init classes', ()=>{
             @after(hooks.spySuper, METHOD)
-            class Super{
-            }
-            Child1 = class extends Super  implements Foo{
-                myMethod(){
-                    hooks.spy1();
-                }
-            };
-            Child2 = class extends Super  implements Foo{
-                myMethod(){
-                    hooks.spy2();
-                }
-            };
+            class _Super{}
+            Super = _Super;
         });
 
         it("multiple children of decorated class do not mess each other up", () => {
+            class Child1 extends Super  implements Foo{
+                myMethod(){
+                    hooks.spy1();
+                }
+            }
+            class Child2 extends Super  implements Foo{
+                myMethod(){
+                    hooks.spy2();
+                }
+            }
             const c1Inst = new Child1();
             c1Inst.myMethod();
             expect(hooks.spySuper, 'after c1Inst.myMethod()').to.have.callCount(1);
@@ -79,20 +79,29 @@ describe("class decor side-effect", () => {
             expect(hooks.spy1, 'after c2Inst.myMethod()').to.have.callCount(0);
         });
 
-        xit("decorations on child of decorated class do not leak to siblings", () => {
-            // const spy = sinon.spy();
-            //
-            // @after(spy, METHOD)
-            // abstract class Super implements Foo{
-            //     abstract myMethod():void;
-            // }
-            //
-            // @mix2
-            // class Child1 extends Super{
-            // }
-            //
-            // class Child2 extends Super {
-            // } // mix2 applies! This is not the expected behavior
+        it("decorations on child of decorated class do not leak to siblings", () => {
+
+            @after(hooks.spy1, METHOD)
+            class Child1 extends Super{
+            }
+
+            @after(hooks.spy2, METHOD)
+            class Child2 extends Super {
+            }
+
+            const c1Inst = new Child1();
+            c1Inst.myMethod();
+            expect(hooks.spySuper, 'after c1Inst.myMethod()').to.have.callCount(1);
+            expect(hooks.spy1, 'after c1Inst.myMethod()').to.have.callCount(1);
+            expect(hooks.spy2, 'after c1Inst.myMethod()').to.have.callCount(0);
+
+            resetAll(hooks);
+
+            const c2Inst = new Child2();
+            c2Inst.myMethod();
+            expect(hooks.spySuper, 'after c2Inst.myMethod()').to.have.callCount(1);
+            expect(hooks.spy2, 'after c2Inst.myMethod()').to.have.callCount(1);
+            expect(hooks.spy1, 'after c2Inst.myMethod()').to.have.callCount(0);
         });
 
         xdescribe("after decorator", () => {

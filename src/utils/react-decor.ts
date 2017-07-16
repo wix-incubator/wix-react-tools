@@ -1,4 +1,4 @@
-import {Class, before, ClassDecorator} from "./class-decor/";
+import {before, ClassDecorator} from "./class-decor/";
 import * as React from "react";
 import {
     Attributes,
@@ -12,7 +12,7 @@ import {
 } from "react";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
-import {customMixin, MixedClass, MixerData} from "./class-decor/mixer";
+import {Class, customMixin, MixedClass, MixerData} from "./class-decor/mixer";
 
 export type RenderResult = JSX.Element | null | false;
 export type Rendered<P extends object> = {

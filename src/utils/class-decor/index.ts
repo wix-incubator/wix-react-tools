@@ -1,8 +1,7 @@
-import {ConstructorHook, customMixin, MixedClass, MixerData, mix} from "./mixer";
+import {ConstructorHook, customMixin, MixedClass, MixerData, mix, Class} from "./mixer";
 import {getPrivateContext} from "../private-context";
 import {initChildClass} from "./apply-method-decorations";
 
-export type Class<T extends object> = new(...args: any[]) => T;
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 
 export type BeforeHook<T, A extends Array<any>> = (instance: T, methodArguments: A) => A;

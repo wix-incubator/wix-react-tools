@@ -1,5 +1,5 @@
-import {Class} from "../src/";
 import {sinon} from 'test-drive-react';
+import {Class} from "../src/utils/class-decor/mixer";
 
 // a type that adds spy type to each field
 export type Spied<T extends { [k: string]: Function }> = {
