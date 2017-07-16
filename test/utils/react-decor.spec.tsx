@@ -1,28 +1,18 @@
-import {registerForCreateElement} from "../../src/";
+import {registerForCreateElement, CreateElementArgs} from "../../src/";
 import * as React from "react";
-import {renderToString} from "react-dom/server";
-import {CreateElementNext, ElementType} from "../../src/";
-import {ReactNode} from "react";
 import {ClientRenderer, expect} from "test-drive-react";
-import {runInContext} from "../../src/utils/config";
 
 describe('react-decor', () => {
 
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
 
-
     it('example', () => {
-        function overrideClassesHook<P extends { className?: string }>(instance: React.Component<{ classOverride?: string }, any>,
-                                                                       next: CreateElementNext<P>,
-                                                                       type: ElementType<P>,
-                                                                       props: P,
-                                                                       children: Array<ReactNode>) {
-
+        function overrideClassesHook<P extends { className?: string }>(instance: React.Component<{ classOverride?: string }, any>, args: CreateElementArgs<P>) {
             if (instance.props.classOverride) {
-                props.className = instance.props.classOverride;
+                args.props.className = instance.props.classOverride;
             }
-            return next(type, props, ...children);
+            return args;
         }
 
         @registerForCreateElement(overrideClassesHook)
@@ -39,7 +29,21 @@ describe('react-decor', () => {
     });
 
     it('throws when hook returns undefined', () => {
+        @registerForCreateElement((() => {}) as any)
+        class MyComp extends React.Component {
+            render() {
+                return <div/>
+            }
+        }
+        // expect the error to have a message with these two strings: `@registerForCreateElement` , `undefined`
+        expect(
+            () => clientRenderer.render(<MyComp/>)
+        ).to.throw(Error, /(?=.*\@registerForCreateElement.*)(?=.*undefined.*)/);
+    });
+
+    it('cleans up hook even if render throws', () => {
         @registerForCreateElement((() => {
+            throw new Error('weeeeeee!!');
         }) as any)
         class MyComp extends React.Component {
             render() {
@@ -47,38 +51,21 @@ describe('react-decor', () => {
             }
         }
         // expect the error to have a message with these two strings: `@registerForCreateElement` , `undefined`
-        expect(() => clientRenderer.render(<MyComp/>)).to.throw(Error, /(?=.*\@registerForCreateElement.*)(?=.*undefined.*)/);
-    });
-
-    it('cleans up hook even if render throws', () => {
-        @registerForCreateElement((() => { throw new Error('weeeeeee!!');}) as any)
-        class MyComp extends React.Component {
-            render() {
-                return <div/>
-            }
-        }
-        // expect the error to have a message with these two strings: `@registerForCreateElement` , `undefined`
-        expect(() => clientRenderer.render(<MyComp/>), 'render MyComp').to.throw(Error);
+        expect(() => clientRenderer.render(<MyComp/>), 'render MyComp').to.throw(Error, 'weeeeeee!!');
         expect(() => clientRenderer.render(<div/>), 'render after MyComp').not.to.throw(Error);
     });
 
     it('multiple hooks work together', () => {
-        function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component,
-                                                                       next: CreateElementNext<P>,
-                                                                       type: ElementType<P>,
-                                                                       props: P,
-                                                                       children: Array<ReactNode>) {
-            props['data-foo'] = 'foo';
-            return next(type, props, ...children);
+        function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: CreateElementArgs<P>) {
+            args.props['data-foo'] = 'foo';
+            return args;
         }
-        function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component,
-                                                     next: CreateElementNext<P>,
-                                                     type: ElementType<P>,
-                                                     props: P,
-                                                     children: Array<ReactNode>) {
-            props['data-bar'] = 'bar';
-            return next(type, props, ...children);
+
+        function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: CreateElementArgs<P>) {
+            args.props['data-bar'] = 'bar';
+            return args;
         }
+
         @registerForCreateElement(FooHook)
         @registerForCreateElement(BarHook)
         class MyComp extends React.Component {
@@ -91,6 +78,7 @@ describe('react-decor', () => {
         expect(select('1')).to.have.attribute('data-bar', 'bar');
     });
 
+    /*
     xit('old WIP example', () => {
         function hook<P extends { className?: string }>(instance: React.Component<any, any>,
                                                         next: CreateElementNext<P>,
@@ -114,10 +102,10 @@ describe('react-decor', () => {
         }
 
         renderToString(<MyComp className="App"/>)
-
 // will return:
-        /* <div className="App rootClassName">
+         <div className="App rootClassName">
          <div className="otherClassName"></div>
-         </div>*/
+         </div>
     });
+*/
 });

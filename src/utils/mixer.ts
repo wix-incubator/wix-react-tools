@@ -127,7 +127,7 @@ function errorBeforeNtReturnedArray(methodArgs: any[]) {
         serialized = JSON.stringify(methodArgs)
     } catch (e) {
     }
-    throw new Error('before hook did not return an array-like object:' + serialized)
+    throw new Error('before hook did not return an array-like object: ' + serialized)
 }
 
 function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
