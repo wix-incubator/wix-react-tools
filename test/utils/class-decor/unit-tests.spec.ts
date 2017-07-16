@@ -39,7 +39,7 @@ describe("Unit tests - method hooks", () => {
         }).not.to.throw();
     });
 
-    it("warns you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
+    it("warns you when a middleware doesn't call its 'next' function (iff deMode is turned ON)", () => {
         @middleware<Duck>(function badLeeroyBrown(){
             //Don't call next()
         }, "duckWillQuack")
@@ -48,7 +48,7 @@ describe("Unit tests - method hooks", () => {
         }
         let duck = new Duck();
 
-        runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:true},()=>{
+        runInContext<FlagsContext>({devMode:true},()=>{
             duck.duckWillQuack();
             expect(console.warn).to.have.callCount(1);
             expect(console.warn).to.have.been.calledWithMatch(/\@middleware/);
@@ -57,7 +57,7 @@ describe("Unit tests - method hooks", () => {
         });
     });
 
-    it("doesn't warn you when a middleware DOES call its 'next' function (iff middlewareWarnWhenChainBreaking is turned ON)", () => {
+    it("doesn't warn you when a middleware DOES call its 'next' function (iff devMode is turned ON)", () => {
         @middleware<Duck>((instance, next, args) => {
             next(args);
         }, "duckWillQuack")
@@ -66,13 +66,13 @@ describe("Unit tests - method hooks", () => {
         }
         let duck = new Duck();
 
-        runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:true},()=>{
+        runInContext<FlagsContext>({devMode:true},()=>{
             duck.duckWillQuack();
             expect(console.warn).to.have.callCount(0);
         });
     });
 
-    it("doesn't warn you when a middleware doesn't call its 'next' function (iff middlewareWarnWhenChainBreaking is turned OFF)", () => {
+    it("doesn't warn you when a middleware doesn't call its 'next' function (iff devMode is turned OFF)", () => {
         @middleware<Duck>(() => {
             //Don't call next()
         }, "duckWillQuack")
@@ -81,7 +81,7 @@ describe("Unit tests - method hooks", () => {
         }
         let duck = new Duck();
 
-        runInContext<FlagsContext>({middlewareWarnWhenChainBreaking:false},()=>{
+        runInContext<FlagsContext>({devMode:false},()=>{
             duck.duckWillQuack();
             expect(console.warn).to.have.callCount(0);
         });

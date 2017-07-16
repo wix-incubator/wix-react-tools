@@ -261,7 +261,7 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Mix
     let retVal;
     if (middlewareHooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
-        let tracker: MiddlewareTracker = (getGlobalConfig<FlagsContext>().middlewareWarnWhenChainBreaking) ? new MiddlewareTracker() : dummyTracker;
+        let tracker: MiddlewareTracker = (getGlobalConfig<FlagsContext>().devMode) ? new MiddlewareTracker() : dummyTracker;
         //Run middleware:
         retVal = middlewareHooks[0](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, 1, tracker), methodArgs);
         if (tracker.lastMiddlewareRunning < middlewareHooks.length) {
