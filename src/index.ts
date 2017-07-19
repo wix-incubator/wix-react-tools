@@ -10,3 +10,6 @@ export * from './utils/config';
 export * from './utils/disposers';
 export * from './utils/flags';
 export * from './utils/private-context';
+
+// business logic
+export {root} from './utils/root-handler';
