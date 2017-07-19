@@ -24,13 +24,6 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
 
     }
 
-    function MyComp(props:any) {
-        console.log("BLAH", JSON.stringify(props));
-        return null;
-    }
-
-    clientRenderer.render(<MyComp data-automation-id="blah"></MyComp>);
-
     describe('If not used on ROOT node', () => {
 
         class MainClass extends BaseComp<{}, {}> {
