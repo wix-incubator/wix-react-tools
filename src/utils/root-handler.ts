@@ -1,4 +1,4 @@
-interface Props {
+export interface Props {
     className: string;
     style?: {[k:string]:string};
     [k:string]: any;
