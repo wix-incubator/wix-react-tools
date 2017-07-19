@@ -17,7 +17,7 @@ function root<T, S>(componentProps:T, rootProps:S = {className:"root"}): T & S;
 0. By default returns rootProps
 1. data-* - Copy any attribute beginning with 'data-' from the componentProps to the result, overriding existing values
 2. inline style - Merge the style attribute of componentProps and rootProps, in case of conflicting values, componentProps takes precedence
-3. className - Merge (concat) the className attribute of componentProps and rootProps (removes duplicates). if rootProps does not contain a valid className attribute, className 'root' is automatically added to the returned result
+3. className - Merge (concat) the className attribute of componentProps and rootProps (removes duplicates). Will throw an error if rootProps does not contain a valid entry. Duplicate classes are not handled at the moment.
 4. onClick outside - TBD, Pending Spec
 
 ### Usage Example
