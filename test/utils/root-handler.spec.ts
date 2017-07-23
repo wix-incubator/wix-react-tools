@@ -20,7 +20,7 @@ describe('root', () => {
         expect(result).to.eql({className: "", bar: "bar"}); // todo: prolly needs to throw an error
     });
 
-    describe("data", () => {
+    describe("data-*", () => {
         it("should merge empty objects", () => {
             const result = root({}, {
                 className: ""
@@ -58,12 +58,35 @@ describe('root', () => {
         });
     });
 
+    describe('data-automation-id', () => {
+        const DAID = "data-automation-id";
+        it("should assign componentProps to root if nothing exists on root", () => {
+            const result = root({[DAID]: "foo"}, {className: "root"});
+            expect(result).to.eql({[DAID]: "foo", className: "root"});
+        });
+
+        it("should maintain root data-automation-id even when component style is empty", () => {
+            const result = root({}, {[DAID]: "foo", className: "root"});
+            expect(result).to.eql({[DAID]: "foo", className: "root"});
+        });
+        it("should concatenate data-automation-ids", () => {
+            const result = root({
+                [DAID]: "foo"
+            }, {
+                [DAID]: "bar",
+                className: ""
+            });
+
+            expect(result).to.eql({[DAID]: "bar foo", className: ""});
+        });
+    });
+
     describe('className', () => {
         it("should throw if no className provided in rootProps", () => {
             expect(() => root({}, {} as any)).to.throw(Error, 'className');
         });
 
-        it("should concatinate classNames", () => {
+        it("should concatenate classNames", () => {
             const result = root({
                 className: "blah"
             }, {
@@ -118,7 +141,7 @@ describe('root', () => {
 
         it("should merge handlers", () => {
             const result = root({
-                onFoo : f1
+                onFoo: f1
             }, {
                 onFoo: f2,
                 className: "root"
