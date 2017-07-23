@@ -22,7 +22,13 @@ export function root<T extends Partial<Props>, S extends Props>(componentProps: 
     const result = Object.assign({}, rootProps);
 
     for (let key in componentProps) {
-        if (key.startsWith('data-')) {
+        if (key === 'data-automation-id') {
+            if (typeof result[key] === "string") {
+                result[key] = (rootProps[key] as string).trim() + ' ' + (componentProps[key] as string).trim();
+            } else {
+                result[key] = componentProps[key];
+            }
+        } else if (key.startsWith('data-')) {
             result[key] = componentProps[key];
         } else if(isEventHandlerName(key)){
             if (typeof result[key] === "function") {
