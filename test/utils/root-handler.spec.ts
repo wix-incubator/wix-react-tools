@@ -1,5 +1,13 @@
-import { expect } from 'test-drive-react';
-import { root } from '../../src';
+import {expect} from 'test-drive-react';
+import {root} from '../../src';
+import {mergeEvents} from "../../src/utils/merge-events";
+
+// make a new function
+function func() {
+    return () => {
+
+    };
+}
 
 describe('root', () => {
     it("does not copy everything", () => {
@@ -9,17 +17,15 @@ describe('root', () => {
             bar: "bar",
             className: ""
         });
-        expect(result).to.eql({ className: "", bar: "bar" }); // todo: prolly needs to throw an error
+        expect(result).to.eql({className: "", bar: "bar"}); // todo: prolly needs to throw an error
     });
 
     describe("data", () => {
         it("should merge empty objects", () => {
-            const result = root({
-
-            }, {
+            const result = root({}, {
                 className: ""
             });
-            expect(result).to.eql({ className: "" }); // todo: prolly needs to throw an error
+            expect(result).to.eql({className: ""}); // todo: prolly needs to throw an error
         });
 
         it("should merge data attributes", () => {
@@ -64,7 +70,7 @@ describe('root', () => {
                 className: "root"
             });
 
-            expect(result).to.eql({ className: "root blah" });
+            expect(result).to.eql({className: "root blah"});
         });
     });
 
@@ -72,7 +78,13 @@ describe('root', () => {
         it("should assign componentProps to root if nothing exists on root", () => {
             const result = root({style: {color: "green"}}, {className: "root"});
 
-            expect(result).to.eql({style: {color: "green"}, className:"root"});
+            expect(result).to.eql({style: {color: "green"}, className: "root"});
+        });
+
+        it("should maintain root style even when component style is empty", () => {
+            const result = root({}, {style: {color: "red"}, className: "root"});
+
+            expect(result).to.eql({style: {color: "red"}, className: "root"});
         });
 
         it("should merge props", () => {
@@ -87,13 +99,33 @@ describe('root', () => {
                 className: "root"
             });
 
-            expect(result).to.eql({style: {color: "green"}, className:"root"});
+            expect(result).to.eql({style: {color: "green"}, className: "root"});
+        });
+    });
+
+    describe('event handlers', () => {
+        const f1 = func();
+        const f2 = func();
+        it("should assign componentProps to root if nothing exists on root", () => {
+            const result = root({onFoo: f1}, {className: "root"});
+            expect(result).to.eql({onFoo: f1, className: "root"});
         });
 
-        it("should maintain root style even when component style is empty", () => {
-            const result = root({}, {style: {color: "red"}, className: "root"});
+        it("should maintain root handlers even when component style is empty", () => {
+            const result = root({}, {onFoo: f1, className: "root"});
+            expect(result).to.eql({onFoo: f1, className: "root"});
+        });
 
-            expect(result).to.eql({style: {color: "red"}, className:"root"});
+        it("should merge handlers", () => {
+            const result = root({
+                onFoo : f1
+            }, {
+                onFoo: f2,
+                className: "root"
+            });
+
+            expect(result).to.eql({onFoo: mergeEvents(f1, f2), className: "root"});
+            expect(result.onFoo).to.equal(mergeEvents(f1, f2)); // notice the use of .equal and *not* .eql
         });
     });
 });

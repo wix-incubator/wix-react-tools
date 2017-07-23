@@ -18,7 +18,8 @@ function root<T, S>(componentProps:T, rootProps:S = {className:"root"}): T & S;
 1. data-* - Copy any attribute beginning with 'data-' from the componentProps to the result, overriding existing values
 2. inline style - Merge the style attribute of componentProps and rootProps, in case of conflicting values, componentProps takes precedence
 3. className - Merge (concat) the className attribute of componentProps and rootProps. An error will be thrown if rootProps does not contain a valid entry. Duplicate classes are not handled at the moment.
-4. onClick outside - TBD, Pending Spec
+4. on* - Merge the event handlers componentProps and rootProps by means of `mergeEvents` (see below)
+
 
 ### Usage Example
 ```tsx
@@ -39,6 +40,13 @@ Checkbox implementation :
 rendered root end result looks like this:
 ```tsx
 <div data-automation-id="bar" className="foo root foo1"  style={{color:'black'}} > ... </div>
+```
+
+## mergeEvents
+merge two event handlers into one. 
+To avoid unnecessary render calls as a result of using this utility, this function is [memoized](https://en.wikipedia.org/wiki/Memoization), meaning calling it twice with the same arguments will produce the same result.
+```ts
+function mergeEvents<T extends Function>(first:T, last:T):T
 ```
 
 # developer documentation

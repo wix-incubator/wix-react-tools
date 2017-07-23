@@ -1,7 +1,17 @@
+import {mergeEvents} from "./merge-events";
 export interface Props {
     className: string;
     style?: {[k:string]:string};
     [k:string]: any;
+}
+
+// TODO use curated list?
+function isEventHandlerName(key:string){
+    if (key.startsWith('on')){
+        const handlerFirstLetter = key['on'.length];
+        return (handlerFirstLetter === handlerFirstLetter.toUpperCase());
+    }
+    return false;
 }
 
 export function root<T extends Partial<Props>, S extends Props>(componentProps: T, rootProps: S): T & S {
@@ -12,8 +22,14 @@ export function root<T extends Partial<Props>, S extends Props>(componentProps: 
     const result = Object.assign({}, rootProps);
 
     for (let key in componentProps) {
-        if (!key.indexOf('data-')) { // perf could be improved
+        if (key.startsWith('data-')) {
             result[key] = componentProps[key];
+        } else if(isEventHandlerName(key)){
+            if (typeof result[key] === "function") {
+                result[key] = mergeEvents(componentProps[key], result[key]);
+            } else {
+                result[key] = componentProps[key];
+            }
         }
     }
 
