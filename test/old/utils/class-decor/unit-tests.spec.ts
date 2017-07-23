@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {before, middleware, runInContext, FlagsContext} from "../../../../src";
+import {before, middleware, runInContext, GlobalConfig} from "../../../../src";
 
 describe("Unit tests - method hooks", () => {
     let warn = console.warn;
@@ -48,7 +48,7 @@ describe("Unit tests - method hooks", () => {
         }
         let duck = new Duck();
 
-        runInContext<FlagsContext>({devMode:true},()=>{
+        runInContext<GlobalConfig>({devMode:true},()=>{
             duck.duckWillQuack();
             expect(console.warn).to.have.callCount(1);
             expect(console.warn).to.have.been.calledWithMatch(/\@middleware/);
@@ -66,7 +66,7 @@ describe("Unit tests - method hooks", () => {
         }
         let duck = new Duck();
 
-        runInContext<FlagsContext>({devMode:true},()=>{
+        runInContext<GlobalConfig>({devMode:true},()=>{
             duck.duckWillQuack();
             expect(console.warn).to.have.callCount(0);
         });
@@ -81,7 +81,7 @@ describe("Unit tests - method hooks", () => {
         }
         let duck = new Duck();
 
-        runInContext<FlagsContext>({devMode:false},()=>{
+        runInContext<GlobalConfig>({devMode:false},()=>{
             duck.duckWillQuack();
             expect(console.warn).to.have.callCount(0);
         });

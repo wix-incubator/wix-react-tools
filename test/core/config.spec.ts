@@ -1,5 +1,5 @@
 import {expect} from "test-drive";
-import {getGlobalConfig, overrideGlobalConfig, setGlobalConfig, runInContext} from "../../../src";
+import {getGlobalConfig, overrideGlobalConfig, setGlobalConfig, runInContext} from "../../src";
 
 const sampleConfig = {
     foo: 'bar',

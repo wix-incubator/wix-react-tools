@@ -1,5 +1,5 @@
 import {expect} from "test-drive";
-import {getPrivateContext,runInContext,FlagsContext} from "../../../src";
+import {getPrivateContext,runInContext,GlobalConfig, STATE_DEV_MODE_KEY} from "../../src";
 
 let ids = ["ID0","ID1"];
 type State = {foo?:string};
@@ -21,22 +21,32 @@ describe('Private context', () => {
     });
 
     it("doesn't create gazillion fields on an instance",()=>{
-        runInContext<FlagsContext>({devMode:true},()=>{
+        runInContext<GlobalConfig>({devMode:true},()=>{
             const instance = {};
             getPrivateContext<State>(instance,ids[0]).foo="Hi";
             getPrivateContext<State>(instance,ids[1]).foo="Bye";
 
-            expect(Object.keys(instance).length).to.eql(1);
+            expect(Object.keys(instance).length).to.be.lessThan(2);
         });
     });
 
-    it("doesn't let you change an instance's private context",()=>{
-        runInContext<FlagsContext>({devMode:true},()=>{
+    it("in dev mode, expose an instance's private context but doesn't let you change it",()=>{
+        runInContext<GlobalConfig>({devMode:true},()=>{
             const instance = {};
             getPrivateContext<State>(instance,ids[0]).foo="Hi";
 
-            const desc = Object.getOwnPropertyDescriptor(instance,Object.keys(instance)[0]);
+            const desc = Object.getOwnPropertyDescriptor(instance,STATE_DEV_MODE_KEY);
             expect(desc).to.containSubset({writable:false,configurable:false});
+        });
+    });
+
+    it("outside dev mode, do not expose an instance's private context ",()=>{
+        runInContext<GlobalConfig>({devMode:false},()=>{
+            const instance = {};
+            getPrivateContext<State>(instance,ids[0]).foo="Hi";
+
+            expect(instance.hasOwnProperty(STATE_DEV_MODE_KEY)).to.eql(false);
+            expect((instance as any)[STATE_DEV_MODE_KEY]).to.equal(undefined);
         });
     });
 });

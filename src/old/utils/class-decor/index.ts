@@ -1,5 +1,5 @@
 import {ConstructorHook, customMixin, MixedClass, MixerData, mix, Class} from "./mixer";
-import {getPrivateContext} from "../private-context";
+import {getPrivateContext} from "../../../core/private-context";
 import {
     AfterHook,
     BeforeHook,

@@ -1,7 +1,7 @@
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import _union = require('lodash/union');
-import {getGlobalConfig} from "../config";
-import {FlagsContext} from "../flags";
+import {getGlobalConfig} from "../../../core/config";
+import {GlobalConfig} from "../../../core/types";
 import {Class, MixedClass, MixerData} from "./mixer";
 
 export type BeforeHook<T, A extends Array<any>> = (instance: T, methodArguments: A) => A;
@@ -161,7 +161,7 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: Cla
     let retVal;
     if (hooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
-        let tracker: MiddlewareTracker = (getGlobalConfig<FlagsContext>().devMode) ? new MiddlewareTracker() : dummyTracker;
+        let tracker: MiddlewareTracker = (getGlobalConfig<GlobalConfig>().devMode) ? new MiddlewareTracker() : dummyTracker;
         //Run middleware:
         retVal = hooks[0](target, createNextForMiddlewareHook(target, originalMethod, hooks, 1, tracker), methodArgs);
         if (tracker.lastMiddlewareRunning < hooks.length) {
@@ -185,7 +185,7 @@ function createNextForMiddlewareHook<T extends object, A extends Array<any>, R>(
 
 function runAfterHooks<T extends object>(target: T, mixerMeta: ClassDecorData<T>, methodName: keyof T, methodResult: any) {
     const hooks = afterHooks(mixerMeta, methodName);
-    const devMode = getGlobalConfig<FlagsContext>().devMode;
+    const devMode = getGlobalConfig<GlobalConfig>().devMode;
 
     if (hooks) {
         hooks.forEach((hook: AfterHook<T, typeof methodResult>) => {
