@@ -73,6 +73,7 @@
     "webpack-dev-server": "^2.5.1"
   },
   "dependencies": {
-    "ifndef": "^0.0.31"
+    "ifndef": "^0.0.31",
+    "memoize-weak": "^1.0.1"
   }
 }
