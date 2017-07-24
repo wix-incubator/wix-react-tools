@@ -19,14 +19,14 @@ describe('root', () => {
         expect(result).to.eql({className: "", bar: "bar"});
     });
 
-    describe("data-*", () => {
-        it("should merge empty objects", () => {
-            const result = root({}, {
-                className: ""
-            });
-            expect(result).to.eql({className: ""});
+    it("should merge empty objects", () => {
+        const result = root({}, {
+            className: ""
         });
+        expect(result).to.eql({className: ""});
+    });
 
+    describe("data-*", () => {
         it("should merge data attributes", () => {
             const result = root({
                 "data-x": "test"
@@ -41,7 +41,7 @@ describe('root', () => {
             });
         });
 
-        it("should merge different attributes", () => {
+        it("should combine different attributes", () => {
             const result = root({
                 "data-1": "1"
             }, {
@@ -51,6 +51,23 @@ describe('root', () => {
 
             expect(result).to.eql({
                 "data-1": "1",
+                "data-2": "2",
+                className: ""
+            });
+        });
+
+        it("should respect black-list", () => {
+            const result = root({
+                "data-1": "1",
+                "data-x": "test"
+            }, {
+                "data-2": "2",
+                "data-x": "overriden",
+                className: ""
+            }, ['data-1']);
+
+            expect(result).to.eql({
+                "data-x": "test",
                 "data-2": "2",
                 className: ""
             });
@@ -125,7 +142,7 @@ describe('root', () => {
         });
     });
 
-    describe('event handlers', () => {
+    describe('event handlers (on*)', () => {
         const f1 = func();
         const f2 = func();
         it("should assign componentProps to root if nothing exists on root", () => {
@@ -148,6 +165,24 @@ describe('root', () => {
 
             expect(result).to.eql({onFoo: mergeEventHandlers(f1, f2), className: "root"});
             expect(result.onFoo).to.equal(mergeEventHandlers(f1, f2)); // notice the use of .equal and *not* .eql
+        });
+
+        it("should respect black-list", () => {
+            let f1 = func();
+            const result = root({
+                "onFoo": f1,
+                "onBar": f1
+            }, {
+                "onBizz": f1,
+                "onBar": f1,
+                className: ""
+            }, ['onFoo']);
+
+            expect(result).to.eql({
+                "onBizz": f1,
+                "onBar": mergeEventHandlers(f1, f1),
+                className: ""
+            });
         });
     });
 });

@@ -15,7 +15,7 @@ function isEventHandlerName(key:string){
     return false;
 }
 
-export function root<T extends Partial<Props>, S extends Props>(componentProps: T, rootProps: S): T & S {
+export function root<T extends Partial<Props>, S extends Props>(componentProps: T, rootProps: S, blacklist:string[] = []): T & S {
     if (typeof rootProps.className !== "string") {
         throw new Error(`root properties does not contain valid className defintion: ${rootProps.className}`);
     }
@@ -23,23 +23,25 @@ export function root<T extends Partial<Props>, S extends Props>(componentProps: 
     const result = Object.assign({}, rootProps);
 
     for (let key in componentProps) {
-        if (key.startsWith('data-')) {
-            if (key === 'data-automation-id') {
-                const resultDaid = result[key];
-                const propsDaid = componentProps[key];
-                if (typeof resultDaid === "string" && typeof propsDaid === 'string') {
-                    result[key] = resultDaid.trim() + ' ' + propsDaid.trim();
+        if (!~blacklist.indexOf(key)) {
+            if (key.startsWith('data-')) {
+                if (key === 'data-automation-id') {
+                    const resultDaid = result[key];
+                    const propsDaid = componentProps[key];
+                    if (typeof resultDaid === "string" && typeof propsDaid === 'string') {
+                        result[key] = resultDaid.trim() + ' ' + propsDaid.trim();
+                    } else {
+                        result[key] = componentProps[key];
+                    }
                 } else {
                     result[key] = componentProps[key];
                 }
-            } else {
-                result[key] = componentProps[key];
-            }
-        } else if(isEventHandlerName(key)){
-            if (typeof result[key] === "function") {
-                result[key] = mergeEventHandlers(componentProps[key], result[key]);
-            } else {
-                result[key] = componentProps[key];
+            } else if (isEventHandlerName(key)) {
+                if (typeof result[key] === "function") {
+                    result[key] = mergeEventHandlers(componentProps[key], result[key]);
+                } else {
+                    result[key] = componentProps[key];
+                }
             }
         }
     }
