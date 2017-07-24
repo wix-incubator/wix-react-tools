@@ -1,5 +1,5 @@
 import {expect} from 'test-drive-react';
-import {root, mergeEvents} from '../../src';
+import {root, mergeEventHandlers} from '../../src';
 
 // make a new function
 function func() {
@@ -146,8 +146,8 @@ describe('root', () => {
                 className: "root"
             });
 
-            expect(result).to.eql({onFoo: mergeEvents(f1, f2), className: "root"});
-            expect(result.onFoo).to.equal(mergeEvents(f1, f2)); // notice the use of .equal and *not* .eql
+            expect(result).to.eql({onFoo: mergeEventHandlers(f1, f2), className: "root"});
+            expect(result.onFoo).to.equal(mergeEventHandlers(f1, f2)); // notice the use of .equal and *not* .eql
         });
     });
 });

@@ -1,5 +1,6 @@
 import {expect} from "test-drive";
 import {getGlobalConfig, overrideGlobalConfig, setGlobalConfig, runInContext} from "../../src";
+import {Dictionary} from "../../src/core/config";
 
 const sampleConfig = {
     foo: 'bar',
@@ -31,7 +32,7 @@ describe('config', () => {
     });
 
     it('is frozen', () => {
-        const config = getGlobalConfig();
+        const config = getGlobalConfig<Dictionary>();
         expect(config).to.eql({});
         expect(() => config.foo = 'bar').to.throw();
         expect(config).to.eql({});
@@ -39,8 +40,8 @@ describe('config', () => {
 
     it('is Deeply frozen', () => {
         setGlobalConfig(sampleConfig);
-        const config = getGlobalConfig();
-        expect(() => config.biz.baz = 'meep').to.throw();
+        const config = getGlobalConfig<typeof sampleConfig>();
+        expect(() => config.biz.baz = !config.biz.baz).to.throw();
         expect(config).to.eql(sampleConfig);
     });
 
