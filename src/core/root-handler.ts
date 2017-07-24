@@ -23,16 +23,18 @@ export function root<T extends Partial<Props>, S extends Props>(componentProps: 
     const result = Object.assign({}, rootProps);
 
     for (let key in componentProps) {
-        if (key === 'data-automation-id') {
-            const resultDaid = result[key];
-            const propsDaid = componentProps[key];
-            if (typeof resultDaid === "string" && typeof propsDaid === 'string') {
-                result[key] = resultDaid.trim() + ' ' + propsDaid.trim();
+        if (key.startsWith('data-')) {
+            if (key === 'data-automation-id') {
+                const resultDaid = result[key];
+                const propsDaid = componentProps[key];
+                if (typeof resultDaid === "string" && typeof propsDaid === 'string') {
+                    result[key] = resultDaid.trim() + ' ' + propsDaid.trim();
+                } else {
+                    result[key] = componentProps[key];
+                }
             } else {
                 result[key] = componentProps[key];
             }
-        } else if (key.startsWith('data-')) {
-            result[key] = componentProps[key];
         } else if(isEventHandlerName(key)){
             if (typeof result[key] === "function") {
                 result[key] = mergeEventHandlers(componentProps[key], result[key]);

@@ -16,7 +16,7 @@ describe('root', () => {
             bar: "bar",
             className: ""
         });
-        expect(result).to.eql({className: "", bar: "bar"}); // todo: prolly needs to throw an error
+        expect(result).to.eql({className: "", bar: "bar"});
     });
 
     describe("data-*", () => {
@@ -24,7 +24,7 @@ describe('root', () => {
             const result = root({}, {
                 className: ""
             });
-            expect(result).to.eql({className: ""}); // todo: prolly needs to throw an error
+            expect(result).to.eql({className: ""});
         });
 
         it("should merge data attributes", () => {
