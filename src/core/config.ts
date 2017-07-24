@@ -1,4 +1,5 @@
 import {ifndef} from 'ifndef'
+import {GlobalConfig} from "./types";
 
 export interface Dictionary {
     [index: string]: any;
@@ -10,37 +11,39 @@ let dirty = true;
 let publicState: Readonly<Dictionary> = {};
 
 
-export function overrideGlobalConfig<T extends object = Dictionary>(config: T): void {
+export function overrideGlobalConfig<T extends object = GlobalConfig>(config: T): void {
     internalState = deepClone(config);
     dirty = true;
 }
 
-export function setGlobalConfig<T extends object = Dictionary>(config: T): void {
+export function setGlobalConfig<T extends object = GlobalConfig>(config: T): void {
     deepMergeClone(internalState, config);
     dirty = true;
 }
 
-export function getGlobalConfig<T extends object = Dictionary>(): T {
+export function getGlobalConfig<T extends object = GlobalConfig>(): T {
     if (dirty) {
         publicState = deepFrozenClone(internalState);
     }
     return publicState as T;
 }
 
-export function runInContext<T extends object = Dictionary>(config: T, func: Function, test = false) {
+export function runInContext<T extends object = GlobalConfig>(config: T, func: Function, test = false) {
     const cleanup = overrideGlobalConfig.bind(null, deepClone(internalState));
     let result: any = null;
     dirty = true;
     try {
         setGlobalConfig(config);
-        return result = func();
+        result = func();
     } finally {
         if (test && result && typeof result.then === 'function') {
-            return result.then(cleanup, cleanup).then(() => result);
+            const oldResult = result;
+            result = result.then(cleanup, cleanup).then(() => oldResult);
         } else {
             cleanup();
         }
     }
+    return result;
 }
 
 function deepClone(obj: Dictionary): Dictionary {

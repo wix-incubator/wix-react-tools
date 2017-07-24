@@ -1,7 +1,8 @@
-import {mergeEvents} from "./merge-events";
+import {mergeEventHandlers} from "./merge-events";
 export interface Props {
     className: string;
     style?: {[k:string]:string};
+    'data-automation-id'?:string;
     [k:string]: any;
 }
 
@@ -23,8 +24,10 @@ export function root<T extends Partial<Props>, S extends Props>(componentProps: 
 
     for (let key in componentProps) {
         if (key === 'data-automation-id') {
-            if (typeof result[key] === "string") {
-                result[key] = (rootProps[key] as string).trim() + ' ' + (componentProps[key] as string).trim();
+            const resultDaid = result[key];
+            const propsDaid = componentProps[key];
+            if (typeof resultDaid === "string" && typeof propsDaid === 'string') {
+                result[key] = resultDaid.trim() + ' ' + propsDaid.trim();
             } else {
                 result[key] = componentProps[key];
             }
@@ -32,7 +35,7 @@ export function root<T extends Partial<Props>, S extends Props>(componentProps: 
             result[key] = componentProps[key];
         } else if(isEventHandlerName(key)){
             if (typeof result[key] === "function") {
-                result[key] = mergeEvents(componentProps[key], result[key]);
+                result[key] = mergeEventHandlers(componentProps[key], result[key]);
             } else {
                 result[key] = componentProps[key];
             }

@@ -1,4 +1,4 @@
-import {mergeEvents} from "../../src";
+import {mergeEventHandlers} from "../../src";
 import {expect, sinon} from 'test-drive-react';
 
 // make a new function
@@ -13,7 +13,7 @@ describe("merge-events", () => {
     it('calls the two handlers with the arguments provided', () => {
         const spy1 = sinon.spy();
         const spy2 = sinon.spy();
-        const merged = mergeEvents(spy1, spy2);
+        const merged = mergeEventHandlers(spy1, spy2);
 
         // not call handlers in merging phase
         expect(spy1).to.have.callCount(0);
@@ -31,17 +31,17 @@ describe("merge-events", () => {
         const f1 = func();
         const f2 = func();
 
-        expect(mergeEvents(f1, f2)).to.equal(mergeEvents(f1, f2)); // notice the use of .equal and *not* .eql
+        expect(mergeEventHandlers(f1, f2)).to.equal(mergeEventHandlers(f1, f2)); // notice the use of .equal and *not* .eql
     });
 
     it('not use cache for different order of same arguments', () => {
         const f1 = func();
         const f2 = func();
 
-        expect(mergeEvents(f1, f2)).to.not.equal(mergeEvents(f2, f1)); // notice the use of .equal and *not* .eql
+        expect(mergeEventHandlers(f1, f2)).to.not.equal(mergeEventHandlers(f2, f1)); // notice the use of .equal and *not* .eql
     });
 
     it('not use cache for different arguments', () => {
-        expect(mergeEvents(func(), func())).to.not.equal(mergeEvents(func(), func())); // notice the use of .equal and *not* .eql
+        expect(mergeEventHandlers(func(), func())).to.not.equal(mergeEventHandlers(func(), func())); // notice the use of .equal and *not* .eql
     });
 });
