@@ -37,9 +37,9 @@ describe('function-decor documentation examples', () => {
                 console.log(result);
                 return 'wrapped=> ' + result
             }
-            const enhanceWithLogMW = middleware<[string], string>(logMW);
+            const enhanceWithLogMW = middleware(logMW as any);
 
-            const enhanced = enhanceWithLogMW(original);
+            const enhanced = enhanceWithLogMW(original as any);
 
             const result: string = enhanced('hello');
             expectLog(
