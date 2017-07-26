@@ -1,9 +1,9 @@
-import * as React from 'react';
-import {expect, sinon} from 'test-drive-react';
+import * as React from "react";
+import {expect, sinon} from "test-drive-react";
 import {Disposers} from "../../../src";
 
 describe("Disposers", () => {
-      it('registers named disposers ', () => {
+    it('registers named disposers ', () => {
         const disposables = new Disposers();
         const disposer1 = sinon.spy();
         const disposer2 = sinon.spy();
@@ -54,10 +54,12 @@ describe("Disposers", () => {
     it('handles explosives disposers', () => {
         const disposables = new Disposers();
         const error = new Error('Boom');
-        const disposer1 = sinon.spy(()=>{throw error});
+        const disposer1 = sinon.spy(() => {
+            throw error
+        });
         const disposer2 = sinon.spy();
         // waiting for console-feng-shui
-    //    const consoleStub = sinon.stub(console, 'warn', ()=>{});
+        //    const consoleStub = sinon.stub(console, 'warn', ()=>{});
 
         disposables.set('key1', disposer1);
         disposables.set('key2', disposer2);
@@ -67,7 +69,7 @@ describe("Disposers", () => {
         expect(disposer1).to.have.callCount(1);
         expect(disposer2).to.have.callCount(1);
         expect(disposer2).to.have.been.calledAfter(disposer1);
-    //    expect(consoleStub).to.have.been.calledWithExactly(UNCAUGHT_DISPOSER_ERROR_MESSAGE, error);
+        //    expect(consoleStub).to.have.been.calledWithExactly(UNCAUGHT_DISPOSER_ERROR_MESSAGE, error);
     });
 
     it('un-registers specific disposers by key', () => {

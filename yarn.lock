@@ -1535,6 +1535,10 @@ forwarded@~0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.1.0.tgz#19ef9874c4ae1c297bcf078fde63a09b66a84363"
 
+fp-ts@^0.4.3:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-0.4.3.tgz#03877fb7e5aa3c04d0694e9371543e9dbfe3ef6f"
+
 fresh@0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.0.tgz#f474ca5e6a9246d6fd8e0953cfa9b9c805afa78e"
@@ -4001,9 +4005,20 @@ type-is@~1.6.15:
     media-typer "0.3.0"
     mime-types "~2.1.15"
 
-typescript@^2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.4.1.tgz#c3ccb16ddaa0b2314de031e7e6fee89e5ba346bc"
+typelevel-ts@^0.1.3:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/typelevel-ts/-/typelevel-ts-0.1.3.tgz#74369335683574fb70f81f8416a9b13eeea8cf79"
+
+typescript@^2.4.2:
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.4.2.tgz#f8395f85d459276067c988aa41837a8f82870844"
+
+typings-checker@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/typings-checker/-/typings-checker-1.1.2.tgz#ccd1a4e33e0c64681d70d31b3474054caaa4c291"
+  dependencies:
+    lodash "^4.17.4"
+    yargs "^6.6.0"
 
 ua-parser-js@^0.7.9:
   version "0.7.13"
@@ -4306,7 +4321,7 @@ yargs-parser@^4.2.0:
   dependencies:
     camelcase "^3.0.0"
 
-yargs@^6.0.0:
+yargs@^6.0.0, yargs@^6.6.0:
   version "6.6.0"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-6.6.0.tgz#782ec21ef403345f830a808ca3d513af56065208"
   dependencies:

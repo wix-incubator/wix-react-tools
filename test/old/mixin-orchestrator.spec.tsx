@@ -1,7 +1,12 @@
-import * as React from 'react';
-import {renderToString} from 'react-dom/server';
-import {expect, sinon, ClientRenderer} from 'test-drive-react';
-import {orchastrated,registerForConstructor,lifeCycleHook,registerLifeCycle, lifeCycleHooks, lifeCycleHookName} from "../../src/old/mixin-orchestrator";
+import * as React from "react";
+import {renderToString} from "react-dom/server";
+import {ClientRenderer, expect, sinon} from "test-drive-react";
+import {
+    lifeCycleHookName,
+    orchastrated,
+    registerForConstructor,
+    registerLifeCycle
+} from "../../src/old/mixin-orchestrator";
 import {ReactConstructor} from "../../src/old/utils/types";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 import _reduce = require('lodash/reduce');
@@ -17,19 +22,19 @@ class Spies {
     mixin2SpyAround = sinon.spy();
     userCodeSpy = sinon.spy();
 }
-function expectCallOrder(order:{name:string,spy:sinon.SinonSpy}[],calls:number=1){
+function expectCallOrder(order: { name: string, spy: sinon.SinonSpy }[], calls: number = 1) {
 
-    for(var i=0;i<order.length;i++){
-        expect(order[i].spy,order[i].name).to.have.callCount(calls);
-        if(i>0){
-            expect(order[i].spy,order[i].name+' after '+order[i-1].name).to.have.been.calledAfter(order[i-1].spy)
+    for (var i = 0; i < order.length; i++) {
+        expect(order[i].spy, order[i].name).to.have.callCount(calls);
+        if (i > 0) {
+            expect(order[i].spy, order[i].name + ' after ' + order[i - 1].name).to.have.been.calledAfter(order[i - 1].spy)
         }
     }
 }
 
-function expectNoCalls(spies:Spies){
-    _forEach(spies,(element:sinon.SinonSpy) => {
-        expect(element,name).to.have.callCount(0);
+function expectNoCalls(spies: Spies) {
+    _forEach(spies, (element: sinon.SinonSpy) => {
+        expect(element, name).to.have.callCount(0);
     });
 }
 
@@ -45,39 +50,40 @@ describe("mixin orchestrator", () => {
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
 
-    describe('register: constructor',()=>{
-         it('allows mutliple mixins to run code in constructor', () => {
+    describe('register: constructor', () => {
+        it('allows mutliple mixins to run code in constructor', () => {
 
 
             const mixin1Spy = sinon.spy();
             const mixin2Spy = sinon.spy();
-            function mixin1<T>(cls:T):T{
-                registerForConstructor(cls,mixin1Spy);
+
+            function mixin1<T>(cls: T): T {
+                registerForConstructor(cls, mixin1Spy);
                 return cls;
             }
 
-            function mixin2<T>(cls:T):T{
-                registerForConstructor(cls,mixin2Spy);
+            function mixin2<T>(cls: T): T {
+                registerForConstructor(cls, mixin2Spy);
                 return cls;
             }
 
             @mixin2
             @mixin1
             @orchastrated
-            class MixinBaseComp<P,S> extends React.Component<P, S> {
+            class MixinBaseComp<P, S> extends React.Component<P, S> {
                 render() {
                     return <div data-automation-id="test"></div>;
                 }
             }
 
-            class UserClass extends MixinBaseComp<any,any>{
-                constructor(props:any,constext:any){
+            class UserClass extends MixinBaseComp<any, any> {
+                constructor(props: any, constext: any) {
                     expect(mixin1Spy).to.have.callCount(0);
                     expect(mixin2Spy).to.have.callCount(0);
                     super();
                     expect(mixin1Spy).to.have.calledWith(this);
                     expect(mixin2Spy).to.have.calledWith(this);
-                    expectCallOrder([{name:'mixin1Spy',spy:mixin1Spy},{name:'mixin2Spy',spy:mixin2Spy}]);
+                    expectCallOrder([{name: 'mixin1Spy', spy: mixin1Spy}, {name: 'mixin2Spy', spy: mixin2Spy}]);
                 }
             }
 
@@ -88,29 +94,30 @@ describe("mixin orchestrator", () => {
         });
 
     })
-    describe('life cycle hooks',()=>{
-        const reactLifeCycleCreation:lifeCycleHookName[] = ['render','componentDidMount'];
-        const reactLifeCycle:lifeCycleHookName[] = ['render','componentDidMount','componentWillReceiveProps','shouldComponentUpdate','componentWillUpdate','componentDidUpdate','componentWillUnmount'];
+    describe('life cycle hooks', () => {
+        const reactLifeCycleCreation: lifeCycleHookName[] = ['render', 'componentDidMount'];
+        const reactLifeCycle: lifeCycleHookName[] = ['render', 'componentDidMount', 'componentWillReceiveProps', 'shouldComponentUpdate', 'componentWillUpdate', 'componentDidUpdate', 'componentWillUnmount'];
 
-        reactLifeCycle.map((lifeCycleMethod)=>{
-            const isCreationLifeCycle:boolean = reactLifeCycleCreation.indexOf(lifeCycleMethod)!=-1
-            describe.assuming(inBrowser(),'inbrowser')('client side life cycle',()=>{
-                describe('before and after: '+lifeCycleMethod,()=>{
-                    it('allows mutliple mixins to run code in '+lifeCycleMethod+' with user method', () => {
-                        const spies:Spies = new Spies();
+        reactLifeCycle.map((lifeCycleMethod) => {
+            const isCreationLifeCycle: boolean = reactLifeCycleCreation.indexOf(lifeCycleMethod) != -1
+            describe.assuming(inBrowser(), 'inbrowser')('client side life cycle', () => {
+                describe('before and after: ' + lifeCycleMethod, () => {
+                    it('allows mutliple mixins to run code in ' + lifeCycleMethod + ' with user method', () => {
+                        const spies: Spies = new Spies();
 
                         const spyOrder = getSpiesOrder(spies);
 
                         //TODO generalize
-                        function mixin1<T>(cls:T):T{
-                            registerLifeCycle(cls,'before',lifeCycleMethod,spies.mixin1SpyBefore);
-                            registerLifeCycle(cls,'after',lifeCycleMethod,spies.mixin1SpyAfter);
+                        function mixin1<T>(cls: T): T {
+                            registerLifeCycle(cls, 'before', lifeCycleMethod, spies.mixin1SpyBefore);
+                            registerLifeCycle(cls, 'after', lifeCycleMethod, spies.mixin1SpyAfter);
                             // registerLifeCycle(cls,'around',lifeCycleMethod,mixin1Spy);
                             return cls;
                         }
-                        function mixin2<T>(cls:T):T{
-                            registerLifeCycle(cls,'before',lifeCycleMethod,spies.mixin2SpyBefore);
-                            registerLifeCycle(cls,'after',lifeCycleMethod,spies.mixin2SpyAfter);
+
+                        function mixin2<T>(cls: T): T {
+                            registerLifeCycle(cls, 'before', lifeCycleMethod, spies.mixin2SpyBefore);
+                            registerLifeCycle(cls, 'after', lifeCycleMethod, spies.mixin2SpyAfter);
                             return cls;
                         }
 
@@ -122,37 +129,37 @@ describe("mixin orchestrator", () => {
                         @mixin2
                         @mixin1
                         @orchastrated
-                        class MixinBaseComp<P,S> extends React.Component<P, S> {
+                        class MixinBaseComp<P, S> extends React.Component<P, S> {
 
                         }
 
                         // define final component class
-                        class UserClass extends MixinBaseComp<any,any>{
-                            render(){
+                        class UserClass extends MixinBaseComp<any, any> {
+                            render() {
                                 return <div></div>
                             }
                         }
                         // simulate user overriding lifeCycleMethod with no call to super[lifeCycleMethod]
-                        (UserClass as any).prototype[lifeCycleMethod] = function(this:UserClass):any{
+                        (UserClass as any).prototype[lifeCycleMethod] = function (this: UserClass): any {
                             spies.userCodeSpy();
-                            if(lifeCycleMethod==='render'){
+                            if (lifeCycleMethod === 'render') {
                                 return <div></div>
                             }
                         };
 
                         const {container} = clientRenderer.render(<div><UserClass></UserClass></div>);
-                        if(isCreationLifeCycle){
+                        if (isCreationLifeCycle) {
                             expectCallOrder([...spyOrder]);
-                        }else{
+                        } else {
                             expectNoCalls(spies);
                         }
 
-                        clientRenderer.render(<div><UserClass></UserClass></div>,container);
+                        clientRenderer.render(<div><UserClass></UserClass></div>, container);
 
-                        switch(lifeCycleMethod){
+                        switch (lifeCycleMethod) {
                             case 'render':
                                 //render should have been called twice
-                                expectCallOrder([...spyOrder,...spyOrder],2);
+                                expectCallOrder([...spyOrder, ...spyOrder], 2);
                                 break;
                             case 'componentDidMount':
                                 //componentDidMount should have been called once (at first clientRenderer.render)
@@ -168,12 +175,12 @@ describe("mixin orchestrator", () => {
 
                         }
 
-                        clientRenderer.render(<div></div>,container);
+                        clientRenderer.render(<div></div>, container);
 
-                        switch(lifeCycleMethod){
+                        switch (lifeCycleMethod) {
                             case 'render':
                                 //render should have been called twice
-                                expectCallOrder([...spyOrder,...spyOrder],2);
+                                expectCallOrder([...spyOrder, ...spyOrder], 2);
                                 break;
                             case 'componentDidMount':
                                 //componentDidMount should have been called once (at first clientRenderer.render)
@@ -203,28 +210,28 @@ describe("mixin orchestrator", () => {
         const mixin2Spy = sinon.spy();
 
 
-        function mixin1<C extends ReactConstructor<any>>(cls:C):C{
+        function mixin1<C extends ReactConstructor<any>>(cls: C): C {
             const oCls = orchastrated(cls);
-            registerForConstructor(cls,mixin1Spy);
+            registerForConstructor(cls, mixin1Spy);
             return oCls;
         }
 
-        function mixin2<C extends ReactConstructor<any>>(cls:C):C{
+        function mixin2<C extends ReactConstructor<any>>(cls: C): C {
             const oCls = orchastrated(cls);
-            registerForConstructor(cls,mixin2Spy);
+            registerForConstructor(cls, mixin2Spy);
             return oCls;
         }
 
         @mixin2
         @mixin1
-        class MixinBaseComp<P,S> extends React.Component<P, S> {
+        class MixinBaseComp<P, S> extends React.Component<P, S> {
             render() {
                 return <div data-automation-id="test"></div>;
             }
         }
 
-        class UserClass extends MixinBaseComp<any,any>{
-            constructor(props:any,context:any){
+        class UserClass extends MixinBaseComp<any, any> {
+            constructor(props: any, context: any) {
                 expect(mixin1Spy).to.have.callCount(0);
                 expect(mixin2Spy).to.have.callCount(0);
                 super();

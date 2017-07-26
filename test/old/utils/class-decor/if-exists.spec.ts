@@ -1,4 +1,4 @@
-import {middleware, before, after} from "../../../../src";
+import {after, before, middleware} from "../../../../src";
 import {expect, sinon} from "test-drive";
 
 describe('middleware, before, after', () => {
@@ -27,7 +27,7 @@ describe('middleware, before, after', () => {
         @before(beforeHook, 'myMethod')
         @after(afterHook, 'myMethod')
         class Logger {
-            myMethod:()=>void;
+            myMethod: () => void;
         }
         const logger = new Logger();
         logger.myMethod();
@@ -39,7 +39,7 @@ describe('middleware, before, after', () => {
         @before.ifExists(beforeHook, 'myMethod')
         @after.ifExists(afterHook, 'myMethod')
         class Logger {
-            myMethod:()=>void;
+            myMethod: () => void;
         }
         const logger = new Logger();
         expect(logger.myMethod).to.equal(undefined);
@@ -50,7 +50,8 @@ describe('middleware, before, after', () => {
         @before.ifExists(beforeHook, 'myMethod')
         @after.ifExists(afterHook, 'myMethod')
         class Logger {
-            myMethod(){};
+            myMethod() {
+            };
         }
         const logger = new Logger();
         logger.myMethod();

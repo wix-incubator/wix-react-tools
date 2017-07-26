@@ -1,8 +1,8 @@
-import * as React from 'react';
-import { expect, sinon, simulate, ClientRenderer } from 'test-drive-react';
-import { ObservableComponent,resetCounters } from '../../../../src';
-import { observable } from 'mobx';
-import {testHooks,person,withPerson} from './types';
+import * as React from "react";
+import {ClientRenderer, expect, sinon} from "test-drive-react";
+import {ObservableComponent, resetCounters} from "../../../../src";
+import {observable} from "mobx";
+import {person, testHooks, withPerson} from "./types";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 
 const testAnchor: string = 'Test-root';
@@ -10,26 +10,32 @@ const testAnchor: string = 'Test-root';
 
 describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
     const clientRenderer = new ClientRenderer();
-    afterEach(() => {clientRenderer.cleanup();resetCounters()});
+    afterEach(() => {
+        clientRenderer.cleanup();
+        resetCounters()
+    });
 
     describe('primitive state', () => {
 
 
-        class TestComp extends ObservableComponent<testHooks, person>{
+        class TestComp extends ObservableComponent<testHooks, person> {
             static defaultState: person = {
                 name: 'enter name here',
                 age: -1,
                 smell: 'bad'
             };
             static defaultProps: testHooks = {
-                onRender: (comp: any) => { },
-                onMount: (comp: any) => { }
+                onRender: (comp: any) => {
+                },
+                onMount: (comp: any) => {
+                }
             };
 
             render() {
                 this.props.onRender && this.props.onRender(this);
                 return <div data-automation-id={testAnchor}>{this.state.name + ' ' + this.state.age}</div>
             }
+
             componentDidMount() {
                 this.props.onMount && this.props.onMount(this);
             }
@@ -38,7 +44,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should render default state', () => {
             const renderSpy = sinon.spy();
-            const { select, waitForDom } = clientRenderer.render(<TestComp onRender={renderSpy}/>);
+            const {select, waitForDom} = clientRenderer.render(<TestComp onRender={renderSpy}/>);
 
             expect(renderSpy).to.have.been.calledOnce;
             expect(select(testAnchor)).to.have.text('enter name here -1');
@@ -47,7 +53,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should re-render after modifying its state (for rendered parts of its state)', () => {
             const renderSpy = sinon.spy();
-            const { select, waitForDom } = clientRenderer.render(<TestComp onMount={(comp: any) => {
+            const {select, waitForDom} = clientRenderer.render(<TestComp onMount={(comp: any) => {
                 comp.state.name = 'moshe';
                 comp.state.age = 80;
             }} onRender={renderSpy}/>);
@@ -59,7 +65,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should not rerender after modifying its state (for un-rendered parts of its state)', () => {
             const renderSpy = sinon.spy();
-            const { select, waitForDom } = clientRenderer.render(<TestComp onMount={(comp: any) => {
+            const {select, waitForDom} = clientRenderer.render(<TestComp onMount={(comp: any) => {
                 comp.state.smell = 'good';
             }} onRender={renderSpy}/>);
 
@@ -73,13 +79,15 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
     describe('primitive props', () => {
 
 
-        type primitiveTestProps =  person & testHooks;
+        type primitiveTestProps = person & testHooks;
 
-        class TestComp extends ObservableComponent<primitiveTestProps, object>{
+        class TestComp extends ObservableComponent<primitiveTestProps, object> {
 
             static defaultProps: primitiveTestProps = {
-                onRender: () => { },
-                onMount: () => { },
+                onRender: () => {
+                },
+                onMount: () => {
+                },
                 name: 'enter name here',
                 age: -1,
                 smell: 'bad'
@@ -89,6 +97,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
                 this.props.onRender && this.props.onRender(undefined);
                 return <div data-automation-id={testAnchor}>{this.props.name + ' ' + this.props.age}</div>
             }
+
             componentDidMount() {
                 this.props.onMount && this.props.onMount(undefined);
             }
@@ -97,7 +106,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should render default props', () => {
             const renderSpy = sinon.spy();
-            const { select, waitForDom } = clientRenderer.render(<TestComp onRender={renderSpy}/>);
+            const {select, waitForDom} = clientRenderer.render(<TestComp onRender={renderSpy}/>);
 
             expect(renderSpy).to.have.been.calledOnce;
             expect(select(testAnchor)).to.have.text('enter name here -1');
@@ -105,7 +114,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should render initial provided props', () => {
             const renderSpy = sinon.spy();
-            const { select, waitForDom } = clientRenderer.render(<TestComp onRender={renderSpy} name="moshe"/>);
+            const {select, waitForDom} = clientRenderer.render(<TestComp onRender={renderSpy} name="moshe"/>);
 
             expect(renderSpy).to.have.been.calledOnce;
             expect(select(testAnchor)).to.have.text('moshe -1');
@@ -113,7 +122,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should re-render after its props are modified (for rendered properties, 3 renders)', () => {
             const renderSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onRender={renderSpy}/>);
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp onRender={renderSpy}/>);
 
             clientRenderer.render(<TestComp onRender={renderSpy} name="moshe" age={80}/>, container);
 
@@ -128,7 +137,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should not rerender after modifying its props (when changing unrendered field)', () => {
             const renderSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<div><TestComp onRender={renderSpy}/></div>);
+            const {select, waitForDom, container} = clientRenderer.render(<div><TestComp onRender={renderSpy}/></div>);
 
 
             clientRenderer.render(<div><TestComp onRender={renderSpy} smell="good"/></div>, container);
@@ -143,15 +152,16 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
     describe('complex props', () => {
 
 
-
         interface complexTestProps extends testHooks, withPerson {
         }
 
-        class TestComp extends ObservableComponent<complexTestProps, object>{
+        class TestComp extends ObservableComponent<complexTestProps, object> {
 
             static defaultProps: complexTestProps = {
-                onRender: () => { },
-                onMount: () => { },
+                onRender: () => {
+                },
+                onMount: () => {
+                },
                 man: {
                     name: 'yossi',
                     age: 50,
@@ -163,6 +173,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
                 this.props.onRender && this.props.onRender(this);
                 return <div data-automation-id={testAnchor}>{this.props.man!.name + ' ' + this.props.man!.age}</div>
             }
+
             componentDidMount() {
                 this.props.onMount && this.props.onMount(this);
             }
@@ -170,12 +181,12 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should re-render after its props are shalowly modified (for rendered props)', () => {
             const renderSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onRender={renderSpy}/>);
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp onRender={renderSpy}/>);
 
             expect(renderSpy).to.have.been.calledOnce;
             expect(select(testAnchor)).to.have.text('yossi 50');
 
-            clientRenderer.render(<TestComp onRender={renderSpy} man={{ name: "moshe", age: 80 }}/>, container);
+            clientRenderer.render(<TestComp onRender={renderSpy} man={{name: "moshe", age: 80}}/>, container);
 
             expect(renderSpy).to.have.been.calledTwice;
             expect(select(testAnchor)).to.have.text('moshe 80');
@@ -183,8 +194,9 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should re-render after its props are deeply modified (for rendered props)', () => {
             const renderSpy = sinon.spy();
-            const testPerson: person = observable({ name: "moshe", age: 80 })
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onRender={renderSpy} man={testPerson}/>);
+            const testPerson: person = observable({name: "moshe", age: 80})
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp onRender={renderSpy}
+                                                                                    man={testPerson}/>);
 
             expect(renderSpy).to.have.been.calledOnce;
             expect(select(testAnchor)).to.have.text('moshe 80');
@@ -197,9 +209,10 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should re-render after its props are replaced and then modified (when rendering its prop, observable input)', () => {
             const renderSpy = sinon.spy();
-            const testPerson: person = observable({ name: "moshe", age: 80 })
-            const testPerson2: person = observable({ name: "shlomo", age: 30 })
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onRender={renderSpy} man={testPerson}/>);
+            const testPerson: person = observable({name: "moshe", age: 80})
+            const testPerson2: person = observable({name: "shlomo", age: 30})
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp onRender={renderSpy}
+                                                                                    man={testPerson}/>);
 
             clientRenderer.render(<TestComp onRender={renderSpy} man={testPerson2}/>, container);
 
@@ -212,8 +225,9 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
         it('should not re-render after its props are modified (when not rendering its prop, observable input)', () => {
             const renderSpy = sinon.spy();
-            const testPerson: person = observable({ name: "moshe", age: 80 })
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onRender={renderSpy} man={testPerson}/>);
+            const testPerson: person = observable({name: "moshe", age: 80})
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp onRender={renderSpy}
+                                                                                    man={testPerson}/>);
 
             testPerson.smell = 'flunky';
 
@@ -222,16 +236,18 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
 
     });
-    interface props extends testHooks, person {}
+    interface props extends testHooks, person {
+    }
 
 
-    class MyWatchesEverythingComp extends ObservableComponent<props, object>{
+    class MyWatchesEverythingComp extends ObservableComponent<props, object> {
 
         static defaultProps: props = {
             name: 'yossi'
         };
 
-        static watchesAllProps:boolean = true;
+        static watchesAllProps: boolean = true;
+
         render() {
             this.props.onRender && this.props.onRender(this);
             return <div data-automation-id={testAnchor}>{this.props.name + ' ' + (this.props as any).age}</div>
@@ -241,33 +257,38 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
         it('should watch all fields provided at constructor', () => {
             const renderSpy = sinon.spy();
 
-            const { select, waitForDom, container } = clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy} name="gaga" age={5}/>);
+            const {select, waitForDom, container} = clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy}
+                                                                                                   name="gaga"
+                                                                                                   age={5}/>);
 
-            clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy} name="gaga" age={6}/>,container);
+            clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy} name="gaga" age={6}/>, container);
             expect(renderSpy).to.have.been.calledTwice;
         });
         it('should watch all fields provided at receive props', () => {
             const renderSpy = sinon.spy();
 
-            const { select, waitForDom, container } = clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy} name="gaga"/>);
+            const {select, waitForDom, container} = clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy}
+                                                                                                   name="gaga"/>);
 
-            clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy} name="gaga" age={6}/>,container);
+            clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy} name="gaga" age={6}/>, container);
             expect(renderSpy).to.have.been.calledTwice;
         });
         it('should watch all fields provided at receive props (when also changing watched prop)', () => {
             const renderSpy = sinon.spy();
 
-            const { select, waitForDom, container } = clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy} name="gaga"/>);
+            const {select, waitForDom, container} = clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy}
+                                                                                                   name="gaga"/>);
 
-            clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy} name="baga" age={6}/>,container);
+            clientRenderer.render(<MyWatchesEverythingComp onRender={renderSpy} name="baga" age={6}/>, container);
             expect(renderSpy).to.have.been.calledTwice;
         });
     });
 
-    interface props extends testHooks,person {}
+    interface props extends testHooks, person {
+    }
 
 
-    class MyCompName extends ObservableComponent<props, person>{
+    class MyCompName extends ObservableComponent<props, person> {
 
         static defaultProps: props = {
             name: 'yossi'
@@ -275,6 +296,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
         static defaultState: person = {
             age: 5
         };
+
         render() {
             this.props.onRender && this.props.onRender(this);
             return <div data-automation-id={testAnchor}>{this.props.name + ' ' + this.state.age}</div>
@@ -283,7 +305,7 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
 
     describe('names', function () {
         it('should properly name generated constructs', () => {
-            const { select, waitForDom, container, result } = clientRenderer.render(<MyCompName />);
+            const {select, waitForDom, container, result} = clientRenderer.render(<MyCompName />);
             const comp: any = result;
 
             expect(comp._renderReaction.name).to.equal('MyCompName#0 -> render');
@@ -294,7 +316,8 @@ describe.assuming(inBrowser(), 'only in browser')('ObservableComponent', () => {
     describe('dispose', function () {
         it('should dispose render reaction', () => {
             let comp: any;
-            const { select, waitForDom, container, result } = clientRenderer.render(<MyCompName onRender={(c) => comp = c}/>);
+            const {select, waitForDom, container, result} = clientRenderer.render(<MyCompName
+                onRender={(c) => comp = c}/>);
 
             clientRenderer.render(<div></div>);
             waitForDom(() => expect(comp._renderReaction.isDisposed).to.equal(true));

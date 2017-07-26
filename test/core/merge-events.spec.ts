@@ -1,5 +1,5 @@
 import {mergeEventHandlers} from "../../src";
-import {expect, sinon} from 'test-drive-react';
+import {expect, sinon} from "test-drive-react";
 
 // make a new function
 function func() {
@@ -7,7 +7,7 @@ function func() {
 
     };
 }
-const ARGS = [1,2,3];
+const ARGS = [1, 2, 3];
 
 describe("merge-events", () => {
     it('calls the two handlers with the arguments provided', () => {

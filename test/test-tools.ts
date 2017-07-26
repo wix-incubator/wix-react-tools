@@ -1,4 +1,4 @@
-import {sinon} from 'test-drive-react';
+import {sinon} from "test-drive-react";
 import {Class} from "../src/old/utils/class-decor/mixer";
 
 // a type that adds spy type to each field

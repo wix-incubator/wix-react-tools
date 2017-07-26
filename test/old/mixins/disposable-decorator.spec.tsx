@@ -1,6 +1,6 @@
-import * as React from 'react';
-import {expect, sinon, ClientRenderer} from 'test-drive-react';
-import {Disposers,disposable} from "../../../src";
+import * as React from "react";
+import {ClientRenderer, expect, sinon} from "test-drive-react";
+import {disposable, Disposers} from "../../../src";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 
 

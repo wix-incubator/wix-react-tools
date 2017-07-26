@@ -1,6 +1,6 @@
-import * as React from 'react';
-import { expect, ClientRenderer } from 'test-drive-react';
-import { GlobalID, reset, applyMixin } from '../../../src';
+import * as React from "react";
+import {ClientRenderer, expect} from "test-drive-react";
+import {applyMixin, GlobalID, reset} from "../../../src";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 
 
@@ -16,7 +16,7 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
     afterEach(() => clientRenderer.cleanup());
 
     @GlobalID()
-    class BaseComp<P, S> extends React.Component<P & { id?: string }, S>  {
+    class BaseComp<P, S> extends React.Component<P & { id?: string }, S> {
 
         getGlobalID(str: string) {
             return 'This is overridden by the decorator';
@@ -28,10 +28,11 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
 
         class MainClass extends BaseComp<{}, {}> {
             props: MainProps;
+
             render() {
                 return <div data-automation-id={'MAIN_CLASS_ROOT' + this.props.testId}>
                     <TestClass id={this.getGlobalID('MyTestComp')}></TestClass>
-                    <label data-automation-id='MAIN_CLASS_LABEL' htmlFor={this.getGlobalID('MyTestComp')} ></label>
+                    <label data-automation-id='MAIN_CLASS_LABEL' htmlFor={this.getGlobalID('MyTestComp')}></label>
                 </div>
             }
         }
@@ -39,9 +40,9 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
         class TestClass extends BaseComp<{}, {}> {
             render() {
                 return <div data-automation-id='TEST_CLASS_ROOT'>
-                    <input data-automation-id='TEST_CLASS_INPUT1' type="text" id={this.getGlobalID('MyInput')} />
+                    <input data-automation-id='TEST_CLASS_INPUT1' type="text" id={this.getGlobalID('MyInput')}/>
                     <label data-automation-id='TEST_CLASS_LABEL1' htmlFor={this.getGlobalID('MyInput')}></label>
-                    <input data-automation-id='TEST_CLASS_INPUT2' type="text" id={this.getGlobalID('MyOtherInput')} />
+                    <input data-automation-id='TEST_CLASS_INPUT2' type="text" id={this.getGlobalID('MyOtherInput')}/>
                     <label data-automation-id='TEST_CLASS_LABEL2' htmlFor={this.getGlobalID('MyOtherInput')}></label>
                 </div>
             }
@@ -49,7 +50,7 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
 
 
         it('Uses external ID if passed', () => {
-            const { select } = clientRenderer.render(<MainClass testId='1' id={'EXT'}></MainClass>);
+            const {select} = clientRenderer.render(<MainClass testId='1' id={'EXT'}></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT1')).to.exist;
             expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
@@ -61,7 +62,7 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
         });
 
         it('Generates an ID if external ID is not passed', () => {
-            const { select } = clientRenderer.render(<MainClass testId='_I'></MainClass>);
+            const {select} = clientRenderer.render(<MainClass testId='_I'></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT_I')).to.exist;
             expect(select('MAIN_CLASS_ROOT_I', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
@@ -73,7 +74,7 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
         });
 
         it('Generates counter-based IDs for multiple instances of same class', () => {
-            const { select } = clientRenderer.render(
+            const {select} = clientRenderer.render(
                 <div>
                     <MainClass testId='1'></MainClass>
                     <MainClass testId='2'></MainClass>
@@ -91,6 +92,7 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
 
         class MainClass extends BaseComp<{}, {}> {
             props: MainProps;
+
             render() {
                 return <div data-automation-id={'MAIN_CLASS_ROOT' + this.props.testId}>
                     <TestClass id={this.getGlobalID('MyTestComp')}></TestClass>
@@ -101,17 +103,17 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
 
         class TestClass extends BaseComp<{}, {}> {
             render() {
-                return <div data-automation-id='TEST_CLASS_ROOT' id={this.getGlobalID('ROOT')} >
-                    <input data-automation-id='TEST_CLASS_INPUT1' type="text" id={this.getGlobalID('ROOT')} />
+                return <div data-automation-id='TEST_CLASS_ROOT' id={this.getGlobalID('ROOT')}>
+                    <input data-automation-id='TEST_CLASS_INPUT1' type="text" id={this.getGlobalID('ROOT')}/>
                     <label data-automation-id='TEST_CLASS_LABEL1' htmlFor={this.getGlobalID('ROOT')}></label>
-                    <input data-automation-id='TEST_CLASS_INPUT2' type="text" id={this.getGlobalID('MyOtherInput')} />
+                    <input data-automation-id='TEST_CLASS_INPUT2' type="text" id={this.getGlobalID('MyOtherInput')}/>
                     <label data-automation-id='TEST_CLASS_LABEL2' htmlFor={this.getGlobalID('MyOtherInput')}></label>
                 </div>
             }
         }
 
         it('Uses external ID for root node if passed', () => {
-            const { select } = clientRenderer.render(<MainClass testId='1' id={'EXT'} ></MainClass>);
+            const {select} = clientRenderer.render(<MainClass testId='1' id={'EXT'}></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT1')).to.exist;
             expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.have.attribute('id', 'EXT_MyTestComp');
@@ -123,7 +125,7 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
         });
 
         it('Generates explicit ID for root node if external ID is not passed', () => {
-            const { select,  } = clientRenderer.render(<MainClass testId='1' ></MainClass>);
+            const {select,} = clientRenderer.render(<MainClass testId='1'></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT1')).to.exist;
             expect(select('MAIN_CLASS_ROOT1', 'TEST_CLASS_ROOT')).to.have.attribute('id', 'MainClass1_MyTestComp');
@@ -138,7 +140,7 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
     describe('CreateElement syntax sugar', () => {
 
         @GlobalID()
-        class OtherBaseComp<P, S> extends React.Component<P & { id?: string }, S>  {
+        class OtherBaseComp<P, S> extends React.Component<P & { id?: string }, S> {
 
             constructor(props: P) {
                 super(props);
@@ -152,6 +154,7 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
 
         class MainClass extends OtherBaseComp<{}, {}> {
             props: MainProps;
+
             render() {
                 return <div data-automation-id={'MAIN_CLASS_ROOT' + this.props.testId}>
                     <TestClass id='MyTestComp'></TestClass>
@@ -163,16 +166,16 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
         class TestClass extends OtherBaseComp<{}, {}> {
             render() {
                 return <div data-automation-id='TEST_CLASS_ROOT'>
-                    <input data-automation-id='TEST_CLASS_INPUT1' type="text" id='MyInput' />
+                    <input data-automation-id='TEST_CLASS_INPUT1' type="text" id='MyInput'/>
                     <label data-automation-id='TEST_CLASS_LABEL1' htmlFor='MyInput'></label>
-                    <input data-automation-id='TEST_CLASS_INPUT2' type="text" id={this.getGlobalID('MyOtherInput')} />
+                    <input data-automation-id='TEST_CLASS_INPUT2' type="text" id={this.getGlobalID('MyOtherInput')}/>
                     <label data-automation-id='TEST_CLASS_LABEL2' htmlFor={this.getGlobalID('MyOtherInput')}></label>
                 </div>
             }
         }
 
         it('Generates an ID if external ID is not passed', () => {
-            const { select } = clientRenderer.render(<MainClass testId='_I' ></MainClass>);
+            const {select} = clientRenderer.render(<MainClass testId='_I'></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT_I')).to.exist;
             expect(select('MAIN_CLASS_ROOT_I', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
@@ -184,7 +187,7 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
         });
 
         it('Uses external ID if passed', () => {
-            const { select } = clientRenderer.render(<MainClass testId='_I' id={'EXT'}></MainClass>);
+            const {select} = clientRenderer.render(<MainClass testId='_I' id={'EXT'}></MainClass>);
 
             expect(select('MAIN_CLASS_ROOT_I')).to.exist;
             expect(select('MAIN_CLASS_ROOT_I', 'TEST_CLASS_ROOT')).to.not.have.attribute('id');
@@ -204,13 +207,14 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
             class MainClass extends BaseComp<{}, {}> {
                 render() {
                     return <div data-automation-id={'MAIN_CLASS_ROOT'}>
-                        <input type="text" data-automation-id='MAIN_CLASS_DIV' id={this.getGlobalID('MyTestComp')} />
-                        <label data-automation-id='MAIN_CLASS_LABEL' id={this.getGlobalID('MyTestComp')} htmlFor={this.getGlobalID('MyTestComp')} ></label>
+                        <input type="text" data-automation-id='MAIN_CLASS_DIV' id={this.getGlobalID('MyTestComp')}/>
+                        <label data-automation-id='MAIN_CLASS_LABEL' id={this.getGlobalID('MyTestComp')}
+                               htmlFor={this.getGlobalID('MyTestComp')}></label>
                     </div>
                 }
             }
 
-            const { select } = clientRenderer.render(<MainClass></MainClass>);
+            const {select} = clientRenderer.render(<MainClass></MainClass>);
 
             expect(select('MAIN_CLASS_DIV')).to.have.attribute('id', 'MainClass1_MyTestComp');
             expect(select('MAIN_CLASS_LABEL')).to.have.attribute('id', 'MainClass1_MyTestComp');
@@ -224,13 +228,13 @@ describe.assuming(inBrowser(), 'only in browser')('Global ID Decorator', () => {
             class MainClass extends BaseComp<{}, {}> {
                 render() {
                     return <div data-automation-id={'MAIN_CLASS_ROOT'}>
-                        <input type="text" data-automation-id='MAIN_CLASS_DIV' id={this.getGlobalID('MyTestComp')} />
-                        <label data-automation-id='MAIN_CLASS_LABEL' htmlFor={this.getGlobalID('MyTestComp')} ></label>
+                        <input type="text" data-automation-id='MAIN_CLASS_DIV' id={this.getGlobalID('MyTestComp')}/>
+                        <label data-automation-id='MAIN_CLASS_LABEL' htmlFor={this.getGlobalID('MyTestComp')}></label>
                     </div>
                 }
             }
 
-            const { select } = clientRenderer.render(<MainClass></MainClass>);
+            const {select} = clientRenderer.render(<MainClass></MainClass>);
 
             expect(select('MAIN_CLASS_DIV')).to.have.attribute('id', 'MainClass1_MyTestComp');
             expect(select('MAIN_CLASS_LABEL')).to.have.attribute('for', 'MainClass1_MyTestComp');

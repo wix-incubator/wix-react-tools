@@ -3,16 +3,25 @@ import * as React from "react";
 import {
     Attributes,
     CElement,
-    ClassicComponent, ClassicComponentClass, ClassType, ComponentClass, ComponentState, DOMElement, HTMLAttributes,
+    ClassicComponent,
+    ClassicComponentClass,
+    ClassType,
+    ComponentClass,
+    ComponentState,
+    DOMElement,
+    HTMLAttributes,
     ReactElement,
     ReactHTML,
     ReactHTMLElement,
-    ReactNode, ReactSVG, ReactSVGElement,
-    SFC, SFCElement
+    ReactNode,
+    ReactSVG,
+    ReactSVGElement,
+    SFC,
+    SFCElement
 } from "react";
+import {Class, customMixin, MixedClass, MixerData} from "./class-decor/mixer";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
-import {Class, customMixin, MixedClass, MixerData} from "./class-decor/mixer";
 
 export type RenderResult = JSX.Element | null | false;
 export type Rendered<P extends object> = {
@@ -56,13 +65,12 @@ function cleanUpHook<P extends HTMLAttributes<HTMLElement>>(type: ElementType<P>
 
 interface ReactMixerData<T extends Rendered<any>> extends MixerData<T> {
     createElementHooks: Array<CreateElementHook<T>>;
-    lastRendering:T;
+    lastRendering: T;
 }
 
-type ReactMixedClass<T extends Rendered<any>> = Class<T> & {$mixerData: ReactMixerData<T>};
+type ReactMixedClass<T extends Rendered<any>> = Class<T> & { $mixerData: ReactMixerData<T> };
 
-function createElementProxy<T extends Rendered<any>, P extends HTMLAttributes<HTMLElement>>(
-    this:ReactMixerData<T>, type: ElementType<P>, props: Attributes & Partial<P> = {}, ...children: Array<ReactNode>) {
+function createElementProxy<T extends Rendered<any>, P extends HTMLAttributes<HTMLElement>>(this: ReactMixerData<T>, type: ElementType<P>, props: Attributes & Partial<P> = {}, ...children: Array<ReactNode>) {
     // check if original render is over, then clean up and call original
     if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
         let args: CreateElementArgs<P> = {type, props, children};
@@ -82,22 +90,24 @@ function isReactMix<T extends Rendered<any>>(arg: MixedClass<T>): arg is ReactMi
     return !!(arg as ReactMixedClass<T>).$mixerData.createElementHooks;
 }
 
-function initReactMix<C extends MixedClass<Rendered<any>>>(mixed: C):C & ReactMixedClass<Rendered<any>> {
+function initReactMix<C extends MixedClass<Rendered<any>>>(mixed: C): C & ReactMixedClass<Rendered<any>> {
     const reactMixed = mixed as C & ReactMixedClass<Rendered<any>>;
     reactMixed.$mixerData.createElementHooks = [];
     const boundProxy = createElementProxy.bind(reactMixed.$mixerData);
-    function reactDecorBeforeRenderHook(instance: Rendered<any>, args: never[]){
+
+    function reactDecorBeforeRenderHook(instance: Rendered<any>, args: never[]) {
         reactMixed.$mixerData.lastRendering = instance;
         (React as any).createElement = boundProxy;
         return args;
     }
+
     return before(reactDecorBeforeRenderHook, 'render')(reactMixed) as typeof reactMixed;
 }
-const reactMix : <C extends Class<Rendered<any>>>(clazz:C)=>C & ReactMixedClass<Rendered<any>>
+const reactMix: <C extends Class<Rendered<any>>>(clazz: C) => C & ReactMixedClass<Rendered<any>>
     = customMixin.bind(null, initReactMix, isReactMix);
 
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
-    return function registerForCreateElementDecorator<C extends Class<T>>(t: C):C {
+    return function registerForCreateElementDecorator<C extends Class<T>>(t: C): C {
         const mixed = reactMix(t);
         mixed.$mixerData.createElementHooks.push(hook);
         return mixed;

@@ -1,5 +1,5 @@
 import {resetAll, spyAll} from "./test-tools";
-import {before, after, middleware, FunctionWrapper} from "../src/function-decor";
+import {after, before, middleware} from "../src/function-decor";
 import {expect} from "test-drive";
 
 
@@ -24,7 +24,7 @@ describe('function-decor documentation examples', () => {
 
     describe('wrapper', () => {
 
-        function original(text: string):string {
+        function original(text: string): string {
             console.log(text);
             return 'message printed: ' + text;
         }
@@ -37,7 +37,7 @@ describe('function-decor documentation examples', () => {
                 console.log(result);
                 return 'wrapped=> ' + result
             }
-            const enhanceWithLogMW = middleware<[string], string>(logMW);
+            const enhanceWithLogMW = middleware(logMW);
 
             const enhanced = enhanceWithLogMW(original);
 
@@ -56,6 +56,7 @@ describe('function-decor documentation examples', () => {
                 console.log('called before method with ' + methodArguments[0]);
                 return ['goodbye'];
             }
+
             const wrap = before(preMethod);
             const printMessage = wrap(original);
 
@@ -68,10 +69,11 @@ describe('function-decor documentation examples', () => {
         });
 
         it('after', () => {
-            function postMethod(methodReturn:string){
+            function postMethod(methodReturn: string) {
                 console.log(methodReturn);
-                return 'wrapped=> '+methodReturn;
+                return 'wrapped=> ' + methodReturn;
             }
+
             const wrap = after(postMethod);
             const printMessage = wrap(original);
 

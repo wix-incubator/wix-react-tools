@@ -1,12 +1,13 @@
 import {expect, sinon} from "test-drive-react";
 import {getHeritage, resetAll, spyAll} from "../../../test-tools";
-import {after, before, onInstance, chain, middleware} from "../../../../src";
+import {after, before, chain, middleware, onInstance} from "../../../../src";
 import {Class} from "../../../../src/old/utils/class-decor/mixer";
 
 const METHOD = "myMethod";
 
 class Foo {
-    myMethod() {}
+    myMethod() {
+    }
 }
 describe("class decor side-effect", () => {
     const decorate = chain<Foo>(
@@ -39,24 +40,28 @@ describe("class decor side-effect", () => {
 
     describe('heritage boundaries', () => {
         const hooks = spyAll({
-            spySuper: ()=>{},
-            spy1: ()=>{},
-            spy2: ()=>{}
+            spySuper: () => {
+            },
+            spy1: () => {
+            },
+            spy2: () => {
+            }
         });
-        let Super : Class<any>;
+        let Super: Class<any>;
         afterEach("reset console.warn", () => {
             resetAll(hooks);
         });
 
-        beforeEach('init classes', ()=>{
+        beforeEach('init classes', () => {
             @after(hooks.spySuper, METHOD)
-            class _Super{}
+            class _Super {
+            }
             Super = _Super;
         });
 
         it("init of parent class do not leak to children", () => {
             @after(hooks.spy1, METHOD)
-            class Child1 extends Super{
+            class Child1 extends Super {
 
             }
             new Super();
@@ -67,13 +72,13 @@ describe("class decor side-effect", () => {
         });
 
         it("multiple children of decorated class do not mess each other up", () => {
-            class Child1 extends Super  implements Foo{
-                myMethod(){
+            class Child1 extends Super implements Foo {
+                myMethod() {
                     hooks.spy1();
                 }
             }
-            class Child2 extends Super  implements Foo{
-                myMethod(){
+            class Child2 extends Super implements Foo {
+                myMethod() {
                     hooks.spy2();
                 }
             }
@@ -94,7 +99,7 @@ describe("class decor side-effect", () => {
         it("decorations on child of decorated class do not leak to siblings", () => {
 
             @after(hooks.spy1, METHOD)
-            class Child1 extends Super{
+            class Child1 extends Super {
             }
 
             @after(hooks.spy2, METHOD)
@@ -119,7 +124,8 @@ describe("class decor side-effect", () => {
 
         xdescribe("after decorator", () => {
             class Blah {
-                myMethod(): void {}
+                myMethod(): void {
+                }
             }
 
             it("should not override a method on the class itself", () => {

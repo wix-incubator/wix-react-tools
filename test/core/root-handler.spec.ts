@@ -1,5 +1,5 @@
-import {expect} from 'test-drive-react';
-import {root, mergeEventHandlers} from '../../src';
+import {expect} from "test-drive-react";
+import {mergeEventHandlers, root} from "../../src";
 
 // make a new function
 function func() {

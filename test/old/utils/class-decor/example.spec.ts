@@ -1,12 +1,13 @@
 import {resetAll, spyAll} from "../../../test-tools";
-import {middleware, before, after} from "../../../../src";
+import {add, after, before, middleware, onInstance} from "../../../../src";
 import {expect} from "test-drive";
-import {add, onInstance} from "../../../../src";
 
 describe('class-decor documentation examples', () => {
     const console = spyAll({
-        log: ()=>{},
-        warn: ()=>{},
+        log: () => {
+        },
+        warn: () => {
+        },
     });
 
     afterEach("reset console.warn", () => {
@@ -32,6 +33,7 @@ describe('class-decor documentation examples', () => {
             function init(instance: Logger, constructorArguments: [string]) {
                 console.log('called on constructor with "' + constructorArguments[0] + '"');
             }
+
             @onInstance(init)
             class Logger {
                 constructor(name: string) {
@@ -49,18 +51,18 @@ describe('class-decor documentation examples', () => {
 
     describe('middleware', () => {
         it('directly on class', () => {
-            function logMW(instance: Logger, next: (n:string)=>string, methodArguments:[string]){
-                console.log('called on method with '+methodArguments[0]);
-                const result:string = next('goodbye');
+            function logMW(instance: Logger, next: (n: string) => string, methodArguments: [string]) {
+                console.log('called on method with ' + methodArguments[0]);
+                const result: string = next('goodbye');
                 console.log(result)
-                return 'wrapped=> '+result
+                return 'wrapped=> ' + result
             }
 
             @middleware(logMW, 'printMessage')
-            class Logger{
-                printMessage(text:string){
+            class Logger {
+                printMessage(text: string) {
                     console.log(text);
-                    return 'message printed: '+text;
+                    return 'message printed: ' + text;
                 }
             }
             const logger = new Logger();
@@ -76,16 +78,16 @@ describe('class-decor documentation examples', () => {
 
     describe('before', () => {
         it('directly on class', () => {
-            function preMethod(instance:Logger, methodArguments:[string]){
-                console.log('called before method with '+methodArguments[0]);
+            function preMethod(instance: Logger, methodArguments: [string]) {
+                console.log('called before method with ' + methodArguments[0]);
                 return ['goodbye'];
             }
 
             @before(preMethod, 'printMessage')
-            class Logger{
-                printMessage(text:string){
+            class Logger {
+                printMessage(text: string) {
                     console.log(text);
-                    return 'message printed: '+text;
+                    return 'message printed: ' + text;
                 }
             }
             const logger = new Logger();
@@ -100,16 +102,16 @@ describe('class-decor documentation examples', () => {
 
     describe('after', () => {
         it('directly on class', () => {
-            function postMethod(instance:Logger, methodReturn:string){
+            function postMethod(instance: Logger, methodReturn: string) {
                 console.log(methodReturn);
-                return 'wrapped=> '+methodReturn;
+                return 'wrapped=> ' + methodReturn;
             }
 
             @after(postMethod, 'printMessage')
-            class Logger{
-                printMessage(text:string){
+            class Logger {
+                printMessage(text: string) {
                     console.log(text);
-                    return 'message printed: '+text;
+                    return 'message printed: ' + text;
                 }
             }
 
@@ -125,14 +127,14 @@ describe('class-decor documentation examples', () => {
 
     describe('add', () => {
         it('directly on class', () => {
-            function printMessage(text:string){
+            function printMessage(text: string) {
                 console.log(text);
-                return 'message printed: '+text;
+                return 'message printed: ' + text;
             }
 
-            @add({ printMessage })
-            class Logger{
-                printMessage: (text:string)=>string;
+            @add({printMessage})
+            class Logger {
+                printMessage: (text: string) => string;
             }
             const logger = new Logger();
             const result = logger.printMessage('hello');

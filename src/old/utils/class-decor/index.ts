@@ -1,9 +1,12 @@
-import {ConstructorHook, customMixin, MixedClass, MixerData, mix, Class} from "./mixer";
+import {Class, ConstructorHook, customMixin, mix, MixedClass} from "./mixer";
 import {getPrivateContext} from "../../../core/private-context";
 import {
     AfterHook,
     BeforeHook,
-    EdgeClassData, initChildClass, isClassDecorMixin, MiddlewareHook,
+    EdgeClassData,
+    initChildClass,
+    isClassDecorMixin,
+    MiddlewareHook,
     MixedClassDecor
 } from "./apply-method-decorations";
 

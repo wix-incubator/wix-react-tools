@@ -1,21 +1,21 @@
 import {mergeEventHandlers} from "./merge-events";
 export interface Props {
     className: string;
-    style?: {[k:string]:string};
-    'data-automation-id'?:string;
-    [k:string]: any;
+    style?: { [k: string]: string };
+    'data-automation-id'?: string;
+    [k: string]: any;
 }
 
 // TODO use curated list?
-function isEventHandlerName(key:string){
-    if (key.startsWith('on')){
+function isEventHandlerName(key: string) {
+    if (key.startsWith('on')) {
         const handlerFirstLetter = key['on'.length];
         return (handlerFirstLetter === handlerFirstLetter.toUpperCase());
     }
     return false;
 }
 
-export function root<T extends Partial<Props>, S extends Props>(componentProps: T, rootProps: S, blacklist:string[] = []): T & S {
+export function root<T extends Partial<Props>, S extends Props>(componentProps: T, rootProps: S, blacklist: string[] = []): T & S {
     if (typeof rootProps.className !== "string") {
         throw new Error(`root properties does not contain valid className defintion: ${rootProps.className}`);
     }

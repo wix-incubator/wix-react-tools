@@ -1,4 +1,4 @@
-import {registerForCreateElement, CreateElementArgs} from "../../../src";
+import {CreateElementArgs, registerForCreateElement} from "../../../src";
 import * as React from "react";
 import {ClientRenderer, expect} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
@@ -30,7 +30,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
     });
 
     it('throws when hook returns undefined', () => {
-        @registerForCreateElement((() => {}) as any)
+        @registerForCreateElement((() => {
+        }) as any)
         class MyComp extends React.Component {
             render() {
                 return <div/>
@@ -80,33 +81,33 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
     });
 
     /*
-    xit('old WIP example', () => {
-        function hook<P extends { className?: string }>(instance: React.Component<any, any>,
-                                                        next: CreateElementNext<P>,
-                                                        type: ElementType<P>,
-                                                        props: P,
-                                                        children: Array<ReactNode>) {
+     xit('old WIP example', () => {
+     function hook<P extends { className?: string }>(instance: React.Component<any, any>,
+     next: CreateElementNext<P>,
+     type: ElementType<P>,
+     props: P,
+     children: Array<ReactNode>) {
 
-            if (instance.props.className) {
-                props.className = instance.props.className + (props.className ? ' ' + props.className : '');
-            }
-            return next(type, props, children);
-        }
+     if (instance.props.className) {
+     props.className = instance.props.className + (props.className ? ' ' + props.className : '');
+     }
+     return next(type, props, children);
+     }
 
-        @registerForCreateElement(hook)
-        class MyComp extends React.Component<{ className: string }, {}> {
-            render() {
-                return <div className="rootClassName">
-                    <div className="otherClassName"/>
-                </div>
-            }
-        }
+     @registerForCreateElement(hook)
+     class MyComp extends React.Component<{ className: string }, {}> {
+     render() {
+     return <div className="rootClassName">
+     <div className="otherClassName"/>
+     </div>
+     }
+     }
 
-        renderToString(<MyComp className="App"/>)
-// will return:
-         <div className="App rootClassName">
-         <div className="otherClassName"></div>
-         </div>
-    });
-*/
+     renderToString(<MyComp className="App"/>)
+     // will return:
+     <div className="App rootClassName">
+     <div className="otherClassName"></div>
+     </div>
+     });
+     */
 });
