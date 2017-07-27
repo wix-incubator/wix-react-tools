@@ -1,6 +1,6 @@
 import {resetAll, spyAll} from "./test-tools";
-import {after, before, middleware} from "../src/function-decor";
-import {reduce} from "lodash";
+import {after, before, middleware, FunctionWrapper} from "../src/function-decor";
+import {reduce, concat, map, chain} from 'lodash';
 import {expect} from "test-drive";
 import {Args} from "../src/index";
 
@@ -110,26 +110,35 @@ describe('function-decor documentation examples', () => {
                 return id;
             }
 
-            function getWrappedFunction(originalMethod: Function, middlewares: Function[] = [], befores: Function[] = [], afters: Function[] = []): Function {
-                const merged = middlewares.concat(befores, afters);
-                return reduce(merged, (prev: Function, current: Function) => current(prev), originalMethod);
-            }
+            type hookWrappers = {middleware: Array<Function>, before: Array<Function>, after: Array<Function>}
+
+            function getWrappingFunction(wrappers: hookWrappers): Function {
+                return function (originalMethod: Function): Function {
+                    return chain(
+                    concat(
+                        map(wrappers.middleware, middleware),
+                        map(wrappers.before, before),
+                        map(wrappers.after, after)
+                )).reduce((prev:Function, wrapper:Function) => wrapper(prev), originalMethod).value();
+            }}
 
             it('should be able to wrap multiple before/after/middleware functions', () => {
-                const middlewares = [
-                    middleware(middlewarePrintMethod),
-                    middleware(middlewarePrintMethod)
-                ];
-                const befores = [
-                    before(beforePrintMethod),
-                    before(beforePrintMethod)
-                ];
-                const afters = [
-                    after(afterPrintMethod),
-                    after(afterPrintMethod)
-                ];
+                const wrappers:hookWrappers = {
+                    middleware: [
+                        middlewarePrintMethod,
+                        middlewarePrintMethod
+                    ],
+                    before: [
+                        beforePrintMethod,
+                        beforePrintMethod
+                    ],
+                    after: [
+                        afterPrintMethod,
+                        afterPrintMethod
+                    ]
+                };
 
-                const enhanced = getWrappedFunction(original, middlewares, befores, afters);
+                const enhanced = getWrappingFunction(wrappers)(original);
 
                 const res = enhanced('0');
 
