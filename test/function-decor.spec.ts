@@ -1,8 +1,7 @@
 import {resetAll, spyAll} from "./test-tools";
-import {after, before, middleware, FunctionWrapper} from "../src/function-decor";
-import {reduce, concat, map, chain} from 'lodash';
+import {concat, map, chain} from 'lodash';
 import {expect} from "test-drive";
-import {Args} from "../src/index";
+import {after, before, middleware} from "../src/index";
 
 
 describe('function-decor documentation examples', () => {
@@ -40,7 +39,7 @@ describe('function-decor documentation examples', () => {
                 return 'wrapped=> ' + result
             }
 
-            const enhanceWithLogMW = middleware<Args<[string]>, string>(logMW);
+            const enhanceWithLogMW = middleware(logMW);
             const enhanced = enhanceWithLogMW(original);
 
             const result: string = enhanced('hello');
@@ -116,9 +115,9 @@ describe('function-decor documentation examples', () => {
                 return function (originalMethod: Function): Function {
                     return chain(
                     concat(
-                        map(wrappers.middleware, middleware),
-                        map(wrappers.before, before),
-                        map(wrappers.after, after)
+                        map(wrappers.middleware, (mw:any) => middleware(mw)),
+                        map(wrappers.before, (b:any) => before(b)),
+                        map(wrappers.after, (a:any) => after(a))
                 )).reduce((prev:Function, wrapper:Function) => wrapper(prev), originalMethod).value();
             }}
 

@@ -16,21 +16,23 @@ export * from './old/mixins/global-id-decorator';
 export * from './old/utils/class-decor/index';
 export * from './old/utils/react-decor';
 export * from './old/utils/disposers';
+
 // custom exports:
+import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
 import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./old/utils/class-decor/index";
-import {middleware as FDMiddleware} from "./function-decor";
 
-
-//TODO: merge types of class decor and function decor
-export const before: typeof CDBefore = CDBefore;
-export const after: typeof CDAfter = CDAfter;
-
-
-export const middleware = function middlewareRoot() {
-    if (arguments.length > 1) {
-        return CDMiddleware.apply(null, arguments);
-    } else {
-        return FDMiddleware.apply(null, arguments);
+function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc:F, cDFunc:C) : F & C{
+    function ApiHook() {
+        if (arguments.length > 1) {
+            return cDFunc.apply(null, arguments);
+        } else {
+            return fDFunc.apply(null, arguments);
+        }
     }
-} as any as ((typeof CDMiddleware) & (typeof FDMiddleware));
-Object.setPrototypeOf(middleware, CDMiddleware);
+    Object.setPrototypeOf(ApiHook, cDFunc);
+    return ApiHook as any as F & C;
+}
+
+export const before = mergeFuncAndClass(FDBefore, CDBefore);
+export const after = mergeFuncAndClass(FDAfter, CDAfter);
+export const middleware = mergeFuncAndClass(FDMiddleware, CDMiddleware);
