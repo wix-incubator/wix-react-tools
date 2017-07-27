@@ -1,6 +1,7 @@
 import {resetAll, spyAll} from "./test-tools";
 import {after, before, middleware} from "../src/function-decor";
 import {expect} from "test-drive";
+import {Args} from "../src/index";
 
 
 describe('function-decor documentation examples', () => {
@@ -31,15 +32,14 @@ describe('function-decor documentation examples', () => {
 
 
         it('middleware', () => {
-            function logMW(next: (n: string) => string, methodArguments: [string]) {
+            function logMW(next: (n: [string]) => string, methodArguments: [string]):string {
                 console.log('called on method with ' + methodArguments[0]);
-                const result: string = next('goodbye');
+                const result: string = next(['goodbye']);
                 console.log(result);
                 return 'wrapped=> ' + result
             }
-            const enhanceWithLogMW = middleware(logMW as any);
-
-            const enhanced = enhanceWithLogMW(original as any);
+            const  enhanceWithLogMW = middleware<Args<[string]>, string>(logMW);
+            const enhanced = enhanceWithLogMW(original);
 
             const result: string = enhanced('hello');
             expectLog(
@@ -84,8 +84,6 @@ describe('function-decor documentation examples', () => {
             );
             expect(result).to.eql('wrapped=> message printed: hello');
         });
-
     });
-
 });
 

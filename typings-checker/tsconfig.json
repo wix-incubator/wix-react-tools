@@ -5,6 +5,7 @@
     "strictNullChecks": true,
     "experimentalDecorators": true,
     "target": "es6",
+    "allowJs": true,
     "noEmit": true
   },
   "lib": ["es6"]

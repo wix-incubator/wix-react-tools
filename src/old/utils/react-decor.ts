@@ -1,4 +1,4 @@
-import {before, ClassDecorator} from "./class-decor";
+import {before, ClassDecorator} from "./class-decor/index";
 import * as React from "react";
 import {
     Attributes,
