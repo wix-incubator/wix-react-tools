@@ -1,5 +1,6 @@
 import {resetAll, spyAll} from "./test-tools";
 import {after, before, middleware} from "../src/function-decor";
+import {reduce} from 'lodash';
 import {expect} from "test-drive";
 import {Args} from "../src/index";
 
@@ -84,6 +85,66 @@ describe('function-decor documentation examples', () => {
             );
             expect(result).to.eql('wrapped=> message printed: hello');
         });
+        });
+
+        describe('multiple wrappers', () => {
+            function beforePrintMethod(methodArguments:[string]):[string] {
+                const id = ((+methodArguments[0]) + 1) + ''; // cast to number, increase and cast back to string
+                console.log('before ' + id);
+                return [id];
+            }
+
+            function afterPrintMethod(methodReturn:string) {
+                let lastChar = methodReturn.substr(methodReturn.length - 1); // trims to passed number only
+                const id = ((+lastChar) + 1) + ''; // cast to number, increase and cast back to string
+                console.log('after ' + id);
+                return id;
+            }
+
+            function middlewarePrintMethod(next: (n: [string]) => void, methodArguments:[string]):string {
+                let str = methodArguments[0];
+                const id = ((+str) + 1) + ''; // cast to number, increase and cast back to string
+                console.log('middleware before ' + id);
+                next([id]); // because dynamic number of arguments in generic functions?
+                console.log('middleware after ' + id);
+                return id;
+            }
+
+            function getWrappedFunction(originalMethod: Function, middlewares: Function[] = [], befores: Function[] = [], afters: Function[] = []): Function {
+                const merged = middlewares.concat(befores, afters);
+                return reduce(merged, (prev:Function, current:Function) => current(prev), originalMethod);
+            }
+
+            it('should be able to wrap multiple before/after/middleware functions', () => {
+                const middlewares = [
+                    middleware(middlewarePrintMethod),
+                    middleware(middlewarePrintMethod)
+                ];
+                const befores = [
+                    before(beforePrintMethod),
+                    before(beforePrintMethod)
+                ];
+                const afters = [
+                    after(afterPrintMethod),
+                    after(afterPrintMethod)
+                ];
+
+                const enhanced = getWrappedFunction(original, middlewares, befores, afters);
+
+                const res = enhanced('0');
+
+                expectLog(
+                    'before 1', // befores
+                    'before 2',
+                    'middleware before 3', // middlewares
+                    'middleware before 4',
+                    '4', // original function
+                    'middleware after 4',
+                    'middleware after 3',
+                    'after 4', // afters
+                    'after 5',
+                );
+            });
+        });
     });
 });
-
