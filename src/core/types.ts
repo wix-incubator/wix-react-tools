@@ -27,7 +27,7 @@ export declare type THListLengthNum<L extends THList> = {
     false: Increment[THListLengthNum<THListTail<L>>];
 }[THListIsTHNil<L>];
 
-export type ApiFunc<A extends THList, R = void, T = any> = {
+export type ApiFunc<A extends THList, R = void, T = never> = {
     0: (this: T) => R
     1: (this: T, a0: ArgAt<A, _0>) => R
     2: (this: T, a0: ArgAt<A, _0>, a1: ArgAt<A, _1>) => R
