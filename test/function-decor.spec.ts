@@ -1,5 +1,6 @@
 import {resetAll, spyAll} from "./test-tools";
 import {after, before, middleware} from "../src/function-decor";
+import {reduce} from 'lodash';
 import {expect} from "test-drive";
 
 
@@ -31,9 +32,9 @@ describe('function-decor documentation examples', () => {
 
 
         it('middleware', () => {
-            function logMW(next: (n: string) => string, methodArguments: [string]) {
+            function logMW(next: (n: [string]) => string, methodArguments: [string]) {
                 console.log('called on method with ' + methodArguments[0]);
-                const result: string = next('goodbye');
+                const result: string = next(['goodbye']);
                 console.log(result);
                 return 'wrapped=> ' + result
             }
@@ -99,27 +100,35 @@ describe('function-decor documentation examples', () => {
                 return id;
             }
 
-            function middlewarePrintMethod<R = string>(next: (n: [string]) => R, methodArguments:[string]):string {
+            function middlewarePrintMethod(next: (n: [string]) => void, methodArguments:[string]):string {
                 let str = methodArguments[0];
                 const id = ((+str) + 1) + ''; // cast to number, increase and cast back to string
                 console.log('middleware before ' + id);
-                next(id as any); // because dynamic number of arguments in generic functions?
+                next([id]); // because dynamic number of arguments in generic functions?
                 console.log('middleware after ' + id);
                 return id;
             }
 
-            it('should be able to wrap multiple before/after/middleware functions', () => {
-                const middlewareWrapper = middleware(middlewarePrintMethod);
-                const beforeWrapper = before(beforePrintMethod);
-                const afterWrapper = after(afterPrintMethod);
+            function getWrappedFunction(originalMethod: Function, middlewares: Function[] = [], befores: Function[] = [], afters: Function[] = []): Function {
+                const merged = middlewares.concat(befores, afters);
+                return reduce(merged, (prev:Function, current:Function) => current(prev), originalMethod);
+            }
 
-                const enhanced = afterWrapper(
-                    afterWrapper(
-                    beforeWrapper(
-                    beforeWrapper(
-                    middlewareWrapper(
-                    middlewareWrapper(original)
-                )))));
+            it('should be able to wrap multiple before/after/middleware functions', () => {
+                const middlewares = [
+                    middleware(middlewarePrintMethod),
+                    middleware(middlewarePrintMethod)
+                ];
+                const befores = [
+                    before(beforePrintMethod),
+                    before(beforePrintMethod)
+                ];
+                const afters = [
+                    after(afterPrintMethod),
+                    after(afterPrintMethod)
+                ];
+
+                const enhanced = getWrappedFunction(original, middlewares, befores, afters);
 
                 const res = enhanced('0');
 

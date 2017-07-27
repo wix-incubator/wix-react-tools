@@ -19,10 +19,14 @@ export function after<T extends Function>(postMethod: AfterHook<any>): FunctionW
     }
 }
 
+function bridgeOriginalArguments(originalFunction: Function): Function {
+    return (methodArguments: Array<any>) => originalFunction.apply(undefined, methodArguments); // which this?
+}
+
 export function middleware<T extends Function>(hook: MiddlewareHook<any>): FunctionWrapper<T> {
-    return function (originalFunction: Function): any {
-        return function (...methodArguments: Array<any>): any {
-            return hook(originalFunction as any, methodArguments);
+    return function createWrapper(originalFunction: Function): any {
+        return function wrapper(...methodArguments: Array<any>): any {
+            return hook(bridgeOriginalArguments(originalFunction) as any, methodArguments);
         }
     }
 }
