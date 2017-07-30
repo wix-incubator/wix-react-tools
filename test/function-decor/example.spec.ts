@@ -1,7 +1,7 @@
-import {resetAll, spyAll} from "./test-tools";
+import {resetAll, spyAll} from "../test-drivers/test-tools";
 import {concat, map, chain} from 'lodash';
 import {expect} from "test-drive";
-import {after, before, middleware} from "../src/index";
+import {after, before, middleware} from "../../src/index";
 
 
 describe('function-decor documentation examples', () => {

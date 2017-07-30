@@ -1,7 +1,6 @@
 import {expect, sinon} from "test-drive-react";
 import {after, before, chain, ClassDecorator, middleware, onInstance} from "../../../../src";
-import {expectSpyChain} from "../../test-drivers/spy-chain";
-import {resetAll, spyAll} from "../../../test-tools";
+import {expectSpyChain, resetAll, spyAll} from "../../../test-drivers/test-tools";
 import {Class} from "../../../../src/old/utils/class-decor/mixer";
 import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');

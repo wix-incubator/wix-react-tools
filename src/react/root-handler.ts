@@ -1,4 +1,4 @@
-import {mergeEventHandlers} from "./merge-events";
+import {mergeEventHandlers} from "../core/merge-events";
 import {ObjectOmit} from "typelevel-ts";
 export interface ComponentProps {
     className?: string;

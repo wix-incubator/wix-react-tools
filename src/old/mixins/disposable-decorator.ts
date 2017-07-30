@@ -1,4 +1,4 @@
-import {Disposers} from "../utils/disposers";
+import {Disposers} from "../../core/disposers";
 import {after, chain, onInstance} from "../utils/class-decor";
 export interface DisposableCompMixin extends React.Component {
     readonly disposer: Disposers;
