@@ -1,5 +1,7 @@
 import {ApiFunc} from "./core/types";
 import { THList, THListToTuple, THNil} from "typelevel-ts";
+import { chain, concat, map, reduce } from "lodash";
+
 export type FunctionWrapper<A extends THList, R = void, T = any> =  <F extends ApiFunc<A, R, T>>(func: F) => F
 
 export type BeforeHook<A extends THList, T = any> = (this: T, methodArguments: THListToTuple<A>) => THListToTuple<A>;
@@ -34,3 +36,19 @@ export function middleware<A extends THList, R=void, T=any>(hook: MiddlewareHook
         } as any as F;
     }
 }
+
+export type hookWrappers = {
+    middleware?: Array<Function>,
+    before?: Array<Function>,
+    after?: Array<Function>
+}
+
+export function decorFunction(wrappers: hookWrappers): Function {
+    return function (originalMethod: Function): Function {
+        return chain(
+        concat(
+            map(wrappers.middleware, (mw:any) => middleware(mw)),
+            map(wrappers.before, (b:any) => before(b)),
+            map(wrappers.after, (a:any) => after(a))
+    )).reduce((prev:Function, wrapper:Function) => wrapper(prev), originalMethod).value();
+}}
