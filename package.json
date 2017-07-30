@@ -24,7 +24,7 @@
     "component"
   ],
   "main": "dist/src/index.js",
-  "browser": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "tsc -d",
     "bundle": "webpack --progress",
