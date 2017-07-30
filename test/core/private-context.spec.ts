@@ -1,52 +1,74 @@
 import {expect} from "test-drive";
-import {getPrivateContext, GlobalConfig, runInContext, STATE_DEV_MODE_KEY} from "../../src";
+import {privateState, runInContext, STATE_DEV_MODE_KEY} from "../../src";
 
-let ids = ["ID0", "ID1"];
-type State = { foo?: string };
-describe('Private context', () => {
-    it('serves private context per id per instance', () => {
-        const instance = {};
-        getPrivateContext<State>(instance, ids[0]).foo = "Hi";
-        expect(getPrivateContext<State>(instance, ids[0])).to.eql({foo: "Hi"});
-        expect(getPrivateContext<State>(instance, ids[1])).to.eql({});  //Make sure new key generates a new object
-
-        expect(getPrivateContext<State>({}, ids[0])).to.eql({});    //Check that new instance doesn't return information given to other instance
-    });
-
-    it("doesn't show the added fields on original object", () => {
-        const instance = {};
-        getPrivateContext<State>(instance, ids[0]).foo = "Hi";
-
-        expect(Object.keys(instance)).to.eql([]);
-    });
-
-    it("doesn't create gazillion fields on an instance", () => {
-        runInContext<GlobalConfig>({devMode: true}, () => {
-            const instance = {};
-            getPrivateContext<State>(instance, ids[0]).foo = "Hi";
-            getPrivateContext<State>(instance, ids[1]).foo = "Bye";
-
-            expect(Object.keys(instance).length).to.be.lessThan(2);
+let ids = ["ID0", "ID1", "ID2"];
+function emptyState(subj: any) {
+    return {};
+}
+type State = {
+    foo?: string
+    bar?: string
+};
+describe('Private state', () => {
+    describe('per ID', () => {
+        const pState0 = privateState<State>(ids[0], emptyState);
+        const pState1 = privateState<State>(ids[1], emptyState);
+        const pState2 = privateState<State>(ids[2], (subj: any) => {
+            const result = Object.create(pState1(subj));
+            result.foo = 'bar';
+            return result;
         });
-    });
-
-    it("in dev mode, expose an instance's private context but doesn't let you change it", () => {
-        runInContext<GlobalConfig>({devMode: true}, () => {
+        it('serves private state per id per instance', () => {
             const instance = {};
-            getPrivateContext<State>(instance, ids[0]).foo = "Hi";
+            pState0(instance).foo = "Hi";
+            expect(pState0(instance)).to.eql({foo: "Hi"});
+            expect(pState1(instance)).to.eql({});  //Make sure new key generates a new object
 
-            const desc = Object.getOwnPropertyDescriptor(instance, STATE_DEV_MODE_KEY);
-            expect(desc).to.containSubset({writable: false, configurable: false});
+            expect(pState0({})).to.eql({});    //Check that new instance doesn't return information given to other instance
         });
-    });
 
-    it("outside dev mode, do not expose an instance's private context ", () => {
-        runInContext<GlobalConfig>({devMode: false}, () => {
+        it("doesn't show the added fields on original object", () => {
             const instance = {};
-            getPrivateContext<State>(instance, ids[0]).foo = "Hi";
+            pState0(instance).foo = "Hi";
 
-            expect(instance.hasOwnProperty(STATE_DEV_MODE_KEY)).to.eql(false);
-            expect((instance as any)[STATE_DEV_MODE_KEY]).to.equal(undefined);
+            expect(Object.keys(instance)).to.eql([]);
+        });
+
+        it("doesn't create gazillion fields on an instance", () => {
+            runInContext({devMode: true}, () => {
+                const instance = {};
+                pState0(instance).foo = "Hi";
+                pState1(instance).foo = "Bye";
+
+                expect(Object.keys(instance).length).to.be.lessThan(2);
+            });
+        });
+
+        it("in dev mode, expose an instance's private state but doesn't let you change it", () => {
+            runInContext({devMode: true}, () => {
+                const instance = {};
+                pState0(instance).foo = "Hi";
+
+                const desc = Object.getOwnPropertyDescriptor(instance, STATE_DEV_MODE_KEY);
+                expect(desc).to.containSubset({writable: false, configurable: false});
+            });
+        });
+
+        it("outside dev mode, do not expose an instance's private state ", () => {
+            runInContext({devMode: false}, () => {
+                const instance = {};
+                pState0(instance).foo = "Hi";
+
+                expect(instance.hasOwnProperty(STATE_DEV_MODE_KEY)).to.eql(false);
+                expect((instance as any)[STATE_DEV_MODE_KEY]).to.equal(undefined);
+            });
+        });
+
+        it("allows initializing (and prototype inheritance) between states", () => {
+            const instance = {};
+            expect(pState2(instance)).to.eql({foo:"bar"});
+            pState1(instance).bar = "Hi";
+            expect(pState2(instance)).to.eql({foo:"bar", bar: "Hi"});
         });
     });
 });

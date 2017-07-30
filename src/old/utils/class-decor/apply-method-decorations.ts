@@ -18,11 +18,11 @@ export interface ClassDecorData<T extends object> extends MixerData<T> {
     middlewareHooks: {[P in keyof T]?:FlaggedArray<MiddlewareHook<T, any, any>>};
 }
 
-export interface EdgeClassData<T extends object> {
+export interface EdgeClassData<T extends object = object> {
     mixerMeta: ClassDecorData<T>;
     origin: {[P in keyof T]?:T[P] & ((...args: any[]) => any)};
 }
-export type MixedClassDecor<T extends object> = Class<T> & { $mixerData: ClassDecorData<T> };
+export type MixedClassDecor<T extends object = object> = Class<T> & { $mixerData: ClassDecorData<T> };
 
 export function isClassDecorMixin<T extends object>(arg: MixedClass<T>): arg is MixedClassDecor<T> {
     return !!(arg as MixedClassDecor<T>).$mixerData.beforeHooks;
