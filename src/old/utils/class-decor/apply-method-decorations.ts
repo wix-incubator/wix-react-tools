@@ -8,7 +8,7 @@ export type BeforeHook<T, A extends Array<any>> = (instance: T, methodArguments:
 export type AfterHook<T, R = void> = (instance: T, methodResult: R) => R;
 export type MiddlewareHook<T, A extends Array<any>, R = void> = (instance: T, next: (methodArguments: A) => R, methodArguments: A) => R;
 
-export type FlaggedArray<T> = Array <{
+export type FlaggedArray<T> = Array<{
     ifExists?: boolean;
 } & T>
 
@@ -29,14 +29,15 @@ export function isClassDecorMixin<T extends object>(arg: MixedClass<T>): arg is 
 }
 const wrappedFlag = '$class-decor-wrapped-method'; //TODO Symbol or something
 
-function emptyMethod(){}
-
-type WrappedMethod<F extends Function = Function> = F & {
-    ['$class-decor-wrapped-method']:true;
-    originalMethod?:F;
+function emptyMethod() {
 }
 
-function wrapMethod<T extends object, P extends keyof T>(edgeClassData: EdgeClassData<T>, methodName: P, originalMethod?: T[P]):WrappedMethod{
+type WrappedMethod<F extends Function = Function> = F & {
+    ['$class-decor-wrapped-method']: true;
+    originalMethod?: F;
+}
+
+function wrapMethod<T extends object, P extends keyof T>(edgeClassData: EdgeClassData<T>, methodName: P, originalMethod?: T[P]): WrappedMethod {
     // TODO dynamically named function
     const result = function wrappedClassDecorMethod(this: T) {
         let methodArgs: any[] = Array.prototype.slice.call(arguments);
@@ -52,14 +53,14 @@ function wrapMethod<T extends object, P extends keyof T>(edgeClassData: EdgeClas
     return result;
 }
 
-function unwrapMethod(method:Function | WrappedMethod): Function| undefined{
-    if ((method as WrappedMethod)[wrappedFlag]){
+function unwrapMethod(method: Function | WrappedMethod): Function | undefined {
+    if ((method as WrappedMethod)[wrappedFlag]) {
         return (method as WrappedMethod).originalMethod;
     }
     return method;
 }
 
-export function initChildClass<T extends object>(edgeClassData: EdgeClassData<T>, proto:T) {
+export function initChildClass<T extends object>(edgeClassData: EdgeClassData<T>, proto: T) {
     hookedMethodNames(edgeClassData.mixerMeta).forEach((methodName: keyof T) => {
         // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
         if (proto[methodName]) {
@@ -89,31 +90,31 @@ function hookedMethodNames<T extends object>(classData: ClassDecorData<T>): Arra
         Object.keys(classData.afterHooks)) as Array<keyof T>;
 }
 
-function middlewareHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<MiddlewareHook<T, any, any>>| undefined {
+function middlewareHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<MiddlewareHook<T, any, any>> | undefined {
     const parent = classData.getParentOf(isClassDecorMixin);
     const parentHooks = parent && middlewareHooks(parent.$mixerData, methodName);
     const thisHooks = classData.middlewareHooks[methodName];
-    if (parentHooks){
-        return thisHooks ? _union(parentHooks,thisHooks) : parentHooks;
+    if (parentHooks) {
+        return thisHooks ? _union(parentHooks, thisHooks) : parentHooks;
     }
     return thisHooks;
 }
 
-function beforeHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<BeforeHook<T, any>>| undefined {
+function beforeHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<BeforeHook<T, any>> | undefined {
     const parent = classData.getParentOf(isClassDecorMixin);
     const parentHooks = parent && beforeHooks(parent.$mixerData, methodName);
     const thisHooks = classData.beforeHooks[methodName];
-    if (parentHooks){
+    if (parentHooks) {
         // notice: after order is reversed to before order
-        return thisHooks ? _union(parentHooks,thisHooks) : parentHooks;
+        return thisHooks ? _union(parentHooks, thisHooks) : parentHooks;
     }
     return thisHooks;
 }
-function afterHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<AfterHook<T, any>>| undefined {
+function afterHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<AfterHook<T, any>> | undefined {
     const parent = classData.getParentOf(isClassDecorMixin);
     const parentHooks = parent && afterHooks(parent.$mixerData, methodName);
     const thisHooks = classData.afterHooks[methodName];
-    if (parentHooks){
+    if (parentHooks) {
         // notice: after order is reversed to before order
         return thisHooks ? _union(thisHooks, parentHooks) : parentHooks;
     }
@@ -156,7 +157,7 @@ const dummyTracker = {
     }
 };
 
-function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: ClassDecorData<T>, originalMethod:(...args:any[])=>any, methodName: keyof T, methodArgs: any[]) {
+function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: ClassDecorData<T>, originalMethod: (...args: any[]) => any, methodName: keyof T, methodArgs: any[]) {
     const hooks = middlewareHooks(mixerMeta, methodName);
     let retVal;
     if (hooks) { // should never be an empty array - either undefined or with hook(s)

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 
 let names: { [key: string]: number } = {};
 
@@ -13,7 +13,7 @@ export function applyMixin(target: any) {
 
         (React as any).createElement = function (type: any, props: any, children: any[]) {
             if (props['htmlFor']) {
-                if (!target._id || props['htmlFor'].indexOf(target._id) !== 0)  {
+                if (!target._id || props['htmlFor'].indexOf(target._id) !== 0) {
                     props['htmlFor'] = target.getGlobalID(props['htmlFor']);
                 }
             }
@@ -48,7 +48,9 @@ export function GlobalID() {
             if (this.props.id) {
                 this._id = this.props.id;
             } else {
-                if (!this._id) { this._id = generateID(this.constructor.name); }
+                if (!this._id) {
+                    this._id = generateID(this.constructor.name);
+                }
             }
             return this._id + (str == 'ROOT' ? '' : '_' + str);
         }

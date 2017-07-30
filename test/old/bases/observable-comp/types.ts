@@ -1,4 +1,3 @@
-
 export interface testHooks {
     onRender?: (comp: any) => void;
     onMount?: (comp: any) => void;
@@ -11,6 +10,6 @@ export interface person {
     smell?: string;
 }
 
-export interface withPerson{
+export interface withPerson {
     man?: person;
 }

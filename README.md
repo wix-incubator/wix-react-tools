@@ -49,6 +49,10 @@ To avoid unnecessary render calls as a result of using this utility, this functi
 ```ts
 function mergeEventHandlers<T extends Function>(first:T, last:T):T
 ```
+## function-decor
+Wrapping tools for functions
+More details in [function-decor](./docs/function-decor.md)
+
 
 ## configuraiton
 Static configuration allows passing any form of data/flags to tools.

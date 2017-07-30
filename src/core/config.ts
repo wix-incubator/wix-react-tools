@@ -1,4 +1,4 @@
-import {ifndef} from 'ifndef'
+import {ifndef} from "ifndef";
 import {GlobalConfig} from "./types";
 
 export interface Dictionary {

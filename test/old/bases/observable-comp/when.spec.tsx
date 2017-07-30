@@ -1,24 +1,29 @@
-import * as React from 'react';
-import { expect, sinon, simulate, ClientRenderer, waitFor } from 'test-drive-react';
-import { ObservableComponent, when, resetCounters } from '../../../../src';
-import { observable } from 'mobx';
-import {testHooks,person,withPerson} from './types';
+import * as React from "react";
+import {ClientRenderer, expect, sinon} from "test-drive-react";
+import {ObservableComponent, resetCounters, when} from "../../../../src";
+import {observable} from "mobx";
+import {person, testHooks, withPerson} from "./types";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 
 const testAnchor: string = 'Test-root';
 
 describe.assuming(inBrowser(), 'only in browser')('when', () => {
     const clientRenderer = new ClientRenderer();
-    afterEach(() => {clientRenderer.cleanup();resetCounters()});
+    afterEach(() => {
+        clientRenderer.cleanup();
+        resetCounters()
+    });
 
     describe('primitive props', () => {
 
-        interface primitiveTestProps extends testHooks, person {}
+        interface primitiveTestProps extends testHooks, person {
+        }
 
-        class TestComp extends ObservableComponent<primitiveTestProps, object>{
+        class TestComp extends ObservableComponent<primitiveTestProps, object> {
 
             static defaultProps: primitiveTestProps = {
-                onRender: () => { },
+                onRender: () => {
+                },
                 name: 'enter name here',
                 age: -1,
                 smell: 'bad'
@@ -28,10 +33,13 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
                 this.props.onRender!(this);
                 return <div data-automation-id={testAnchor}>{this.props.name + ' ' + this.props.age}</div>
             }
+
             componentDidMount() {
             }
 
-            @when(function () { this.props.smell })
+            @when(function () {
+                this.props.smell
+            })
             checkStink() {
                 this.props.onWhen!(this);
             }
@@ -39,7 +47,7 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
         }
 
         it('should properly name "when" reactions', () => {
-            const { select, waitForDom, container, result } = clientRenderer.render(<TestComp/>);
+            const {select, waitForDom, container, result} = clientRenderer.render(<TestComp/>);
             const comp: any = result;
 
 
@@ -48,7 +56,7 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
 
         it('should be called after an observed prop has been modified', () => {
             const whenSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onWhen={whenSpy}/>);
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp onWhen={whenSpy}/>);
 
             clientRenderer.render(<TestComp onWhen={whenSpy} smell="worse"/>, container);
 
@@ -58,7 +66,7 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
 
         it('should work repeatedly', () => {
             const whenSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onWhen={whenSpy}/>);
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp onWhen={whenSpy}/>);
 
             clientRenderer.render(<TestComp onWhen={whenSpy} smell="worse"/>, container);
             clientRenderer.render(<TestComp onWhen={whenSpy} smell="yuck"/>, container);
@@ -69,7 +77,7 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
 
         it('should not be called for properties it is not watching', () => {
             const whenSpy = sinon.spy();
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp onWhen={whenSpy}/>);
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp onWhen={whenSpy}/>);
 
             clientRenderer.render(<TestComp onWhen={whenSpy} name="worse"/>, container);
             clientRenderer.render(<TestComp onWhen={whenSpy} name="yuck"/>, container);
@@ -79,7 +87,10 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
 
         it('should dispose of reactions when unmounting', () => {
             let comp: TestComp;
-            const { select, waitForDom, container } = clientRenderer.render(<div><TestComp onRender={function (component) { comp = component }}/></div>);
+            const {select, waitForDom, container} = clientRenderer.render(<div><TestComp
+                onRender={function (component) {
+                    comp = component
+                }}/></div>);
 
             clientRenderer.render(<div></div>);
             waitForDom(() => {
@@ -90,28 +101,34 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
 
     });
 
-     describe('complex props', () => {
+    describe('complex props', () => {
 
 
-        interface complexTestProps extends testHooks, withPerson {}
+        interface complexTestProps extends testHooks, withPerson {
+        }
 
-        class TestComp extends ObservableComponent<complexTestProps, object>{
+        class TestComp extends ObservableComponent<complexTestProps, object> {
 
-            constructor(props:complexTestProps,context:any){
-                super(props,context);
+            constructor(props: complexTestProps, context: any) {
+                super(props, context);
             }
+
             static defaultProps: complexTestProps = {
-                onRender: () => { }
+                onRender: () => {
+                }
             };
 
             render() {
                 this.props.onRender!(this);
                 return <div data-automation-id={testAnchor}>{this.props.man!.name + ' ' + this.props.man!.age}</div>
             }
+
             componentDidMount() {
             }
 
-            @when<TestComp>(function () { this.props.man!.smell })
+            @when<TestComp>(function () {
+                this.props.man!.smell
+            })
             checkStink() {
                 this.props.onWhen!(this);
             }
@@ -121,10 +138,10 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
 
         it('should be called after an observed prop has been modified', () => {
             const whenSpy = sinon.spy();
-            const testMan:person = observable({
-                smell:'bad'
+            const testMan: person = observable({
+                smell: 'bad'
             });
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}/>);
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}/>);
 
             testMan.smell = 'worse';
 
@@ -133,15 +150,15 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
 
 
         it('should be called after an observed prop has been replaced', () => {
-             const whenSpy = sinon.spy();
-            const testMan:person = observable({
-                smell:'bad'
+            const whenSpy = sinon.spy();
+            const testMan: person = observable({
+                smell: 'bad'
             });
-            const testMan2:person = observable({
-                smell:'good'
+            const testMan2: person = observable({
+                smell: 'good'
             });
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}/>);
-            clientRenderer.render(<TestComp man={testMan2} onWhen={whenSpy}/>,container);
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}/>);
+            clientRenderer.render(<TestComp man={testMan2} onWhen={whenSpy}/>, container);
 
             testMan2.smell = 'worse';
 
@@ -150,12 +167,12 @@ describe.assuming(inBrowser(), 'only in browser')('when', () => {
 
 
         it('should not be called for properties it is not watching', () => {
-             const whenSpy = sinon.spy();
-            const testMan:person = observable({
-                smell:'bad',
-                age:90
+            const whenSpy = sinon.spy();
+            const testMan: person = observable({
+                smell: 'bad',
+                age: 90
             });
-            const { select, waitForDom, container } = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}/>);
+            const {select, waitForDom, container} = clientRenderer.render(<TestComp man={testMan} onWhen={whenSpy}/>);
 
             testMan.age = 91;
 

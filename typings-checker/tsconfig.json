@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "experimentalDecorators": true,
+    "target": "es6",
+    "noEmit": true
+  }
+}
