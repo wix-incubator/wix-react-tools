@@ -56,7 +56,7 @@ More details in [disposers](./docs/core/disposers.md)
 
 ## function-decor
 Wrapping tools for functions
-More details in [function-decor](./docs/function-decor.md)
+More details in [function-decor](./docs/function-decor)
 
 ## configuraiton
 Static configuration allows passing any form of data/flags to tools.
