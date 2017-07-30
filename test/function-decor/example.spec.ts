@@ -1,7 +1,6 @@
 import {resetAll, spyAll} from "../test-drivers/test-tools";
-import {concat, map, chain} from 'lodash';
 import {expect} from "test-drive";
-import {after, before, middleware} from "../../src/index";
+import {after, before, middleware, decorFunction, hookWrappers} from "../../src/index";
 
 
 describe('function-decor documentation examples', () => {
@@ -109,17 +108,7 @@ describe('function-decor documentation examples', () => {
                 return id;
             }
 
-            type hookWrappers = {middleware: Array<Function>, before: Array<Function>, after: Array<Function>}
 
-            function getWrappingFunction(wrappers: hookWrappers): Function {
-                return function (originalMethod: Function): Function {
-                    return chain(
-                    concat(
-                        map(wrappers.middleware, (mw:any) => middleware(mw)),
-                        map(wrappers.before, (b:any) => before(b)),
-                        map(wrappers.after, (a:any) => after(a))
-                )).reduce((prev:Function, wrapper:Function) => wrapper(prev), originalMethod).value();
-            }}
 
             it('should be able to wrap multiple before/after/middleware functions', () => {
                 const wrappers:hookWrappers = {
@@ -137,7 +126,7 @@ describe('function-decor documentation examples', () => {
                     ]
                 };
 
-                const enhanced = getWrappingFunction(wrappers)(original);
+                const enhanced = decorFunction(wrappers)(original);
 
                 const res = enhanced('0');
 

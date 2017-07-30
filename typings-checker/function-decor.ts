@@ -1,4 +1,4 @@
-import {Args, before, middleware, after} from "../dist/src/index";
+import {Args, before, middleware, after, decorFunction} from "../dist/src/index";
 
 declare function original(text: string): string;
 declare function subset(text: 'foo'): 'bar';
@@ -146,6 +146,13 @@ describe(`after`, () => {
     })
 })
 
-
+describe(`decorFunction`, () => {
+    // $ExpectType Function
+    decorFunction({
+        middleware: [mwHook],
+        before: [bHook],
+        after: [aHook]
+    });
+});
 
 
