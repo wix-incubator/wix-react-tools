@@ -1,6 +1,6 @@
 import * as React from "react";
 import {expect, sinon} from "test-drive-react";
-import {Disposers} from "../../../src";
+import {Disposers} from "../../src";
 
 describe("Disposers", () => {
     it('registers named disposers ', () => {

@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {getHeritage, resetAll, spyAll} from "../../../test-tools";
+import {getHeritage, resetAll, spyAll} from "../../../test-drivers/test-tools";
 import {after, before, chain, middleware, onInstance} from "../../../../src";
 import {Class} from "../../../../src/old/utils/class-decor/mixer";
 

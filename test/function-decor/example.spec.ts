@@ -1,6 +1,6 @@
-import {resetAll, spyAll} from "./test-tools";
+import {resetAll, spyAll} from "../test-drivers/test-tools";
 import {expect} from "test-drive";
-import {after, before, middleware, decorFunction, hookWrappers} from "../src/index";
+import {after, before, middleware, decorFunction, HookWrappers} from "../../src/index";
 
 
 describe('function-decor documentation examples', () => {
@@ -108,10 +108,20 @@ describe('function-decor documentation examples', () => {
                 return id;
             }
 
+            it('supports empty hooks object', () => {
+                const wrappers:HookWrappers = {};
 
+                const enhanced = decorFunction(wrappers)(original);
+
+                const res = enhanced('0');
+
+                expectLog(
+                    '0', // original function
+                );
+            });
 
             it('should be able to wrap multiple before/after/middleware functions', () => {
-                const wrappers:hookWrappers = {
+                const wrappers:HookWrappers = {
                     middleware: [
                         middlewarePrintMethod,
                         middlewarePrintMethod

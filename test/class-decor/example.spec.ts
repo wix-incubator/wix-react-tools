@@ -1,5 +1,5 @@
-import {resetAll, spyAll} from "../../../test-tools";
-import {add, after, before, middleware, onInstance} from "../../../../src";
+import {resetAll, spyAll} from "../test-drivers/test-tools";
+import {add, after, before, middleware, onInstance} from "../../src";
 import {expect} from "test-drive";
 
 describe('class-decor documentation examples', () => {

@@ -1,5 +1,5 @@
 // business logic
-export {root} from './core/root-handler';
+export {root} from './react/root-handler';
 export * from './core/merge-events';
 export * from './core/types';
 export * from './core/config';
@@ -15,7 +15,7 @@ export * from './old/mixins/global-id-decorator';
 //utils
 export * from './old/utils/class-decor/index';
 export * from './old/utils/react-decor';
-export * from './old/utils/disposers';
+export * from './core/disposers';
 
 // custom exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
