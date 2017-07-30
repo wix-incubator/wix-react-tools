@@ -3,7 +3,7 @@ export {root} from './react/root-handler';
 export * from './core/merge-events';
 export * from './core/types';
 export * from './core/config';
-export * from './core/private-context';
+export * from './core/private-state';
 export * from "./function-decor";
 
 // legacy :

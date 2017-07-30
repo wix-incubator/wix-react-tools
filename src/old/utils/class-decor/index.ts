@@ -1,5 +1,5 @@
 import {Class, ConstructorHook, customMixin, mix, MixedClass} from "./mixer";
-import {getPrivateContext} from "../../../core/private-context";
+import {privateState} from "../../../core/private-state";
 import {
     AfterHook,
     BeforeHook,
@@ -12,8 +12,16 @@ import {
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 
-
 const privateContextKey = 'class-decor-private-key'; //TODO Symbol or something
+
+const edgeClassData = privateState(privateContextKey, (clazz:MixedClassDecor<object>)=>{
+    const edgeClassData = {} as EdgeClassData<object>;
+    edgeClassData.mixerMeta = clazz.$mixerData;
+    edgeClassData.origin = {};
+    initChildClass(edgeClassData, clazz.prototype);
+    return edgeClassData;
+} ) as <T extends object>(instance: MixedClassDecor<T>)=>EdgeClassData<T>;
+
 function initMixedClassDecor<T extends object, C extends MixedClass<T>>(mixed: C): C & MixedClassDecor<object> {
     const classDecorated = mixed as C & MixedClassDecor<object>;
     classDecorated.$mixerData.beforeHooks = {};
@@ -22,12 +30,7 @@ function initMixedClassDecor<T extends object, C extends MixedClass<T>>(mixed: C
 
     // TODO extract generic onFirstInstance
     return onInstance(function onFirstClassDecorInstance(instance: T) {
-        let edgeClassData = getPrivateContext<EdgeClassData<T>>(instance.constructor, privateContextKey);
-        if (!edgeClassData.origin) {
-            edgeClassData.mixerMeta = (instance.constructor as MixedClassDecor<T>).$mixerData;
-            edgeClassData.origin = {};
-            initChildClass(edgeClassData, instance.constructor.prototype)
-        }
+        edgeClassData(instance.constructor as MixedClassDecor<T>);
     })(classDecorated) as typeof classDecorated;
 }
 

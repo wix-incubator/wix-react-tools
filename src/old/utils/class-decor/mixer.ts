@@ -1,4 +1,7 @@
-export type Class<T extends object> = new(...args: any[]) => T;
+export type Class<T extends object> = {
+    prototype:T;
+    new(...args: any[]): T
+};
 type DumbClass = new(...args: any[]) => object;
 
 export type ConstructorHook<T extends object> = (instance: T, constructorArguments: any[]) => void;
