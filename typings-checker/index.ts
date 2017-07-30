@@ -1,4 +1,4 @@
-import {ApiFunc, Args, NumberToString} from "../dist/src/index";
+import {ApiFunc, Args, NumberToString, root} from "../dist/src/index";
 
 type FIVE = NumberToString[5];
 const n2s1: FIVE = '5';
@@ -13,3 +13,16 @@ type Result = { bar: number }
 
 // $ExpectType (this: Ctx, a0: "0", a1: "1", a2: "2") => Result
 0 as any as ApiFunc<Args<['0', '1', '2']>, Result, Ctx>
+
+interface Props {
+    p1 : string;
+    onChange : number;
+}
+declare const p : Props;
+
+// $ExpectError Property 'className' is missing in type '{}'
+root(p, {}, ['onChange'])
+
+// $ExpectType Partial<Pick<Props, "p1">> & { className: string; }
+root(p, {className:'bar'}, ['onChange'])
+

@@ -1,9 +1,13 @@
 import {mergeEventHandlers} from "./merge-events";
-export interface Props {
-    className: string;
+import {ObjectOmit} from "typelevel-ts";
+export interface ComponentProps {
+    className?: string;
     style?: { [k: string]: string };
     'data-automation-id'?: string;
     [k: string]: any;
+}
+export interface Props extends ComponentProps{
+    className: string;
 }
 
 // TODO use curated list?
@@ -14,8 +18,11 @@ function isEventHandlerName(key: string) {
     }
     return false;
 }
+// Partial because ther is no way more percise to express data-* and on* filtering :(
+// pending https://github.com/Microsoft/TypeScript/issues/6579
+export type PartialProps<T, B extends string> = Partial<ObjectOmit<T, B>>
 
-export function root<T extends Partial<Props>, S extends Props>(componentProps: T, rootProps: S, blacklist: string[] = []): T & S {
+export function root<T extends ComponentProps, S extends Props, B extends keyof T>(componentProps: T, rootProps: S, blacklist?:B[]): PartialProps<T, B> & S {
     if (typeof rootProps.className !== "string") {
         throw new Error(`root properties does not contain valid className defintion: ${rootProps.className}`);
     }
@@ -23,7 +30,7 @@ export function root<T extends Partial<Props>, S extends Props>(componentProps: 
     const result = Object.assign({}, rootProps);
 
     for (let key in componentProps) {
-        if (!~blacklist.indexOf(key)) {
+        if (!blacklist || !~blacklist.indexOf(key as B)) {
             if (key.startsWith('data-')) {
                 if (key === 'data-automation-id') {
                     const resultDaid = result[key];
