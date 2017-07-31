@@ -132,7 +132,7 @@ const wrappers:HookWrappers = {
 const enhanced = decorFunction(wrappers)(original);
 
 const res = enhanced('Bob'); // prints:
-// 'before Bob'
+// 'Before Bob'
 // 'Here comes Bob!'
 // 'Bob!'
 // 'There goes Bob!'
