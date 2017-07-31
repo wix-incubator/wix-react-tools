@@ -36,7 +36,7 @@ function beforeHook(methodArguments: [string]) {
 Usage example:
 ```ts
 const wrap = before(beforeHook); // creates the before hook
-const printMessage = wrap(originalFunction); // applies hook, returning wrapped function
+const printMessage = wrap(originalFunction); // wraps original function with our newly created hook
 
 printMessage('Mike'); // prints 'Before Mike', returns 'Before Mike'
 ```
@@ -92,8 +92,8 @@ function mwHook(next: (name: [string]) => string, methodArguments: [string]): st
 
 Usage example:
 ```ts
-const wrap = middleware(mwHook); // creates the middleware hook
-const printMessage = wrap(originalFunction); // applies hook, returning wrapped function
+const wrap = middleware(mwHook);
+const printMessage = wrap(originalFunction);
 
 printMessage('Bob'); // prints:
 // 'Here comes Bob'
