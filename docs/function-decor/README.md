@@ -131,15 +131,12 @@ const wrappers:HookWrappers = {
 
 const enhanced = decorFunction(wrappers)(original);
 
-const res = enhanced('Bob');
-
-expectLog(
-    'before Bob', // befores
-    'Here comes Bob!', // middlewares
-    'Bob!', // original function
-    'There goes Bob!',
-    'After Bob!' // afters
-);
+const res = enhanced('Bob'); // prints:
+// 'before Bob'
+// 'Here comes Bob!'
+// 'Bob!'
+// 'There goes Bob!'
+// 'After Bob!'
 ```
 
 
