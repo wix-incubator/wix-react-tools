@@ -1,4 +1,4 @@
-import {Class, ConstructorHook, customMixin, mix, MixedClass} from "./mixer";
+import {Class, ConstructorHook, customMixin, mix, MixedClass, safeGetLowestMixerData} from "./mixer";
 import {privateState} from "../../../core/private-state";
 import {
     AfterHook,
@@ -7,7 +7,8 @@ import {
     initChildClass,
     isClassDecorMixin,
     MiddlewareHook,
-    MixedClassDecor
+    MixedClassDecor,
+    getClassDecorData
 } from "./apply-method-decorations";
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
@@ -16,7 +17,7 @@ const privateContextKey = 'class-decor-private-key'; //TODO Symbol or something
 
 const edgeClassData = privateState(privateContextKey, (clazz:MixedClassDecor<object>)=>{
     const edgeClassData = {} as EdgeClassData<object>;
-    edgeClassData.mixerMeta = clazz.$mixerData;
+    edgeClassData.mixerMeta = getClassDecorData(clazz);
     edgeClassData.origin = {};
     initChildClass(edgeClassData, clazz.prototype);
     return edgeClassData;
@@ -24,9 +25,9 @@ const edgeClassData = privateState(privateContextKey, (clazz:MixedClassDecor<obj
 
 function initMixedClassDecor<T extends object, C extends MixedClass<T>>(mixed: C): C & MixedClassDecor<object> {
     const classDecorated = mixed as C & MixedClassDecor<object>;
-    classDecorated.$mixerData.beforeHooks = {};
-    classDecorated.$mixerData.afterHooks = {};
-    classDecorated.$mixerData.middlewareHooks = {};
+    getClassDecorData(classDecorated).beforeHooks = {};
+    getClassDecorData(classDecorated).afterHooks = {};
+    getClassDecorData(classDecorated).middlewareHooks = {};
 
     // TODO extract generic onFirstInstance
     return onInstance(function onFirstClassDecorInstance(instance: T) {
@@ -59,7 +60,12 @@ export function onInstance<T extends object>(hook: ConstructorHook<T>, target: C
 export function onInstance<T extends object>(hook: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mix(t);
-        mixed.$mixerData.constructorHooks.push(hook);
+        let mixerData = safeGetLowestMixerData(mixed);
+        if (mixerData) {
+            mixerData.constructorHooks.push(hook);
+        } else {
+            throw new Error(`unexpected: class ${mixed.name} does not have mixer data`);
+        }
         return mixed;
     }
 
@@ -101,7 +107,7 @@ function addIfExists<T extends Function>(originDecorator: T): MethodDecoratorApi
 export const middleware = addIfExists(function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mixClassDecor<T1, Class<T1>>(t);
-        getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(hook);
+        getLazyListProp(getClassDecorData(mixed).middlewareHooks, methodName).push(hook);
         return mixed;
     }
 
@@ -114,7 +120,7 @@ export const middleware = addIfExists(function middleware<T extends object>(hook
 export const before = addIfExists(function before<T extends object>(hook: BeforeHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>): Class<T1> {
         const mixed = mixClassDecor<T1, Class<T1>>(t);
-        getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(hook);
+        getLazyListProp(getClassDecorData(mixed).beforeHooks, methodName).push(hook);
         return mixed;
     }
 
@@ -127,7 +133,7 @@ export const before = addIfExists(function before<T extends object>(hook: Before
 export const after = addIfExists(function after<T extends object>(hook: AfterHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mixClassDecor<T1, Class<T1>>(t);
-        getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(hook);
+        getLazyListProp(getClassDecorData(mixed).afterHooks, methodName).unshift(hook);
         return mixed;
     }
 

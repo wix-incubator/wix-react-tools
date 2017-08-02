@@ -19,7 +19,7 @@ import {
     SFC,
     SFCElement
 } from "react";
-import {Class, customMixin, MixedClass, MixerData} from "./class-decor/mixer";
+import {Class, customMixin, MixedClass, MixerData, safeGetLowestMixerData} from "./class-decor/mixer";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
@@ -68,7 +68,14 @@ interface ReactMixerData<T extends Rendered<any>> extends MixerData<T> {
     lastRendering: T;
 }
 
-type ReactMixedClass<T extends Rendered<any>> = Class<T> & { $mixerData: ReactMixerData<T> };
+export function getReactMixerData<T extends Rendered<any>>(clazz: Class<T>): ReactMixerData<T>{
+    let data = safeGetLowestMixerData(clazz);
+    if (!data){
+        throw new Error(`unexpected: class ${clazz.name} does not have react mixer data`);
+    }
+    return data as ReactMixerData<T>;
+}
+type ReactMixedClass<T extends Rendered<any>> = Class<T>;
 
 function createElementProxy<T extends Rendered<any>, P extends HTMLAttributes<HTMLElement>>(this: ReactMixerData<T>, type: ElementType<P>, props: Attributes & Partial<P> = {}, ...children: Array<ReactNode>) {
     // check if original render is over, then clean up and call original
@@ -87,16 +94,16 @@ function createElementProxy<T extends Rendered<any>, P extends HTMLAttributes<HT
 }
 
 function isReactMix<T extends Rendered<any>>(arg: MixedClass<T>): arg is ReactMixedClass<T> {
-    return !!(arg as ReactMixedClass<T>).$mixerData.createElementHooks;
+    return !!getReactMixerData(arg).createElementHooks;
 }
 
 function initReactMix<C extends MixedClass<Rendered<any>>>(mixed: C): C & ReactMixedClass<Rendered<any>> {
     const reactMixed = mixed as C & ReactMixedClass<Rendered<any>>;
-    reactMixed.$mixerData.createElementHooks = [];
-    const boundProxy = createElementProxy.bind(reactMixed.$mixerData);
+    getReactMixerData(reactMixed).createElementHooks = [];
+    const boundProxy = createElementProxy.bind(getReactMixerData(reactMixed));
 
     function reactDecorBeforeRenderHook(instance: Rendered<any>, args: never[]) {
-        reactMixed.$mixerData.lastRendering = instance;
+        getReactMixerData(reactMixed).lastRendering = instance;
         (React as any).createElement = boundProxy;
         return args;
     }
@@ -109,7 +116,7 @@ const reactMix: <C extends Class<Rendered<any>>>(clazz: C) => C & ReactMixedClas
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
     return function registerForCreateElementDecorator<C extends Class<T>>(t: C): C {
         const mixed = reactMix(t);
-        mixed.$mixerData.createElementHooks.push(hook);
+        getReactMixerData(mixed).createElementHooks.push(hook);
         return mixed;
     };
 }

@@ -2,7 +2,7 @@ import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import _union = require('lodash/union');
 import {getGlobalConfig} from "../../../core/config";
 import {GlobalConfig} from "../../../core/types";
-import {Class, MixedClass, MixerData} from "./mixer";
+import {Class, MixedClass, MixerData, safeGetLowestMixerData} from "./mixer";
 
 export type BeforeHook<T, A extends Array<any>> = (instance: T, methodArguments: A) => A;
 export type AfterHook<T, R = void> = (instance: T, methodResult: R) => R;
@@ -22,11 +22,20 @@ export interface EdgeClassData<T extends object = object> {
     mixerMeta: ClassDecorData<T>;
     origin: {[P in keyof T]?:T[P] & ((...args: any[]) => any)};
 }
-export type MixedClassDecor<T extends object = object> = Class<T> & { $mixerData: ClassDecorData<T> };
+export type MixedClassDecor<T extends object = object> = Class<T>;
 
 export function isClassDecorMixin<T extends object>(arg: MixedClass<T>): arg is MixedClassDecor<T> {
-    return !!(arg as MixedClassDecor<T>).$mixerData.beforeHooks;
+    return !!getClassDecorData(arg).beforeHooks;
 }
+
+export function getClassDecorData<T extends object>(clazz: Class<T>): ClassDecorData<T>{
+    let data = safeGetLowestMixerData(clazz);
+    if (!data){
+        throw new Error(`unexpected: class ${clazz.name} does not have mixer data`);
+    }
+    return data as ClassDecorData<T>;
+}
+
 const wrappedFlag = '$class-decor-wrapped-method'; //TODO Symbol or something
 
 function emptyMethod() {
@@ -73,7 +82,7 @@ export function initChildClass<T extends object>(edgeClassData: EdgeClassData<T>
 
 function createIfNotExist<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): boolean {
     const parent = classData.getParentOf(isClassDecorMixin);
-    return (parent && createIfNotExist(parent.$mixerData, methodName)) ||
+    return (parent && createIfNotExist(getClassDecorData(parent), methodName)) ||
         _union(
             classData.beforeHooks[methodName],
             classData.middlewareHooks[methodName],
@@ -84,7 +93,7 @@ function createIfNotExist<T extends object>(classData: ClassDecorData<T>, method
 function hookedMethodNames<T extends object>(classData: ClassDecorData<T>): Array<keyof T> {
     const parent = classData.getParentOf(isClassDecorMixin);
     return _union(
-        (parent && hookedMethodNames(parent.$mixerData)),
+        (parent && hookedMethodNames(getClassDecorData(parent))),
         Object.keys(classData.middlewareHooks),
         Object.keys(classData.beforeHooks),
         Object.keys(classData.afterHooks)) as Array<keyof T>;
@@ -92,7 +101,7 @@ function hookedMethodNames<T extends object>(classData: ClassDecorData<T>): Arra
 
 function middlewareHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<MiddlewareHook<T, any, any>> | undefined {
     const parent = classData.getParentOf(isClassDecorMixin);
-    const parentHooks = parent && middlewareHooks(parent.$mixerData, methodName);
+    const parentHooks = parent && middlewareHooks(getClassDecorData(parent), methodName);
     const thisHooks = classData.middlewareHooks[methodName];
     if (parentHooks) {
         return thisHooks ? _union(parentHooks, thisHooks) : parentHooks;
@@ -102,7 +111,7 @@ function middlewareHooks<T extends object>(classData: ClassDecorData<T>, methodN
 
 function beforeHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<BeforeHook<T, any>> | undefined {
     const parent = classData.getParentOf(isClassDecorMixin);
-    const parentHooks = parent && beforeHooks(parent.$mixerData, methodName);
+    const parentHooks = parent && beforeHooks(getClassDecorData(parent), methodName);
     const thisHooks = classData.beforeHooks[methodName];
     if (parentHooks) {
         // notice: after order is reversed to before order
@@ -112,7 +121,7 @@ function beforeHooks<T extends object>(classData: ClassDecorData<T>, methodName:
 }
 function afterHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<AfterHook<T, any>> | undefined {
     const parent = classData.getParentOf(isClassDecorMixin);
-    const parentHooks = parent && afterHooks(parent.$mixerData, methodName);
+    const parentHooks = parent && afterHooks(getClassDecorData(parent), methodName);
     const thisHooks = classData.afterHooks[methodName];
     if (parentHooks) {
         // notice: after order is reversed to before order
