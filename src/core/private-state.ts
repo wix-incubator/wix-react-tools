@@ -3,12 +3,11 @@ import {getGlobalConfig} from "./config";
 export const STATE_DEV_MODE_KEY = "$private-context";
 const privates = new WeakMap();
 
-
+/**
+ * a function that provides a private state per instance. initializes a new state if none exists.
+ * @param targetObj object to which the private state is affiliated.
+ */
 export interface StateProvider<P extends object = any, T extends object = any>{
-    /**
-     * a function that provides a private state per instance. initializes a new state if none exists.
-     * @param targetObj object to which the private state is affiliated.
-     */
     (targetObj: T): P;
     /**
      * checks whether an instance has a private state associated with it. does not initialize a new state.
@@ -20,7 +19,7 @@ export interface StateProvider<P extends object = any, T extends object = any>{
 /**
  * Returns a function that provides a private state per instance.
  * @param key a unique identifier for the provider
- * @param initializer {StateProvider<P, T>} initializer of a new private state.
+ * @param initializer {{(targetObj: T): P}} initializer of a new private state.
  * @returns {StateProvider<P, T>} Provider for the private state object.
  */
 export function privateState<P extends object = any, T extends object = any>(key: string, initializer: {(targetObj: T): P}): StateProvider<P, T> {
