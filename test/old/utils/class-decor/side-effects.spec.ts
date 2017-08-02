@@ -122,7 +122,7 @@ describe("class decor side-effect", () => {
             expect(hooks.spy1, 'after c2Inst.myMethod()').to.have.callCount(0);
         });
 
-        xdescribe("after decorator", () => {
+        describe("after decorator", () => {
             class Blah {
                 myMethod(): void {
                 }
