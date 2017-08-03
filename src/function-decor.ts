@@ -9,7 +9,7 @@ export type BeforeHook<A extends THList, T = any> = (this: T, methodArguments: T
 export function before<A extends THList, T=any>(preMethod: BeforeHook<A, T>): FunctionWrapper<A, any, T> {
     return function beforeWrapper<F extends ApiFunc<A, any, T>>(originalFunction: F): F {
         return function wrapped(this:T, ...methodArguments:any[]): any {
-            return originalFunction.apply(this, preMethod.apply(this, [methodArguments]));
+            return originalFunction.apply(this, preMethod.call(this, methodArguments));
         } as any as F;
     }
 }
