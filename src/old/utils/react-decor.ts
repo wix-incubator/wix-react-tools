@@ -63,7 +63,7 @@ function cleanUpHook<P extends HTMLAttributes<HTMLElement>>(type: ElementType<P>
     return original(type as any, props, ...children);
 }
 
-interface ReactMixerData<T extends Rendered<any>> extends MixerData<T> {
+export interface ReactMixerData<T extends Rendered<any>> extends MixerData<T> {
     createElementHooks: Array<CreateElementHook<T>>;
     lastRendering: T;
 }
