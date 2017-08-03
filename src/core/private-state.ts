@@ -4,7 +4,7 @@ export const STATE_DEV_MODE_KEY = "$private-context";
 const privates = new WeakMap();
 
 /**
- * a function that provides a private state per instance. initializes a new state if none exists.
+ * provides a private state for a supplied instance. initializes a new state if none exists.
  * @param targetObj object to which the private state is affiliated.
  */
 export interface StateProvider<P extends object = any, T extends object = any>{
@@ -24,13 +24,13 @@ export interface StateProvider<P extends object = any, T extends object = any>{
  */
 export function privateState<P extends object = any, T extends object = any>(key: string, initializer: {(targetObj: T): P}): StateProvider<P, T> {
     const result = function getPrivateState(targetObj: T) {
-        let privateContext: { [key: string]: P } = getStateContext(targetObj, true);
+        let stateContext: { [key: string]: P } = getStateContext(targetObj, true);
         // If key doesn't exist for that instance, create a new object for that key
-        if (!privateContext[key]) {
+        if (!stateContext[key]) {
             // init instance-key
-            privateContext[key] = initializer(targetObj);
+            stateContext[key] = initializer(targetObj);
         }
-        return privateContext[key];
+        return stateContext[key];
     } as StateProvider<P, T>;
 
     result.hasState = function hasState(targetObj: T):boolean {

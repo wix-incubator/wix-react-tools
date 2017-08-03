@@ -21,7 +21,7 @@ const directMixerData = privateState('mixer data', <T extends object>(c:Class<T>
     return new MixerData<T>(c, superClass);
 }) as MixerDataProvider;
 
-export function safeGetLowestMixerData<T extends object>(clazz: Class<T>): MixerData<Partial<T>> | null {
+export function inheritedMixerData<T extends object>(clazz: Class<T>): MixerData<Partial<T>> | null {
     while (clazz as Class<object> !== Object) {
         if (directMixerData.hasState(clazz)) {
             return directMixerData(clazz);
@@ -29,6 +29,21 @@ export function safeGetLowestMixerData<T extends object>(clazz: Class<T>): Mixer
         clazz = Object.getPrototypeOf(clazz.prototype).constructor;
     }
     return null;
+}
+
+export function unsafeMixerData<T extends object>(clazz: Class<T>): MixerData<T> {
+    if (directMixerData.hasState(clazz)) {
+        return directMixerData(clazz);
+    }
+    throw new Error(`unexpected: class ${clazz.name} does not have mixer data`);
+}
+
+export function unsafeInheritedMixerData<T extends object>(clazz: Class<T>): MixerData<Partial<T>> {
+    let data = inheritedMixerData(clazz);
+    if (data) {
+        return data;
+    }
+    throw new Error(`unexpected: class ${clazz.name} does not inherit any mixer data`);
 }
 
 export function customMixin<T extends object, M extends MixedClass<any>, C extends Class<T>>
@@ -77,7 +92,7 @@ export class MixerData<T extends object> {
     constructorHooks: ConstructorHook<T>[] = [];
 
     constructor(public mixinClass: MixedClass<T>, originClass: Class<T>) {
-        const ancestorMixerData = safeGetLowestMixerData(originClass);
+        const ancestorMixerData = inheritedMixerData(originClass);
         if (ancestorMixerData) {
             this.superData = ancestorMixerData;
         }

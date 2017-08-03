@@ -19,7 +19,7 @@ import {
     SFC,
     SFCElement
 } from "react";
-import {Class, customMixin, MixedClass, MixerData, safeGetLowestMixerData} from "./class-decor/mixer";
+import {Class, customMixin, MixedClass, MixerData, unsafeMixerData} from "./class-decor/mixer";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
@@ -69,11 +69,7 @@ export interface ReactMixerData<T extends Rendered<any>> extends MixerData<T> {
 }
 
 export function getReactMixerData<T extends Rendered<any>>(clazz: Class<T>): ReactMixerData<T>{
-    let data = safeGetLowestMixerData(clazz);
-    if (!data){
-        throw new Error(`unexpected: class ${clazz.name} does not have react mixer data`);
-    }
-    return data as ReactMixerData<T>;
+    return unsafeMixerData(clazz) as ReactMixerData<T>;
 }
 type ReactMixedClass<T extends Rendered<any>> = Class<T>;
 

@@ -71,6 +71,13 @@ describe('Private state', () => {
     });
 
     describe('.hasState', () => {
+        it('reflects existence of private state per id per instance', () => {
+            const instance = {};
+            expect(pState0.hasState(instance)).to.eql(false);
+            pState0(instance);
+            expect(pState0.hasState(instance)).to.eql(true);
+            expect(pState1.hasState(instance)).to.eql(false);
+        });
         it('does not change the original instance', () => {
             runInContext({devMode: false}, () => {
                 const instance = {};
@@ -79,21 +86,11 @@ describe('Private state', () => {
             });
         });
         it('in dev mode, does not change the original instance', () => {
-            const instance = {};
-            pState0.hasState(instance);
-            expect(instance).to.eql({});
             runInContext({devMode: true}, () => {
                 const instance = {};
                 pState0.hasState(instance);
                 expect(instance).to.eql({});
             });
-        });
-        it('reflects existence of private state per id per instance', () => {
-            const instance = {};
-            expect(pState0.hasState(instance)).to.eql(false);
-            pState0(instance);
-            expect(pState0.hasState(instance)).to.eql(true);
-            expect(pState1.hasState(instance)).to.eql(false);
         });
     });
 });

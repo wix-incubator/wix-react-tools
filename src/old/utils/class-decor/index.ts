@@ -1,4 +1,4 @@
-import {Class, ConstructorHook, customMixin, mix, MixedClass, safeGetLowestMixerData} from "./mixer";
+import {Class, ConstructorHook, customMixin, mix, MixedClass, unsafeMixerData} from "./mixer";
 import {privateState} from "../../../core/private-state";
 import {
     AfterHook,
@@ -13,15 +13,18 @@ import {
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 
-const privateContextKey = 'class-decor-private-key'; //TODO Symbol or something
 
-const edgeClassData = privateState(privateContextKey, (clazz:MixedClassDecor<object>)=>{
+function initClassData (clazz:MixedClassDecor<object>){
     const edgeClassData = {} as EdgeClassData<object>;
     edgeClassData.mixerMeta = getClassDecorData(clazz);
     edgeClassData.origin = {};
     initChildClass(edgeClassData, clazz.prototype);
     return edgeClassData;
-} ) as <T extends object>(instance: MixedClassDecor<T>)=>EdgeClassData<T>;
+}
+
+const edgeClassData = privateState('class-decor data', initClassData);
+// TODO extract generic onFirstInstance
+const initClassOnInstance = onInstance((instance: object) => edgeClassData(instance.constructor as MixedClassDecor<object>));
 
 function initMixedClassDecor<T extends object, C extends MixedClass<T>>(mixed: C): C & MixedClassDecor<object> {
     const classDecorated = mixed as C & MixedClassDecor<object>;
@@ -29,10 +32,7 @@ function initMixedClassDecor<T extends object, C extends MixedClass<T>>(mixed: C
     getClassDecorData(classDecorated).afterHooks = {};
     getClassDecorData(classDecorated).middlewareHooks = {};
 
-    // TODO extract generic onFirstInstance
-    return onInstance(function onFirstClassDecorInstance(instance: T) {
-        edgeClassData(instance.constructor as MixedClassDecor<T>);
-    })(classDecorated) as typeof classDecorated;
+    return initClassOnInstance(classDecorated) as typeof classDecorated;
 }
 
 const mixClassDecor: <T extends object, C extends Class<T>>(clazz: C) => C & MixedClassDecor<T>
@@ -60,12 +60,7 @@ export function onInstance<T extends object>(hook: ConstructorHook<T>, target: C
 export function onInstance<T extends object>(hook: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mix(t);
-        let mixerData = safeGetLowestMixerData(mixed);
-        if (mixerData) {
-            mixerData.constructorHooks.push(hook);
-        } else {
-            throw new Error(`unexpected: class ${mixed.name} does not have mixer data`);
-        }
+        unsafeMixerData(mixed).constructorHooks.push(hook);
         return mixed;
     }
 
