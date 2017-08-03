@@ -2,7 +2,7 @@ import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import _union = require('lodash/union');
 import {getGlobalConfig} from "../../../core/config";
 import {GlobalConfig} from "../../../core/types";
-import {Class, MixedClass, MixerData, unsafeInheritedMixerData} from "./mixer";
+import {Class, MixerData, unsafeInheritedMixerData} from "./mixer";
 
 export type BeforeHook<T, A extends Array<any>> = (instance: T, methodArguments: A) => A;
 export type AfterHook<T, R = void> = (instance: T, methodResult: R) => R;
@@ -18,17 +18,65 @@ export interface ClassDecorData<T extends object> extends MixerData<T> {
     middlewareHooks: {[P in keyof T]?:FlaggedArray<MiddlewareHook<T, any, any>>};
 }
 
-export interface EdgeClassData<T extends object = object> {
-    mixerMeta: ClassDecorData<T>;
-    origin: {[P in keyof T]?:T[P] & ((...args: any[]) => any)};
-}
-export type MixedClassDecor<T extends object = object> = Class<T>;
+export class EdgeClassData<T extends object = object> {
 
-export function isClassDecorMixin<T extends object>(arg: MixedClass<T>): arg is MixedClassDecor<T> {
+    // TODO move to function decor (use private state?)
+    private static unwrapMethod(method: Function | WrappedMethod): Function | undefined {
+        if ((method as WrappedMethod)[wrappedFlag]) {
+            return (method as WrappedMethod).originalMethod;
+        }
+        return method;
+    }
+
+    origin: {[P in keyof T]?:T[P] & ((...args: any[]) => any)} = {};
+
+    constructor(private clazz: Class<T>) {
+    }
+
+    init() {
+        this.hookedMethodNames(getClassDecorData(this.clazz)).forEach((methodName: keyof T) => {
+            // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
+            if (this.clazz.prototype[methodName]) {
+                this.clazz.prototype[methodName] = this.wrapMethod(methodName, EdgeClassData.unwrapMethod(this.clazz.prototype[methodName]));
+            } else if (createIfNotExist(getClassDecorData(this.clazz), methodName)) {
+                this.clazz.prototype[methodName] = this.wrapMethod(methodName);
+            }
+        });
+    }
+
+    private hookedMethodNames(classData: ClassDecorData<T>): Array<keyof T> {
+        const parent = classData.getParentOf(isClassDecorMixin);
+        return _union(
+            (parent && this.hookedMethodNames(getClassDecorData(parent))),
+            Object.keys(classData.middlewareHooks),
+            Object.keys(classData.beforeHooks),
+            Object.keys(classData.afterHooks)) as Array<keyof T>;
+    }
+
+    private wrapMethod<P extends keyof T>(methodName: P, originalMethod?: T[P]): WrappedMethod {
+        const mixerMeta = getClassDecorData(this.clazz);
+        // TODO dynamically named function
+        const result = function wrappedClassDecorMethod(this: T) {
+            let methodArgs: any[] = Array.prototype.slice.call(arguments);
+            methodArgs = runBeforeHooks(this, mixerMeta, methodName, methodArgs);
+            let methodResult = runMiddlewareHooksAndOrigin(this, mixerMeta, originalMethod || emptyMethod, methodName, methodArgs);
+            methodResult = runAfterHooks(this, mixerMeta, methodName, methodResult);
+            return methodResult;
+        } as any as WrappedMethod;
+        result[wrappedFlag] = true;
+        if (originalMethod) {
+            result.originalMethod = originalMethod;
+        }
+        return result;
+    }
+}
+
+
+export function isClassDecorMixin<T extends object>(arg: Class<T>): arg is Class<T> {
     return !!getClassDecorData(arg).beforeHooks;
 }
 
-export function getClassDecorData<T extends object>(clazz: Class<T>): ClassDecorData<T>{
+export function getClassDecorData<T extends object>(clazz: Class<T>): ClassDecorData<T> {
     return unsafeInheritedMixerData(clazz) as ClassDecorData<T>;
 }
 
@@ -42,39 +90,6 @@ type WrappedMethod<F extends Function = Function> = F & {
     originalMethod?: F;
 }
 
-function wrapMethod<T extends object, P extends keyof T>(edgeClassData: EdgeClassData<T>, methodName: P, originalMethod?: T[P]): WrappedMethod {
-    // TODO dynamically named function
-    const result = function wrappedClassDecorMethod(this: T) {
-        let methodArgs: any[] = Array.prototype.slice.call(arguments);
-        methodArgs = runBeforeHooks(this, edgeClassData.mixerMeta, methodName, methodArgs);
-        let methodResult = runMiddlewareHooksAndOrigin(this, edgeClassData.mixerMeta, originalMethod || emptyMethod, methodName, methodArgs);
-        methodResult = runAfterHooks(this, edgeClassData.mixerMeta, methodName, methodResult);
-        return methodResult;
-    } as any as WrappedMethod;
-    result[wrappedFlag] = true;
-    if (originalMethod) {
-        result.originalMethod = originalMethod;
-    }
-    return result;
-}
-
-function unwrapMethod(method: Function | WrappedMethod): Function | undefined {
-    if ((method as WrappedMethod)[wrappedFlag]) {
-        return (method as WrappedMethod).originalMethod;
-    }
-    return method;
-}
-
-export function initChildClass<T extends object>(edgeClassData: EdgeClassData<T>, proto: T) {
-    hookedMethodNames(edgeClassData.mixerMeta).forEach((methodName: keyof T) => {
-        // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
-        if (proto[methodName]) {
-            proto[methodName] = wrapMethod(edgeClassData, methodName, unwrapMethod(proto[methodName]));
-        } else if (createIfNotExist(edgeClassData.mixerMeta, methodName)) {
-            proto[methodName] = wrapMethod(edgeClassData, methodName);
-        }
-    });
-}
 
 function createIfNotExist<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): boolean {
     const parent = classData.getParentOf(isClassDecorMixin);
@@ -86,14 +101,6 @@ function createIfNotExist<T extends object>(classData: ClassDecorData<T>, method
         ).some((hook) => !hook.ifExists);
 }
 
-function hookedMethodNames<T extends object>(classData: ClassDecorData<T>): Array<keyof T> {
-    const parent = classData.getParentOf(isClassDecorMixin);
-    return _union(
-        (parent && hookedMethodNames(getClassDecorData(parent))),
-        Object.keys(classData.middlewareHooks),
-        Object.keys(classData.beforeHooks),
-        Object.keys(classData.afterHooks)) as Array<keyof T>;
-}
 
 function middlewareHooks<T extends object>(classData: ClassDecorData<T>, methodName: keyof T): FlaggedArray<MiddlewareHook<T, any, any>> | undefined {
     const parent = classData.getParentOf(isClassDecorMixin);

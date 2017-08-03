@@ -1,42 +1,38 @@
-import {Class, ConstructorHook, customMixin, mix, MixedClass, unsafeMixerData} from "./mixer";
+import {Class, ConstructorHook, mix, unsafeMixerData} from "./mixer";
 import {privateState} from "../../../core/private-state";
 import {
     AfterHook,
     BeforeHook,
     EdgeClassData,
-    initChildClass,
-    isClassDecorMixin,
-    MiddlewareHook,
-    MixedClassDecor,
-    getClassDecorData
+    getClassDecorData,
+    MiddlewareHook
 } from "./apply-method-decorations";
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 
-
-function initClassData (clazz:MixedClassDecor<object>){
-    const edgeClassData = {} as EdgeClassData<object>;
-    edgeClassData.mixerMeta = getClassDecorData(clazz);
-    edgeClassData.origin = {};
-    initChildClass(edgeClassData, clazz.prototype);
+function initClassData(clazz: Class<object>) {
+    const edgeClassData = new EdgeClassData<object>(clazz);
+    edgeClassData.init();
     return edgeClassData;
 }
 
 const edgeClassData = privateState('class-decor data', initClassData);
 // TODO extract generic onFirstInstance
-const initClassOnInstance = onInstance((instance: object) => edgeClassData(instance.constructor as MixedClassDecor<object>));
+const initClassOnInstance = onInstance((instance: object) => edgeClassData(instance.constructor as Class<object>));
 
-function initMixedClassDecor<T extends object, C extends MixedClass<T>>(mixed: C): C & MixedClassDecor<object> {
-    const classDecorated = mixed as C & MixedClassDecor<object>;
-    getClassDecorData(classDecorated).beforeHooks = {};
-    getClassDecorData(classDecorated).afterHooks = {};
-    getClassDecorData(classDecorated).middlewareHooks = {};
+function mixClassDecor<T extends object, C extends Class<T>>(clazz: C): C {
+    const mixed = mix<T, C>(clazz);
+    if (getClassDecorData(mixed).beforeHooks) {
+        return mixed;
+    } else {
+        const classDecorated = mixed;
+        getClassDecorData(classDecorated).beforeHooks = {};
+        getClassDecorData(classDecorated).afterHooks = {};
+        getClassDecorData(classDecorated).middlewareHooks = {};
 
-    return initClassOnInstance(classDecorated) as typeof classDecorated;
+        return initClassOnInstance(classDecorated) as typeof classDecorated;
+    }
 }
-
-const mixClassDecor: <T extends object, C extends Class<T>>(clazz: C) => C & MixedClassDecor<T>
-    = customMixin.bind(null, initMixedClassDecor, isClassDecorMixin);
 
 
 function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {

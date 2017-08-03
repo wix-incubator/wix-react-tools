@@ -46,22 +46,12 @@ export function unsafeInheritedMixerData<T extends object>(clazz: Class<T>): Mix
     throw new Error(`unexpected: class ${clazz.name} does not inherit any mixer data`);
 }
 
-export function customMixin<T extends object, M extends MixedClass<any>, C extends Class<T>>
-(init: <C extends MixedClass<T>>(m: C) => C & M, isValid: (m: MixedClass<T>) => m is M, clazz: C): C & M {
-    const result = mix<T, C>(clazz);
-    if (isValid(result)) {
-        return result;
-    } else {
-        return init(result);
-    }
-}
-
-export function mix<T extends object, C extends Class<T>>(clazz: C): C & MixedClass<T> {
+export function mix<T extends object, C extends Class<T>>(clazz: C): C {
     // de-dup class creation
     // but don't de-dup if $mixerData was inherited
     if (directMixerData.hasState(clazz)) {
         // https://github.com/wix/react-bases/issues/10
-        return clazz as C & MixedClass<T>;
+        return clazz;
     }
     class Extended extends (clazz as any as DumbClass) {
         static isMixed: boolean = true;
@@ -84,21 +74,20 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C & MixedCl
     return Extended as any;
 }
 
-export type MixedClass<T extends object> = Class<T>;
 
 
 export class MixerData<T extends object> {
     readonly superData: MixerData<Partial<T>>;
     constructorHooks: ConstructorHook<T>[] = [];
 
-    constructor(public mixinClass: MixedClass<T>, originClass: Class<T>) {
+    constructor(public mixinClass: Class<T>, originClass: Class<T>) {
         const ancestorMixerData = inheritedMixerData(originClass);
         if (ancestorMixerData) {
             this.superData = ancestorMixerData;
         }
     }
 
-    getParentOf<M extends MixedClass<T>>(isValid: (m: MixedClass<T>) => m is M): M | undefined {
+    getParentOf<M extends Class<T>>(isValid: (m: Class<T>) => m is M): M | undefined {
         let next: MixerData<T>;
         while (next = this.superData as any) {
             if (isValid(next.mixinClass)) {
