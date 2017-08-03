@@ -2,24 +2,19 @@ import {before, ClassDecorator} from "./class-decor/index";
 import * as React from "react";
 import {
     Attributes,
-    CElement,
     ClassicComponent,
     ClassicComponentClass,
     ClassType,
     ComponentClass,
     ComponentState,
-    DOMElement,
     HTMLAttributes,
-    ReactElement,
     ReactHTML,
-    ReactHTMLElement,
     ReactNode,
     ReactSVG,
-    ReactSVGElement,
     SFC,
-    SFCElement
 } from "react";
-import {Class, customMixin, MixedClass, MixerData, unsafeMixerData} from "./class-decor/mixer";
+import {Class, mix, MixerData, unsafeMixerData} from "./class-decor/mixer";
+import {privateState} from "../../core/private-state";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
@@ -47,14 +42,6 @@ export type ElementType<P> =
     | ComponentClass<P>
     | ClassType<P, ClassicComponent<P, ComponentState>, ClassicComponentClass<P>>;
 
-export type ElementReturnType<P> =
-    ReactHTMLElement<any>
-    | ReactSVGElement
-    | DOMElement<P, any>
-    | SFCElement<P>
-    | ReactElement<P>
-    | CElement<P, ClassicComponent<P, ComponentState>>;
-
 const original: typeof React.createElement = React.createElement;
 // for root replication use React.cloneElement()
 
@@ -63,56 +50,49 @@ function cleanUpHook<P extends HTMLAttributes<HTMLElement>>(type: ElementType<P>
     return original(type as any, props, ...children);
 }
 
-export interface ReactMixerData<T extends Rendered<any>> extends MixerData<T> {
-    createElementHooks: Array<CreateElementHook<T>>;
+class ReactDecorData<T extends Rendered<any>> {
+    createElementHooks: Array<CreateElementHook<T>> = [];
     lastRendering: T;
-}
 
-export function getReactMixerData<T extends Rendered<any>>(clazz: Class<T>): ReactMixerData<T>{
-    return unsafeMixerData(clazz) as ReactMixerData<T>;
-}
-type ReactMixedClass<T extends Rendered<any>> = Class<T>;
+    constructor(private mixData: MixerData<T>) {
 
-function createElementProxy<T extends Rendered<any>, P extends HTMLAttributes<HTMLElement>>(this: ReactMixerData<T>, type: ElementType<P>, props: Attributes & Partial<P> = {}, ...children: Array<ReactNode>) {
-    // check if original render is over, then clean up and call original
-    if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
-        let args: CreateElementArgs<P> = {type, props, children};
-        this.createElementHooks.forEach((hook: CreateElementHook<T>) => {
-            args = hook(this.lastRendering, args);
-            if (args === undefined) {
-                throw new Error('@registerForCreateElement Error: hook returned undefined');
-            }
-        });
-        return original<Partial<P>>(args.type as any, args.props, ...args.children);
-    } else {
-        return cleanUpHook(type, props, children);
     }
-}
 
-function isReactMix<T extends Rendered<any>>(arg: MixedClass<T>): arg is ReactMixedClass<T> {
-    return !!getReactMixerData(arg).createElementHooks;
-}
+    createElementProxy = <P extends HTMLAttributes<HTMLElement>>(type: ElementType<P>, props: Attributes & Partial<P> = {}, ...children: Array<ReactNode>) => {
+        // check if original render is over, then clean up and call original
+        if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
+            let args: CreateElementArgs<P> = {type, props, children};
+            // TODO: traverse heritage via this.mixData and call ancestor hooks
+            this.createElementHooks.forEach((hook: CreateElementHook<T>) => {
+                args = hook(this.lastRendering, args);
+                if (args === undefined) {
+                    throw new Error('@registerForCreateElement Error: hook returned undefined');
+                }
+            });
+            return original<Partial<P>>(args.type as any, args.props, ...args.children);
+        } else {
+            return cleanUpHook(type, props, children);
+        }
+    };
 
-function initReactMix<C extends MixedClass<Rendered<any>>>(mixed: C): C & ReactMixedClass<Rendered<any>> {
-    const reactMixed = mixed as C & ReactMixedClass<Rendered<any>>;
-    getReactMixerData(reactMixed).createElementHooks = [];
-    const boundProxy = createElementProxy.bind(getReactMixerData(reactMixed));
-
-    function reactDecorBeforeRenderHook(instance: Rendered<any>, args: never[]) {
-        getReactMixerData(reactMixed).lastRendering = instance;
-        (React as any).createElement = boundProxy;
+    preRenderHook = (instance: T, args: never[]) => {
+        this.lastRendering = instance;
+        (React as any).createElement = this.createElementProxy;
         return args;
-    }
-
-    return before(reactDecorBeforeRenderHook, 'render')(reactMixed) as typeof reactMixed;
+    };
 }
-const reactMix: <C extends Class<Rendered<any>>>(clazz: C) => C & ReactMixedClass<Rendered<any>>
-    = customMixin.bind(null, initReactMix, isReactMix);
+
+const reactMixData = privateState('react-decor data', <T extends Rendered<any>>(clazz: Class<T>) => {
+    let mixerData = unsafeMixerData<T>(clazz); // get data of mixer
+    const result = new ReactDecorData<T>(mixerData); // create react-decor data
+    before(result.preRenderHook, 'render')(clazz); // hook into react-decor's lifecycle
+    return result; // return react data object
+});
 
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
-    return function registerForCreateElementDecorator<C extends Class<T>>(t: C): C {
-        const mixed = reactMix(t);
-        getReactMixerData(mixed).createElementHooks.push(hook);
+    return function registerForCreateElementDecorator<C extends Class<T>>(componentClazz: C): C {
+        let mixed = mix(componentClazz);
+        reactMixData(mixed).createElementHooks.push(hook);
         return mixed;
     };
 }
