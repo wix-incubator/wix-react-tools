@@ -12,7 +12,7 @@ import {
     ClassicComponentClass
 } from 'react';
 import { before, FunctionWrapper, middleware, MiddlewareHook } from './function-decor';
-import { THList, THListToTuple} from "typelevel-ts";
+import { THList, THListToTuple } from "typelevel-ts";
 
 export type RenderResult = JSX.Element | null | false;
 
@@ -35,31 +35,33 @@ interface DecorReactHooks {
     root?: Array<CreateElementHook>
 }
 
+// todo: fix currently only handle hooks for any element, not the root hooks
 export function decorReact(hooks: DecorReactHooks): Function {
-    return middleware(createHook(hooks));
-}
-
-// only handle hooks for any element, not the root hooks
-function createHook(hooks: DecorReactHooks) {
-    const customRenderCreateElement = makeCustomCreateElement(hooks);
-    return (next: Function, args: [object]) => {
+    const mw = (next: Function, args: [object]) => {
         try {
-            React.createElement = customRenderCreateElement(args[0]); // [0] for props in a functional react component
+            React.createElement = makeCustomCreateElement(hooks, args[0]); // [0] for props in a functional react component
             return next(args);
         } finally {
             React.createElement = originalCreateElement as ReactCreateElement;
         }
     }
+    return middleware(mw);
 }
 
-function makeCustomCreateElement(hooks: DecorReactHooks): (componentProps: object) => ReactCreateElement {
-    const hook = hooks.nodes[0];
-
-    return (componentProps: object) => {
-        const beforeHook = (createElementArgs: CreateElementArgsTuple<any>) => {
-            return translateObjectToArguments(hook(componentProps, translateArgumentsToObject(createElementArgs)));
+// create a custom react create element function that applies the given hooks
+function makeCustomCreateElement(hooks: DecorReactHooks, componentProps: object): ReactCreateElement {
+    if (hooks.nodes && hooks.nodes.length) {
+        const executeHook = (res: CreateElementArgs<any>, hook: CreateElementHook): CreateElementArgs<any> => {
+            return hook(componentProps, res);
+        };
+        const beforeHook = (createElementArgsTuple: CreateElementArgsTuple<any>) => {
+            let createElementArgsObject = translateArgumentsToObject(createElementArgsTuple);
+            createElementArgsObject = hooks.nodes!.reduce(executeHook, createElementArgsObject); // we checked hooks.nodes is defined
+            return translateObjectToArguments(createElementArgsObject);
         };
         return before(beforeHook)(originalCreateElement);
+    } else {
+        return originalCreateElement;
     }
 }
 
