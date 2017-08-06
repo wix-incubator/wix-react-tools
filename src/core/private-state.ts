@@ -53,6 +53,9 @@ export function privateState<P = any, T extends object = any>(key: string, initi
     return result
 }
 
+/**
+ * @internal
+ */
 export function unsafe<P, T extends object>(key: string, provider: OptionalStateProvider<P, T>) {
     return function unsafe(clazz: T) {
         if (provider.hasState(clazz)) {
