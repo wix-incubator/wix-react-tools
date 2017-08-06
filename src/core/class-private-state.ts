@@ -4,14 +4,23 @@ import {unsafe, OptionalStateProvider, privateState, StateProvider} from "./priv
 export interface UnsafeClassStateProvider<P = any, T extends Class<object> = Class<object>> extends StateProvider<P, T>{
     (targetObj: T): P;
     inherited(targetObj: T): P;
+    origin:StateProvider<T, T>;
 }
-/**
+
+export interface InheritedClassStateProvider<P, T extends Class<object>> extends OptionalStateProvider<P, T>{
+    origin: OptionalStateProvider<T, T>;
+    unsafe : {
+        (targetObj: T): P;
+        origin(targetObj: T):T;
+    }
+}
+    /**
  * provides a private state for a supplied class. initializes a new state if none exists.
  * @param targetObj object to which the private state is affiliated.
  */
 export interface ClassStateProvider<P = any, T extends Class<object> = Class<object>> extends StateProvider<P, T>{
     unsafe: UnsafeClassStateProvider<P, T>;
-    inherited: OptionalStateProvider<P, T>;
+    inherited: InheritedClassStateProvider<P, T>;
 }
 
 export function classPrivateState<P = any, T extends Class<object> = Class<object>>(key: string, initializer: {(targetObj: T): P}): ClassStateProvider<P, T> {
@@ -21,7 +30,7 @@ export function classPrivateState<P = any, T extends Class<object> = Class<objec
     return result;
 }
 
-function inheritedState<P, T extends Class<object>>(key: string, provider : StateProvider<P, T>): OptionalStateProvider<P, T> {
+function inheritedState<P, T extends Class<object>>(key: string, provider : StateProvider<P, T>) {
     const result = function getInheritedState(clazz: T) {
         while (clazz as Class<object> !== Object) {
             if (provider.hasState(clazz)) {
@@ -30,9 +39,19 @@ function inheritedState<P, T extends Class<object>>(key: string, provider : Stat
             clazz = Object.getPrototypeOf(clazz.prototype).constructor;
         }
         return null;
-    } as OptionalStateProvider<P, T>;
+    } as InheritedClassStateProvider<P, T>;
 
-    result.hasState = function hasState(clazz: T) {
+    result.origin = function getSuperClassWithState<T1 extends T>(clazz: T1) {
+        while (clazz as Class<object> !== Object) {
+            if (provider.hasState(clazz)) {
+                return clazz;
+            }
+            clazz = Object.getPrototypeOf(clazz.prototype).constructor as T1;
+        }
+        return null;
+    } as StateProvider<T, T>;
+
+    result.origin.hasState = result.hasState = function hasState(clazz: T) {
         while (clazz as Class<object> !== Object) {
             if (provider.hasState(clazz)) {
                 return true;
@@ -41,6 +60,8 @@ function inheritedState<P, T extends Class<object>>(key: string, provider : Stat
         }
         return false;
     };
-    result.unsafe = unsafe(key, result);
+
+    result.unsafe = unsafe(key, result) as InheritedClassStateProvider<P, T>['unsafe'];
+    result.unsafe.origin = result.origin.unsafe = unsafe(key, result.origin);
     return result
 }
