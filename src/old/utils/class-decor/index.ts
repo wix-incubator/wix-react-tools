@@ -1,4 +1,4 @@
-import {Class, ConstructorHook, mix, unsafeMixerData} from "./mixer";
+import {ConstructorHook, unsafeMixerData, mix} from "./mixer";
 import {privateState} from "../../../core/private-state";
 import {
     AfterHook,
@@ -7,6 +7,7 @@ import {
     getClassDecorData,
     MiddlewareHook
 } from "./apply-method-decorations";
+import {Class} from "../../../core/types";
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 

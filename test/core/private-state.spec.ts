@@ -93,4 +93,38 @@ describe('Private state', () => {
             });
         });
     });
+
+    describe('.unsafe', () => {
+        it('returns state of own class if exists', ()=>{
+            const instance = {};
+            pState0(instance); // init private state
+            expect(pState0.unsafe(instance)).to.equal(pState0(instance))
+        });
+        it('throws if no state exists', ()=>{
+            const instance = {};
+            expect(() => pState0.unsafe(instance)).to.throw();
+        });
+        it('does not change the original instance', () => {
+            runInContext({devMode: false}, () => {
+                const instance = {};
+                try {
+                    pState0.unsafe(instance);
+                } catch(e){
+
+                }
+                expect(instance).to.eql({});
+            });
+        });
+        it('in dev mode, does not change the original instance', () => {
+            runInContext({devMode: true}, () => {
+                const instance = {};
+                try {
+                    pState0.unsafe(instance);
+                } catch(e){
+
+                }
+                expect(instance).to.eql({});
+            });
+        });
+    });
 });

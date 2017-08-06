@@ -13,10 +13,16 @@ import {
     THNil,
     UnsafeTHListGet
 } from "typelevel-ts";
-export type Class<T extends object> = new(...args: any[]) => T;
+export type Class<T extends object> = {
+    prototype:T;
+    new(...args: any[]): T
+};
+
 export type GlobalConfig = {
     devMode?: boolean;
 }
+
+export type NotNull = object | number | boolean | string;
 
 export type NumberToString = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 

@@ -1,8 +1,8 @@
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import _union = require('lodash/union');
 import {getGlobalConfig} from "../../../core/config";
-import {GlobalConfig} from "../../../core/types";
-import {Class, MixerData, unsafeInheritedMixerData} from "./mixer";
+import {Class, GlobalConfig} from "../../../core/types";
+import {unsafeMixerData, MixerData} from "./mixer";
 
 export type BeforeHook<T, A extends Array<any>> = (instance: T, methodArguments: A) => A;
 export type AfterHook<T, R = void> = (instance: T, methodResult: R) => R;
@@ -77,7 +77,7 @@ export function isClassDecorMixin<T extends object>(arg: Class<T>): arg is Class
 }
 
 export function getClassDecorData<T extends object>(clazz: Class<T>): ClassDecorData<T> {
-    return unsafeInheritedMixerData(clazz) as ClassDecorData<T>;
+    return unsafeMixerData.inherited(clazz) as ClassDecorData<T>;
 }
 
 const wrappedFlag = '$class-decor-wrapped-method'; //TODO Symbol or something

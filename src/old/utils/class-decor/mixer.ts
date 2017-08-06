@@ -1,55 +1,30 @@
-import {privateState, StateProvider} from '../../../core/private-state';
+import {Class} from "../../../core/types";
+import {classPrivateState, ClassStateProvider} from "../../../core/class-private-state";
 
-export type Class<T extends object> = {
-    prototype:T;
-    new(...args: any[]): T
-};
 type DumbClass = new(...args: any[]) => object;
 
 export type ConstructorHook<T extends object> = (instance: T, constructorArguments: any[]) => void;
 
-type MixerDataProvider =
-    {<T extends object>(targetObj: Class<T>): MixerData<T>} &
-    StateProvider<MixerData<object>, Class<object>>;
+type MixerDataProvider = {
+        <T extends object>(targetObj: Class<T>): MixerData<T>
+        unsafe<T extends object>(targetObj:  Class<T>): MixerData<T>;
+    } & ClassStateProvider<MixerData<object>, Class<object>>;
 
-function getSuper<P extends object, C extends P = P>(c: Class<C>): Class<P>{
+function getSuper<T extends object, C extends T = T>(c: Class<C>): Class<T>{
     return Object.getPrototypeOf(c.prototype).constructor;
 }
 
-const directMixerData = privateState('mixer data', <T extends object>(c:Class<T>) => {
+const getMixerData = classPrivateState('mixer data', <T extends object>(c:Class<T>) => {
     const superClass = getSuper<T>(c);
     return new MixerData<T>(c, superClass);
 }) as MixerDataProvider;
 
-export function inheritedMixerData<T extends object>(clazz: Class<T>): MixerData<Partial<T>> | null {
-    while (clazz as Class<object> !== Object) {
-        if (directMixerData.hasState(clazz)) {
-            return directMixerData(clazz);
-        }
-        clazz = Object.getPrototypeOf(clazz.prototype).constructor;
-    }
-    return null;
-}
-
-export function unsafeMixerData<T extends object>(clazz: Class<T>): MixerData<T> {
-    if (directMixerData.hasState(clazz)) {
-        return directMixerData(clazz);
-    }
-    throw new Error(`unexpected: class ${clazz.name} does not have mixer data`);
-}
-
-export function unsafeInheritedMixerData<T extends object>(clazz: Class<T>): MixerData<Partial<T>> {
-    let data = inheritedMixerData(clazz);
-    if (data) {
-        return data;
-    }
-    throw new Error(`unexpected: class ${clazz.name} does not inherit any mixer data`);
-}
+export const unsafeMixerData = getMixerData.unsafe;
 
 export function mix<T extends object, C extends Class<T>>(clazz: C): C {
     // de-dup class creation
     // but don't de-dup if $mixerData was inherited
-    if (directMixerData.hasState(clazz)) {
+    if (getMixerData.hasState(clazz)) {
         // https://github.com/wix/react-bases/issues/10
         return clazz;
     }
@@ -60,7 +35,7 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C {
         constructor(...args: any[]) {
             super(...args);
             // if not inherited by another class, remove itself so to not pollute instance's name
-            activateMixins(this as any as T, directMixerData(Extended), args);
+            activateMixins(this as any as T, getMixerData(Extended), args);
         }
     }
     // TODO remove this ineffective dirty fix, see https://github.com/wix/react-bases/issues/50
@@ -70,18 +45,16 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C {
         value: clazz.name
     });
     // initialize mixer data on Extended
-    directMixerData(Extended);
+    getMixerData(Extended);
     return Extended as any;
 }
-
-
 
 export class MixerData<T extends object> {
     readonly superData: MixerData<Partial<T>>;
     constructorHooks: ConstructorHook<T>[] = [];
 
     constructor(public mixinClass: Class<T>, originClass: Class<T>) {
-        const ancestorMixerData = inheritedMixerData(originClass);
+        const ancestorMixerData = getMixerData.inherited(originClass);
         if (ancestorMixerData) {
             this.superData = ancestorMixerData;
         }

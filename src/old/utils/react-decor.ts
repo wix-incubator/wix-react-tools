@@ -13,10 +13,11 @@ import {
     ReactSVG,
     SFC,
 } from "react";
-import {Class, mix, MixerData, unsafeMixerData} from "./class-decor/mixer";
+import {unsafeMixerData, mix, MixerData} from "./class-decor/mixer";
 import {privateState} from "../../core/private-state";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
+import {Class} from "../../core/types";
 
 export type RenderResult = JSX.Element | null | false;
 export type Rendered<P extends object> = {
@@ -83,7 +84,7 @@ class ReactDecorData<T extends Rendered<any>> {
 }
 
 const reactMixData = privateState('react-decor data', <T extends Rendered<any>>(clazz: Class<T>) => {
-    let mixerData = unsafeMixerData<T>(clazz); // get data of mixer
+    let mixerData = unsafeMixerData(clazz); // get data of mixer
     const result = new ReactDecorData<T>(mixerData); // create react-decor data
     before(result.preRenderHook, 'render')(clazz); // hook into react-decor's lifecycle
     return result; // return react data object

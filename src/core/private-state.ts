@@ -1,14 +1,26 @@
 import {getGlobalConfig} from "./config";
+import {NotNull} from "./types";
 
 export const STATE_DEV_MODE_KEY = "$private-context";
 const privates = new WeakMap();
 
-/**
- * provides a private state for a supplied instance. initializes a new state if none exists.
- * @param targetObj object to which the private state is affiliated.
- */
-export interface StateProvider<P extends object = any, T extends object = any>{
+export interface OptionalStateProvider<P extends NotNull, T extends object = any> extends StateProvider<P|null, T>{
+    unsafe(targetObj: T): P;
+}
+
+export interface StateProvider<P = any, T extends object = any>{
+    /**
+     * provides a private state for a supplied instance. initializes a new state if none exists.
+     * @param targetObj object to which the private state is affiliated.
+     */
     (targetObj: T): P;
+
+    /**
+     * provides a private state for a supplied instance. throws an error if none exists.
+     * @param targetObj object to which the private state is affiliated.
+     */
+    unsafe(targetObj: T): P;
+
     /**
      * checks whether an instance has a private state associated with it. does not initialize a new state.
      * @param targetObj object to which a private state may be affiliated.
@@ -22,7 +34,7 @@ export interface StateProvider<P extends object = any, T extends object = any>{
  * @param initializer {{(targetObj: T): P}} initializer of a new private state.
  * @returns {StateProvider<P, T>} Provider for the private state object.
  */
-export function privateState<P extends object = any, T extends object = any>(key: string, initializer: {(targetObj: T): P}): StateProvider<P, T> {
+export function privateState<P = any, T extends object = any>(key: string, initializer: {(targetObj: T): P}): StateProvider<P, T> {
     const result = function getPrivateState(targetObj: T) {
         let stateContext: { [key: string]: P } = getStateContext(targetObj, true);
         // If key doesn't exist for that instance, create a new object for that key
@@ -37,18 +49,29 @@ export function privateState<P extends object = any, T extends object = any>(key
         let stateContext = getStateContext(targetObj, false);
         return null !== stateContext && undefined !== stateContext[key];
     };
+    result.unsafe = unsafe(key, result);
     return result
 }
 
+export function unsafe<P, T extends object>(key: string, provider: OptionalStateProvider<P, T>) {
+    return function unsafe(clazz: T) {
+        if (provider.hasState(clazz)) {
+            return provider(clazz) as P;
+        }
+        throw new Error(`unexpected: ${clazz} does not have private '${key}' field`);
+    };
+}
+
 /**
+ * @internal
  * provides a store for private states, affiliated with the instance
  * @param targetObj object to which a store may be affiliated.
  * @param initIfNone initialize a new store if none is affilitated with targetObj
  * @returns a context, or null if none existed and initIfNone was set to false
  */
-function getStateContext<T extends object = any>(targetObj: T, initIfNone:true):{ [key: string]: any };
-function getStateContext<T extends object = any>(targetObj: T, initIfNone:false):{ [key: string]: any } | null;
-function getStateContext<T extends object = any>(targetObj: T, initIfNone:boolean):{ [key: string]: any } | null {
+export function getStateContext<T extends object = any>(targetObj: T, initIfNone:true):{ [key: string]: any };
+export function getStateContext<T extends object = any>(targetObj: T, initIfNone:false):{ [key: string]: any } | null;
+export function getStateContext<T extends object = any>(targetObj: T, initIfNone:boolean):{ [key: string]: any } | null {
     let privateContext: { [key: string]: any } | null = null;
     if (getGlobalConfig().devMode) {
         const targetObject = targetObj as any;
