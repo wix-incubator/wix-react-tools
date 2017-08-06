@@ -58,6 +58,10 @@ More details in [disposers](./docs/core/disposers.md)
 Wrapping tools for functions
 More details in [function-decor](./docs/function-decor)
 
+## private-state
+Privately extend any object, without inheritance or visibility concerns 
+More details in [private-state](./docs/core/private-state.md)
+
 ## configuraiton
 Static configuration allows passing any form of data/flags to tools.
 More details in [config](./docs/core/config.md)

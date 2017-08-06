@@ -1,41 +1,39 @@
-import {Class, ConstructorHook, customMixin, mix, MixedClass} from "./mixer";
+import {ConstructorHook, unsafeMixerData, mix} from "./mixer";
 import {privateState} from "../../../core/private-state";
 import {
     AfterHook,
     BeforeHook,
     EdgeClassData,
-    initChildClass,
-    isClassDecorMixin,
-    MiddlewareHook,
-    MixedClassDecor
+    getClassDecorData,
+    MiddlewareHook
 } from "./apply-method-decorations";
+import {Class} from "../../../core/types";
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 
-const privateContextKey = 'class-decor-private-key'; //TODO Symbol or something
-
-const edgeClassData = privateState(privateContextKey, (clazz:MixedClassDecor<object>)=>{
-    const edgeClassData = {} as EdgeClassData<object>;
-    edgeClassData.mixerMeta = clazz.$mixerData;
-    edgeClassData.origin = {};
-    initChildClass(edgeClassData, clazz.prototype);
+function initClassData(clazz: Class<object>) {
+    const edgeClassData = new EdgeClassData<object>(clazz);
+    edgeClassData.init();
     return edgeClassData;
-} ) as <T extends object>(instance: MixedClassDecor<T>)=>EdgeClassData<T>;
-
-function initMixedClassDecor<T extends object, C extends MixedClass<T>>(mixed: C): C & MixedClassDecor<object> {
-    const classDecorated = mixed as C & MixedClassDecor<object>;
-    classDecorated.$mixerData.beforeHooks = {};
-    classDecorated.$mixerData.afterHooks = {};
-    classDecorated.$mixerData.middlewareHooks = {};
-
-    // TODO extract generic onFirstInstance
-    return onInstance(function onFirstClassDecorInstance(instance: T) {
-        edgeClassData(instance.constructor as MixedClassDecor<T>);
-    })(classDecorated) as typeof classDecorated;
 }
 
-const mixClassDecor: <T extends object, C extends Class<T>>(clazz: C) => C & MixedClassDecor<T>
-    = customMixin.bind(null, initMixedClassDecor, isClassDecorMixin);
+const edgeClassData = privateState('class-decor data', initClassData);
+// TODO extract generic onFirstInstance
+const initClassOnInstance = onInstance((instance: object) => edgeClassData(instance.constructor as Class<object>));
+
+function mixClassDecor<T extends object, C extends Class<T>>(clazz: C): C {
+    const mixed = mix<T, C>(clazz);
+    if (getClassDecorData(mixed).beforeHooks) {
+        return mixed;
+    } else {
+        const classDecorated = mixed;
+        getClassDecorData(classDecorated).beforeHooks = {};
+        getClassDecorData(classDecorated).afterHooks = {};
+        getClassDecorData(classDecorated).middlewareHooks = {};
+
+        return initClassOnInstance(classDecorated) as typeof classDecorated;
+    }
+}
 
 
 function getLazyListProp<O extends object, T>(obj: O, key: keyof O): Array<T> {
@@ -59,7 +57,7 @@ export function onInstance<T extends object>(hook: ConstructorHook<T>, target: C
 export function onInstance<T extends object>(hook: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mix(t);
-        mixed.$mixerData.constructorHooks.push(hook);
+        unsafeMixerData(mixed).constructorHooks.push(hook);
         return mixed;
     }
 
@@ -101,7 +99,7 @@ function addIfExists<T extends Function>(originDecorator: T): MethodDecoratorApi
 export const middleware = addIfExists(function middleware<T extends object>(hook: MiddlewareHook<T, any, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mixClassDecor<T1, Class<T1>>(t);
-        getLazyListProp(mixed.$mixerData.middlewareHooks, methodName).push(hook);
+        getLazyListProp(getClassDecorData(mixed).middlewareHooks, methodName).push(hook);
         return mixed;
     }
 
@@ -114,7 +112,7 @@ export const middleware = addIfExists(function middleware<T extends object>(hook
 export const before = addIfExists(function before<T extends object>(hook: BeforeHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>): Class<T1> {
         const mixed = mixClassDecor<T1, Class<T1>>(t);
-        getLazyListProp(mixed.$mixerData.beforeHooks, methodName).push(hook);
+        getLazyListProp(getClassDecorData(mixed).beforeHooks, methodName).push(hook);
         return mixed;
     }
 
@@ -127,7 +125,7 @@ export const before = addIfExists(function before<T extends object>(hook: Before
 export const after = addIfExists(function after<T extends object>(hook: AfterHook<T, any>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mixClassDecor<T1, Class<T1>>(t);
-        getLazyListProp(mixed.$mixerData.afterHooks, methodName).unshift(hook);
+        getLazyListProp(getClassDecorData(mixed).afterHooks, methodName).unshift(hook);
         return mixed;
     }
 
