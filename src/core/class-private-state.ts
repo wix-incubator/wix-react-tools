@@ -1,37 +1,37 @@
 import {Class} from "./types";
-import {unsafe, OptionalStateProvider, privateState, StateProvider} from "./private-state";
+import {OptionalStateProvider, privateState, StateProvider, unsafe} from "./private-state";
 
-export interface UnsafeClassStateProvider<P = any, T extends Class<object> = Class<object>> extends StateProvider<P, T>{
+export interface UnsafeClassStateProvider<P = any, T extends Class<object> = Class<object>> extends StateProvider<P, T> {
     (targetObj: T): P;
     inherited(targetObj: T): P;
-    origin:StateProvider<T, T>;
+    origin: StateProvider<T, T>;
 }
 
-export interface InheritedClassStateProvider<P, T extends Class<object>> extends OptionalStateProvider<P, T>{
+export interface InheritedClassStateProvider<P, T extends Class<object>> extends OptionalStateProvider<P, T> {
     origin: OptionalStateProvider<T, T>;
-    unsafe : {
+    unsafe: {
         (targetObj: T): P;
-        origin(targetObj: T):T;
+        origin(targetObj: T): T;
     }
 }
-    /**
+/**
  * provides a private state for a supplied class. initializes a new state if none exists.
  * @param targetObj object to which the private state is affiliated.
  */
-export interface ClassStateProvider<P = any, T extends Class<object> = Class<object>> extends StateProvider<P, T>{
-    unsafe: UnsafeClassStateProvider<P, T>;
+export interface ClassStateProvider<P = any, T extends Class<object> = Class<object>> extends StateProvider<P, T> {
     inherited: InheritedClassStateProvider<P, T>;
+    unsafe: UnsafeClassStateProvider<P, T>;
 }
 
-export function classPrivateState<P = any, T extends Class<object> = Class<object>>(key: string, initializer: {(targetObj: T): P}): ClassStateProvider<P, T> {
+export function classPrivateState<P = any, T extends Class<object> = Class<object>>(key: string, initializer: { (targetObj: T): P }): ClassStateProvider<P, T> {
     const result = privateState(key, initializer) as ClassStateProvider<P, T>;
     result.inherited = inheritedState(key, result);
     result.unsafe.inherited = result.inherited.unsafe;
     return result;
 }
 
-function inheritedState<P, T extends Class<object>>(key: string, provider : StateProvider<P, T>) {
-    const result = function getInheritedState(clazz: T) {
+function inheritedState<P, T extends Class<object>>(key: string, provider: StateProvider<P, T>) {
+    const inherited = function getInheritedState(clazz: T) {
         while (clazz as Class<object> !== Object) {
             if (provider.hasState(clazz)) {
                 return provider(clazz);
@@ -41,7 +41,7 @@ function inheritedState<P, T extends Class<object>>(key: string, provider : Stat
         return null;
     } as InheritedClassStateProvider<P, T>;
 
-    result.origin = function getSuperClassWithState<T1 extends T>(clazz: T1) {
+    inherited.origin = function getSuperClassWithState<T1 extends T>(clazz: T1) {
         while (clazz as Class<object> !== Object) {
             if (provider.hasState(clazz)) {
                 return clazz;
@@ -51,7 +51,7 @@ function inheritedState<P, T extends Class<object>>(key: string, provider : Stat
         return null;
     } as StateProvider<T, T>;
 
-    result.origin.hasState = result.hasState = function hasState(clazz: T) {
+    inherited.origin.hasState = inherited.hasState = function hasState(clazz: T) {
         while (clazz as Class<object> !== Object) {
             if (provider.hasState(clazz)) {
                 return true;
@@ -61,7 +61,7 @@ function inheritedState<P, T extends Class<object>>(key: string, provider : Stat
         return false;
     };
 
-    result.unsafe = unsafe(key, result) as InheritedClassStateProvider<P, T>['unsafe'];
-    result.unsafe.origin = result.origin.unsafe = unsafe(key, result.origin);
-    return result
+    inherited.unsafe = unsafe(key, inherited) as InheritedClassStateProvider<P, T>['unsafe'];
+    inherited.unsafe.origin = inherited.origin.unsafe = unsafe(key, inherited.origin);
+    return inherited
 }
