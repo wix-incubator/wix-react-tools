@@ -1,25 +1,27 @@
 import {Class} from "../../../core/types";
-import {classPrivateState, ClassStateProvider} from "../../../core/class-private-state";
+import {classPrivateState, ClassStateProvider, UnsafeClassStateProvider} from "../../../core/class-private-state";
 
 type DumbClass = new(...args: any[]) => object;
 
 export type ConstructorHook<T extends object> = (instance: T, constructorArguments: any[]) => void;
 
 type MixerDataProvider = {
-        <T extends object>(targetObj: Class<T>): MixerData<T>
-        unsafe<T extends object>(targetObj:  Class<T>): MixerData<T>;
-    } & ClassStateProvider<MixerData<object>, Class<object>>;
+    <T extends object>(targetObj: Class<T>): MixerData<T>
+    unsafe<T extends object>(targetObj: Class<T>): MixerData<T>;
+} & ClassStateProvider<MixerData<object>, Class<object>>;
 
-function getSuper<T extends object, C extends T = T>(c: Class<C>): Class<T>{
+function getSuper<T extends object, C extends T = T>(c: Class<C>): Class<T> {
     return Object.getPrototypeOf(c.prototype).constructor;
 }
 
-const getMixerData = classPrivateState('mixer data', <T extends object>(c:Class<T>) => {
+const getMixerData = classPrivateState('mixer data', <T extends object>(c: Class<T>) => {
     const superClass = getSuper<T>(c);
     return new MixerData<T>(c, superClass);
 }) as MixerDataProvider;
 
-export const unsafeMixerData = getMixerData.unsafe;
+export const unsafeMixerData: UnsafeClassStateProvider<MixerData<object>> & {
+    <T extends object>(targetObj: Class<T>): MixerData<T>
+} = getMixerData.unsafe;
 
 export function mix<T extends object, C extends Class<T>>(clazz: C): C {
     // de-dup class creation

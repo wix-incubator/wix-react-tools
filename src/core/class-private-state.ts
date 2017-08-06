@@ -1,7 +1,7 @@
 import {Class} from "./types";
 import {unsafe, OptionalStateProvider, privateState, StateProvider} from "./private-state";
 
-interface UnsafeClassStateProvider<P = any, T extends Class<object> = Class<object>> extends StateProvider<P, T>{
+export interface UnsafeClassStateProvider<P = any, T extends Class<object> = Class<object>> extends StateProvider<P, T>{
     (targetObj: T): P;
     inherited(targetObj: T): P;
 }

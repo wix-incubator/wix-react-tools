@@ -84,7 +84,7 @@ class ReactDecorData<T extends Rendered<any>> {
 }
 
 const reactMixData = privateState('react-decor data', <T extends Rendered<any>>(clazz: Class<T>) => {
-    let mixerData = unsafeMixerData(clazz); // get data of mixer
+    let mixerData = unsafeMixerData<T>(clazz); // get data of mixer
     const result = new ReactDecorData<T>(mixerData); // create react-decor data
     before(result.preRenderHook, 'render')(clazz); // hook into react-decor's lifecycle
     return result; // return react data object
