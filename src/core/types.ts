@@ -18,6 +18,18 @@ export type Class<T extends object> = {
     new(...args: any[]): T
 };
 
+export function isClass<T extends object>(protoValidator: (proto:object)=>proto is T, func:Function):func is Class<T>{
+    return func.prototype && (func.prototype.constructor === func) && protoValidator(func.prototype);
+}
+export type RenderResult = JSX.Element | null | false;
+
+export type Rendered<P extends object> = {
+    props: P;
+    render(): RenderResult;
+};
+export function isRendered(obj:any): obj is Rendered<any>{
+    return obj && typeof obj.render === 'function';
+}
 export type GlobalConfig = {
     devMode?: boolean;
 }

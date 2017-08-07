@@ -80,7 +80,7 @@ export class MixerData<T extends object> {
     private afterHooks: LazyLists<T, AfterMethodHook<any, T>> = {};
     private middlewareHooks: LazyLists<T, MiddlewareMethodHook<any, any, T>> = {};
 
-    constructor(private mixedClass: Class<T>, public userClass: Class<T>) {
+    constructor(public mixedClass: Class<T>, public userClass: Class<T>) {
         // TODO: generalize initEdgeClass to a new type of hook (once per edge class)
         if (!getMixerData.inherited.hasState(userClass)) {
             const onClassInit = (firstInstance: T) => {

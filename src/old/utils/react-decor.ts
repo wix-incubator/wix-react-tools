@@ -1,4 +1,4 @@
-import {before, ClassDecorator} from "./class-decor/index";
+import {ClassDecorator} from "./class-decor/index";
 import * as React from "react";
 import {
     Attributes,
@@ -14,16 +14,11 @@ import {
     SFC
 } from "react";
 import {mix, MixerData, unsafeMixerData} from "./class-decor/mixer";
-import {privateState} from "../../core/private-state";
-import {Class} from "../../core/types";
+import {Class, Rendered} from "../../core/types";
+import {classPrivateState, ClassStateProvider} from "../../core/class-private-state";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
-export type RenderResult = JSX.Element | null | false;
-export type Rendered<P extends object> = {
-    props: P;
-    render(): RenderResult;
-};
 
 export type CreateElementArgs<P extends {}> = {
     type: ElementType<P>,
@@ -55,8 +50,16 @@ class ReactDecorData<T extends Rendered<any>> {
     createElementHooks: Array<CreateElementHook<T>> = [];
     lastRendering: T;
 
-    constructor(private mixData: MixerData<T>) {
-
+    constructor(private mixData: MixerData<T>, superData: ReactDecorData<any> | null) {
+        if (!superData) {
+            // TODO: make static function and use inheritence chain
+            const preRenderHook = (instance: T, args: never[]) => {
+                this.lastRendering = instance;
+                (React as any).createElement = this.createElementProxy;
+                return args;
+            };
+            this.mixData.addBeforeHook(preRenderHook, 'render'); // hook react-decor's lifecycle
+        }
     }
 
     createElementProxy = <P extends HTMLAttributes<HTMLElement>>(type: ElementType<P>, props: Attributes & Partial<P> = {}, ...children: Array<ReactNode>) => {
@@ -75,20 +78,14 @@ class ReactDecorData<T extends Rendered<any>> {
             return cleanUpHook(type, props, children);
         }
     };
-
-    preRenderHook = (instance: T, args: never[]) => {
-        this.lastRendering = instance;
-        (React as any).createElement = this.createElementProxy;
-        return args;
-    };
 }
 
-const reactMixData = privateState('react-decor data', <T extends Rendered<any>>(clazz: Class<T>) => {
-    let mixerData = unsafeMixerData<T>(clazz); // get data of mixer
-    const result = new ReactDecorData<T>(mixerData); // create react-decor data
-    before(result.preRenderHook, 'render')(clazz); // hook into react-decor's lifecycle
-    return result; // return react data object
-});
+const reactMixData: ClassStateProvider<ReactDecorData<Rendered<any>>, Class<Rendered<any>>> =
+    classPrivateState('react-decor data', <T extends Rendered<any>>(clazz: Class<T>) => {
+        let mixerData = unsafeMixerData<T>(clazz); // get data of mixer
+        const inherited = reactMixData.inherited(clazz);
+        return new ReactDecorData<T>(mixerData, inherited); // create react-decor data
+    });
 
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
     return function registerForCreateElementDecorator<C extends Class<T>>(componentClazz: C): C {
