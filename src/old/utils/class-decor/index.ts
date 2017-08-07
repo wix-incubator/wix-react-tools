@@ -1,6 +1,11 @@
 import {
-    ConstructorHook, unsafeMixerData, mix, inheritedMixerData,
-    MiddlewareMethodHook, BeforeMethodHook, AfterMethodHook
+    AfterMethodHook,
+    BeforeMethodHook,
+    ConstructorHook,
+    inheritedMixerData,
+    MiddlewareMethodHook,
+    mix,
+    unsafeMixerData
 } from "./mixer";
 import {Class} from "../../../core/types";
 

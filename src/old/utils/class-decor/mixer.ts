@@ -1,8 +1,8 @@
 import {Class} from "../../../core/types";
-import {classPrivateState, ClassStateProvider, InheritedClassStateProvider} from "../../../core/class-private-state";
+import {classPrivateState, ClassStateProvider} from "../../../core/class-private-state";
 import {initEdgeClass} from "./apply-method-decorations";
-import _union = require('lodash/union');
 import {THList, THListToTuple} from "typelevel-ts";
+import _union = require('lodash/union');
 
 type DumbClass = new(...args: any[]) => object;
 
@@ -64,7 +64,7 @@ export type FlaggedArray<T> = Array<{
 } & T>
 
 
-function getLazyListProp<O extends object, T extends keyof O>(obj: O, key: keyof O){
+function getLazyListProp<O extends object, T extends keyof O>(obj: O, key: keyof O) {
     let result = obj[key];
     if (!result) {
         obj[key] = result = [];
@@ -82,8 +82,8 @@ export class MixerData<T extends object> {
 
     constructor(private mixedClass: Class<T>, public userClass: Class<T>) {
         // TODO: generalize initEdgeClass to a new type of hook (once per edge class)
-        if (!getMixerData.inherited.hasState(userClass)){
-            const onClassInit = (firstInstance:T) => {
+        if (!getMixerData.inherited.hasState(userClass)) {
+            const onClassInit = (firstInstance: T) => {
                 initEdgeClass(firstInstance.constructor as Class<T>);
             };
             // if this is the first class in the hierarchy to be mixed
@@ -104,16 +104,19 @@ export class MixerData<T extends object> {
             Object.keys(this.afterHooks)) as Array<keyof T>;
     }
 
-    addConstructorHook(hook: ConstructorHook<T>){
+    addConstructorHook(hook: ConstructorHook<T>) {
         this.constructorHooks.push(hook);
     }
-    addBeforeHook(hook: BeforeMethodHook<any, T>, methodName: keyof T){
+
+    addBeforeHook(hook: BeforeMethodHook<any, T>, methodName: keyof T) {
         getLazyListProp(this.beforeHooks, methodName)!.push(hook);
     }
-    addAfterHook(hook: AfterMethodHook<any, T>, methodName: keyof T){
+
+    addAfterHook(hook: AfterMethodHook<any, T>, methodName: keyof T) {
         getLazyListProp(this.afterHooks, methodName)!.unshift(hook);
     }
-    addMiddlewareHook(hook: MiddlewareMethodHook<any, any, T>, methodName: keyof T){
+
+    addMiddlewareHook(hook: MiddlewareMethodHook<any, any, T>, methodName: keyof T) {
         getLazyListProp(this.middlewareHooks, methodName)!.push(hook);
     }
 
@@ -126,7 +129,7 @@ export class MixerData<T extends object> {
             ).some((hook) => !hook.ifExists);
     }
 
-    visitConstructorHooks(visitor: (value: ConstructorHook<T>) => void){
+    visitConstructorHooks(visitor: (value: ConstructorHook<T>) => void) {
         this.constructorHooks && this.constructorHooks.forEach(visitor);
     }
 
