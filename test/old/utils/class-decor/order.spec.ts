@@ -113,7 +113,7 @@ describe("class decor order", () => {
             function middlewareDecor<T extends Base>(cls: Class<T>): Class<T> {
                 return middleware<T>((target: T, next: Function, args: [number]) => {
                     SPIES.lastBefore(target, args);
-                    const res = next(args[0] + 1);
+                    const res = next([args[0] + 1]);
                     SPIES.firstAfter(target, res);
                     return res + 1;
                 }, METHOD, cls);
@@ -161,7 +161,7 @@ describe("class decor order", () => {
             function outer<T extends Base>(cls: Class<T>): Class<T> {
                 return middleware<T>((target: T, next: Function, args: [number]) => {
                     SPIES.firstBefore(target, args);
-                    const res = next(args[0] + 1);
+                    const res = next([args[0] + 1]);
                     SPIES.lastAfter(target, res);
                     return res + 1;
                 }, METHOD, cls);
@@ -170,7 +170,7 @@ describe("class decor order", () => {
             function inner<T extends Base>(cls: Class<T>): Class<T> {
                 return middleware<T>((target: T, next: Function, args: [number]) => {
                     SPIES.lastBefore(target, args);
-                    const res = next(args[0] + 1);
+                    const res = next([args[0] + 1]);
                     SPIES.firstAfter(target, res);
                     return res + 1;
                 }, METHOD, cls);

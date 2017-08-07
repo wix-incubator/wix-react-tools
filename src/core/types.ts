@@ -51,3 +51,6 @@ export type Args<A, I = 0, L = THNil> = {
     true: Args<A, Increment[I], THCons<A[I], L>>;
     false: THListReverse<L>;
 }[ObjectHasKey<A, I>];
+
+export type AnyArgs = THNil| THCons<any, THNil>;
+export type NoArgs = THNil;

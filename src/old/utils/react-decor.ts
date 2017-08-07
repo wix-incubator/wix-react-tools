@@ -17,7 +17,8 @@ import {unsafeMixerData, mix, MixerData} from "./class-decor/mixer";
 import {privateState} from "../../core/private-state";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
-import {Class} from "../../core/types";
+import {Class, NoArgs} from "../../core/types";
+import {BeforeHook} from "../../function-decor";
 
 export type RenderResult = JSX.Element | null | false;
 export type Rendered<P extends object> = {

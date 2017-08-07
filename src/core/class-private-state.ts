@@ -7,7 +7,7 @@ export interface UnsafeClassStateProvider<P = any, T extends Class<object> = Cla
     origin: StateProvider<T, T>;
 }
 
-export interface InheritedClassStateProvider<P, T extends Class<object>> extends OptionalStateProvider<P, T> {
+export interface InheritedClassStateProvider<P, T extends Class<object> = Class<object>> extends OptionalStateProvider<P, T> {
     origin: OptionalStateProvider<T, T>;
     unsafe: {
         (targetObj: T): P;

@@ -3,18 +3,22 @@ import {add, after, before, middleware, onInstance} from "../../src";
 import {expect} from "test-drive";
 
 describe('class-decor documentation examples', () => {
+    let log:string[] = [];
     const console = spyAll({
-        log: () => {
+        log: (...args:string[]) => {
+            log.push(args.join(' '));
         },
         warn: () => {
         },
     });
 
     afterEach("reset console.warn", () => {
+        log = [];
         resetAll(console);
     });
 
     function expectLog(...lines: Array<string>) {
+        expect(JSON.stringify(log)).to.eql(JSON.stringify(lines));
         expect(console.log).to.have.callCount(lines.length);
         lines.forEach((val: string, idx: number) => {
             expect(console.log.getCall(idx).args, `call #${idx} argument`).eql([val]);
@@ -51,10 +55,10 @@ describe('class-decor documentation examples', () => {
 
     describe('middleware', () => {
         it('directly on class', () => {
-            function logMW(instance: Logger, next: (n: string) => string, methodArguments: [string]) {
+            function logMW(instance: Logger, next: (n: [string]) => string, methodArguments: [string]) {
                 console.log('called on method with ' + methodArguments[0]);
-                const result: string = next('goodbye');
-                console.log(result)
+                const result: string = next(['goodbye']);
+                console.log(result);
                 return 'wrapped=> ' + result
             }
 
