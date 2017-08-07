@@ -11,13 +11,13 @@ import {
     ReactHTML,
     ReactNode,
     ReactSVG,
-    SFC,
+    SFC
 } from "react";
-import {unsafeMixerData, mix, MixerData} from "./class-decor/mixer";
+import {mix, MixerData, unsafeMixerData} from "./class-decor/mixer";
 import {privateState} from "../../core/private-state";
+import {Class} from "../../core/types";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
-import {Class} from "../../core/types";
 
 export type RenderResult = JSX.Element | null | false;
 export type Rendered<P extends object> = {

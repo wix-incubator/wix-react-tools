@@ -1,15 +1,17 @@
 import {classPrivateState, Class} from "../../src/";
 import {expect} from "test-drive";
 
-function emptyState(subj: Class<any>) {
-    return {};
+let count = 0;
+// state initializer
+function initState(subj: Class<any>) {
+    // content is meaningless. just make something unique and easy to debug
+    return {
+        subj,
+        count:count++
+    };
 }
-type State = {
-    foo?: string
-    bar?: string
-};
 describe('Class private state', () => {
-    const pState0 = classPrivateState<State>('foo', emptyState);
+    const pState0 = classPrivateState('foo', initState);
     describe('.inherited', ()=>{
         it('returns state of own class if exists', ()=>{
             class F{}
@@ -35,6 +37,63 @@ describe('Class private state', () => {
             expect(pState0.inherited(G)).to.equal(pState0(G));
             expect(pState0.inherited(G)).to.not.equal(pState0(F));
         });
+        describe('.origin', ()=>{
+            it('returns argument if it has state', ()=>{
+                class F{}
+                pState0(F); // init private state
+                expect(pState0.inherited.origin(F)).to.equal(F);
+            });
+            it('returns null if .inherited would return null for same argument', ()=>{
+                class F{}
+                class G extends F{}
+                expect(pState0.inherited.origin(G)).to.equal(null);
+            });
+            it('returns super class if it has state', ()=>{
+                class F{}
+                class G extends F{}
+                pState0(F); // init private state
+                expect(pState0.inherited.origin(G)).to.equal(F)
+            });
+            it('does not return state of super class if own class has state', ()=>{
+                class F{}
+                class G extends F{}
+                pState0(F); // init private state
+                pState0(G); // init private state
+                expect(pState0.inherited.origin(G)).to.equal(G);
+                expect(pState0.inherited.origin(G)).to.not.equal(F);
+            });
+            describe('.hasState', ()=>{
+                it('equals .inherited.hasState', ()=>{
+                    expect(pState0.inherited.origin.hasState).to.equal(pState0.inherited.hasState)
+                });
+            });
+            describe('.unsafe', ()=>{
+                it('returns argument if it has state', ()=>{
+                    class F{}
+                    pState0(F); // init private state
+                    expect(pState0.inherited.origin.unsafe(F)).to.equal(F);
+                });
+                it('throws if no state exists', ()=>{
+                    class F{}
+                    class G extends F{}
+                    expect(() => pState0.inherited.origin.unsafe(G)).to.throw();
+                });
+                it('returns super class if it has state', ()=>{
+                    class F{}
+                    class G extends F{}
+                    pState0(F); // init private state
+                    expect(pState0.inherited.origin.unsafe(G)).to.equal(F)
+                });
+                it('does not return state of super class if own class has state', ()=>{
+                    class F{}
+                    class G extends F{}
+                    pState0(F); // init private state
+                    pState0(G); // init private state
+                    expect(pState0.inherited.origin.unsafe(G)).to.equal(G);
+                    expect(pState0.inherited.origin.unsafe(G)).to.not.equal(F);
+                });
+            });
+        });
         describe('.unsafe', ()=>{
             it('returns state of own class if exists', ()=>{
                 class F{}
@@ -49,7 +108,7 @@ describe('Class private state', () => {
             it('returns state of super class if exists', ()=>{
                 class F{}
                 class G extends F{}
-                pState0(F).foo = 'bar'; // init private state
+                pState0(F); // init private state
                 expect(pState0.inherited.unsafe(G)).to.equal(pState0(F))
             });
             it('does not return state of super class if own class has state', ()=>{
@@ -59,6 +118,12 @@ describe('Class private state', () => {
                 pState0(G); // init private state
                 expect(pState0.inherited.unsafe(G)).to.equal(pState0(G));
                 expect(pState0.inherited.unsafe(G)).to.not.equal(pState0(F));
+            });
+
+            describe('.origin', ()=>{
+                it('equals .origin.unsafe', ()=>{
+                    expect(pState0.inherited.unsafe.origin).to.equal(pState0.inherited.origin.unsafe)
+                });
             });
         });
         describe('.hasState', ()=>{
@@ -75,7 +140,7 @@ describe('Class private state', () => {
             it('returns true if exists in super', ()=>{
                 class F{}
                 class G extends F{}
-                pState0(F).foo = 'bar'; // init private state
+                pState0(F); // init private state
                 expect(pState0.inherited.hasState(G)).to.equal(true)
             })
         })

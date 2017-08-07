@@ -72,9 +72,9 @@ export function unsafe<P, T extends object>(key: string, provider: OptionalState
  * @param initIfNone initialize a new store if none is affilitated with targetObj
  * @returns a context, or null if none existed and initIfNone was set to false
  */
-export function getStateContext<T extends object = any>(targetObj: T, initIfNone:true):{ [key: string]: any };
-export function getStateContext<T extends object = any>(targetObj: T, initIfNone:false):{ [key: string]: any } | null;
-export function getStateContext<T extends object = any>(targetObj: T, initIfNone:boolean):{ [key: string]: any } | null {
+function getStateContext<T extends object = any>(targetObj: T, initIfNone:true):{ [key: string]: any };
+function getStateContext<T extends object = any>(targetObj: T, initIfNone:false):{ [key: string]: any } | null;
+function getStateContext<T extends object = any>(targetObj: T, initIfNone:boolean):{ [key: string]: any } | null {
     let privateContext: { [key: string]: any } | null = null;
     if (getGlobalConfig().devMode) {
         const targetObject = targetObj as any;
