@@ -18,7 +18,6 @@ function root<T, S>(componentProps:T, rootProps:S = {className:"root"}): T & S;
    1. data-automation-id - Merge (concat) the ids of componentProps and rootProps. Duplicate ids are not handled at the moment.
 2. inline style - Merge the style attribute of componentProps and rootProps, in case of conflicting values, componentProps takes precedence
 3. className - Merge (concat) the className attribute of componentProps and rootProps. Duplicate classes are not handled at the moment.
-4. on* - Merge the event handlers componentProps and rootProps by means of `mergeEventHandlers` (see below)
 
 ### Usage Example
 ```tsx
