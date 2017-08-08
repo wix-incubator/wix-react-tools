@@ -1,6 +1,6 @@
 // business logic
 export {root} from './react/root-handler';
-export * from './core/merge-events';
+export * from './core/functional';
 export * from './core/types';
 export * from './core/config';
 export {privateState, StateProvider, STATE_DEV_MODE_KEY} from './core/private-state';

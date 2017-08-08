@@ -1,5 +1,5 @@
 import {expect} from "test-drive-react";
-import {mergeEventHandlers, root} from "../../src";
+import {cachedChainFunctions, root} from "../../src";
 
 // make a new function
 function func() {
@@ -163,8 +163,8 @@ describe('root', () => {
                 className: "root"
             });
 
-            expect(result).to.eql({onFoo: mergeEventHandlers(f1, f2), className: "root"});
-            expect(result.onFoo).to.equal(mergeEventHandlers(f1, f2)); // notice the use of .equal and *not* .eql
+            expect(result).to.eql({onFoo: cachedChainFunctions(f1, f2), className: "root"});
+            expect(result.onFoo).to.equal(cachedChainFunctions(f1, f2)); // notice the use of .equal and *not* .eql
         });
 
         it("should respect black-list", () => {
@@ -180,7 +180,7 @@ describe('root', () => {
 
             expect(result).to.eql({
                 "onBizz": f1,
-                "onBar": mergeEventHandlers(f1, f1),
+                "onBar": cachedChainFunctions(f1, f1),
                 className: ""
             });
         });

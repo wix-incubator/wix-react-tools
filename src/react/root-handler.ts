@@ -1,4 +1,4 @@
-import {mergeEventHandlers} from "../core/merge-events";
+import {cachedChainFunctions} from "../core/functional";
 import {ObjectOmit} from "typelevel-ts";
 export interface ComponentProps {
     className?: string;
@@ -45,7 +45,7 @@ export function root<T extends ComponentProps, S extends Props, B extends keyof 
                 }
             } else if (isEventHandlerName(key)) {
                 if (typeof result[key] === "function") {
-                    result[key] = mergeEventHandlers(componentProps[key], result[key]);
+                    result[key] = cachedChainFunctions(componentProps[key], result[key]);
                 } else {
                     result[key] = componentProps[key];
                 }
