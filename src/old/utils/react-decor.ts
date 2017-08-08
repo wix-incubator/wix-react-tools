@@ -13,8 +13,8 @@ import {
     ReactSVG,
     SFC
 } from "react";
-import {mix, MixerData, unsafeMixerData} from "./class-decor/mixer";
-import {Class, Rendered} from "../../core/types";
+import {List, mix, MixerData, unsafeMixerData} from "./class-decor/mixer";
+import {Class, Instance, Rendered} from "../../core/types";
 import {classPrivateState, ClassStateProvider} from "../../core/class-private-state";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
@@ -45,19 +45,22 @@ function cleanUpHook<P extends HTMLAttributes<HTMLElement>>(type: ElementType<P>
     return original(type as any, props, ...children);
 }
 
+function preRenderHook<T extends Rendered<any>>(instance: Instance<T>, args: never[]){
+    // find the lowest ReactDecorData attached to the instance
+    let currentReactDecorData = reactMixData.unsafe.inherited(instance.constructor);
+    currentReactDecorData.lastRendering = instance;
+    (React as any).createElement = currentReactDecorData.createElementProxy;
+    return args;
+}
+
 class ReactDecorData<T extends Rendered<any>> {
-    createElementHooks: Array<CreateElementHook<T>> = [];
+    createElementHooks: List<CreateElementHook<T>>;
     lastRendering: T;
 
-    constructor(private mixData: MixerData<T>, superData: ReactDecorData<any> | null) {
+    constructor(mixData: MixerData<T>, superData: ReactDecorData<any> | null) {
+        this.createElementHooks = new List(superData && superData.createElementHooks);
         if (!superData) {
-            // TODO: make static function and use inheritence chain
-            const preRenderHook = (instance: T, args: never[]) => {
-                this.lastRendering = instance;
-                (React as any).createElement = this.createElementProxy;
-                return args;
-            };
-            this.mixData.addBeforeHook(preRenderHook, 'render'); // hook react-decor's lifecycle
+            mixData.addBeforeHook(preRenderHook, 'render'); // hook react-decor's lifecycle
         }
     }
 
@@ -65,8 +68,7 @@ class ReactDecorData<T extends Rendered<any>> {
         // check if original render is over, then clean up and call original
         if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
             let args: CreateElementArgs<P> = {type, props, children};
-            // TODO: traverse heritage via this.mixData and call ancestor hooks
-            this.createElementHooks.forEach((hook: CreateElementHook<T>) => {
+            this.createElementHooks.collect().forEach((hook: CreateElementHook<T>) => {
                 args = hook(this.lastRendering, args);
                 if (args === undefined) {
                     throw new Error('@registerForCreateElement Error: hook returned undefined');
@@ -89,7 +91,7 @@ const reactMixData: ClassStateProvider<ReactDecorData<Rendered<any>>, Class<Rend
 export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
     return function registerForCreateElementDecorator<C extends Class<T>>(componentClazz: C): C {
         let mixed = mix(componentClazz);
-        reactMixData(mixed).createElementHooks.push(hook);
+        reactMixData(mixed).createElementHooks.add(hook);
         return mixed;
     };
 }

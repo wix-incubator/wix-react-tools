@@ -23,6 +23,9 @@ export function isClass<T extends object>(protoValidator: (proto:object)=>proto 
 }
 export type RenderResult = JSX.Element | null | false;
 
+export type Instance<T extends object> = T & {
+    constructor: Class<T>;
+}
 export type Rendered<P extends object> = {
     props: P;
     render(): RenderResult;
