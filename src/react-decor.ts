@@ -14,8 +14,8 @@ import {
     SFC
 } from "react";
 import {List, mix, MixerData, unsafeMixerData} from "./class-decor/mixer";
-import {Class, Instance, Rendered} from "../../core/types";
-import {classPrivateState, ClassStateProvider} from "../../core/class-private-state";
+import {Class, Instance, Rendered} from "./core/types";
+import {classPrivateState, ClassStateProvider} from "./core/class-private-state";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 

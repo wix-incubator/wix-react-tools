@@ -11,16 +11,16 @@ export * from "./function-decor";
 //bases
 export * from './old/bases/observable-component';
 //mixins
-export * from './old/mixins/disposable-decorator';
+export * from './features/disposable-decorator';
 export * from './old/mixins/global-id-decorator';
 //utils
-export * from './old/utils/class-decor/index';
-export * from './old/utils/react-decor';
+export * from './class-decor/index';
+export * from './react-decor';
 export * from './core/disposers';
 
 // custom exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
-import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./old/utils/class-decor/index";
+import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./class-decor/index";
 
 function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc:F, cDFunc:C) : F & C{
     function ApiHook() {

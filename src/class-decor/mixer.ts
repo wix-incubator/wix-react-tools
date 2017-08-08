@@ -1,5 +1,5 @@
-import {AnyArgs, Class} from "../../../core/types";
-import {classPrivateState, ClassStateProvider} from "../../../core/class-private-state";
+import {AnyArgs, Class} from "../core/types";
+import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 import {initEdgeClass} from "./apply-method-decorations";
 import {THList, THListToTuple} from "typelevel-ts";
 import _union = require('lodash/union');

@@ -1,9 +1,9 @@
 import {expect, sinon} from "test-drive-react";
-import {Class, after, before, chain, ClassDecorator, middleware, onInstance} from "../../../../src";
-import {expectSpyChain, resetAll, spyAll} from "../../../test-drivers/test-tools";
+import {Class, after, before, chain, ClassDecorator, middleware, onInstance} from "../../src";
+import {expectSpyChain, resetAll, spyAll} from "../test-drivers/test-tools";
 import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
-import {mix} from "../../../../src/old/utils/class-decor/mixer";
+import {mix} from "../../src/class-decor/mixer";
 
 const ORIGIN_ARGUMENT = 111;
 const ORIGIN_RESULT = 222;

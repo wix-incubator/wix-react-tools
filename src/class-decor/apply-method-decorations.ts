@@ -1,7 +1,7 @@
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import _union = require('lodash/union');
-import {getGlobalConfig} from "../../../core/config";
-import {AnyArgs, Class, GlobalConfig} from "../../../core/types";
+import {getGlobalConfig} from "../core/config";
+import {AnyArgs, Class, GlobalConfig} from "../core/types";
 import {
     AfterMethodHook,
     BeforeMethodHook,
@@ -10,7 +10,7 @@ import {
     MiddlewareMethodHook,
     MixerData
 } from "./mixer";
-import {classPrivateState} from "../../../core/class-private-state";
+import {classPrivateState} from "../core/class-private-state";
 import {THList, THListToTuple} from "typelevel-ts";
 
 const edgeClassData = classPrivateState('edge class data', clazz => new EdgeClassData(clazz));
