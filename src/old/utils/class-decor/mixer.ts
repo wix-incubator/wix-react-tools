@@ -104,6 +104,7 @@ export type MethodData = {
     before: BeforeMethodHook[] | null;
     after: AfterMethodHook[] | null;
 }
+
 export class MixerData<T extends object> {
     private superData: MixerData<Partial<T>> | null;
     private constructorHooks: ConstructorHook<T>[] = [];
@@ -156,9 +157,9 @@ export class MixerData<T extends object> {
     }
 
     getMethodData(methodName: keyof T): MethodData | null {
-        const before = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName].before);
-        const after = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName].after);
-        const middleware = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName].middleware);
+        const before = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].before);
+        const after = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].after);
+        const middleware = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].middleware);
         if (before || after || middleware) {
             return {
                 before: before && before.collect(),

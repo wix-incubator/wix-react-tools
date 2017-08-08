@@ -19,7 +19,6 @@ import {classPrivateState, ClassStateProvider} from "../../core/class-private-st
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
-
 export type CreateElementArgs<P extends {}> = {
     type: ElementType<P>,
     props: Attributes & Partial<P>,

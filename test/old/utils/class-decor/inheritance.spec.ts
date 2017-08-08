@@ -3,6 +3,7 @@ import {Class, after, before, chain, ClassDecorator, middleware, onInstance} fro
 import {expectSpyChain, resetAll, spyAll} from "../../../test-drivers/test-tools";
 import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
+import {mix} from "../../../../src/old/utils/class-decor/mixer";
 
 const ORIGIN_ARGUMENT = 111;
 const ORIGIN_RESULT = 222;
@@ -196,6 +197,22 @@ describe("class decor inheritance", () => {
                 });
                 checkClass(sampleTest);
             });
+
+            describe('when applied on parent of child with other decorations', () => {
+                beforeEach('define classes', () => {
+                    const Parent = second(first(makeBaseClass(SPIES.superClassFunction)));
+                    class _UserClass extends Parent {
+                        myMethod(foo: number): number {
+                            SPIES.childFunction(this, foo);
+                            return ORIGIN_RESULT;
+                        }
+                    }
+                    // mix simulates other decorators creating another subclass with no reference to myMethod
+                    UserClass = mix(_UserClass);
+                });
+                checkClass(sampleTest);
+            });
+
             describe('when apply on child', () => {
                 beforeEach('define classes', () => {
                     const Parent = makeBaseClass(SPIES.superClassFunction);
