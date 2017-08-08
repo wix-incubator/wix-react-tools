@@ -2,6 +2,7 @@ const path = require('path');
 const glob = require("glob");
 const {testGlob} = require('./package.json');
 const testFiles = glob.sync(testGlob);
+const webpack = require('webpack');
 
 const distPath = path.join(__dirname, 'dist');
 
@@ -19,6 +20,11 @@ module.exports = {
         libraryTarget: 'umd',
         pathinfo: true
     },
+    plugins:[new webpack.DefinePlugin({
+        'process.env': {
+            NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'production'),
+        },
+    })],
     devServer: {
         contentBase: distPath,
         inline: true,
