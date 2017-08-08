@@ -1,4 +1,4 @@
-import {Class} from "../../../core/types";
+import {AnyArgs, Class} from "../../../core/types";
 import {classPrivateState, ClassStateProvider} from "../../../core/class-private-state";
 import {initEdgeClass} from "./apply-method-decorations";
 import {THList, THListToTuple} from "typelevel-ts";
@@ -7,9 +7,9 @@ import _union = require('lodash/union');
 type DumbClass = new(...args: any[]) => object;
 
 export type ConstructorHook<T extends object> = (instance: T, constructorArguments: any[]) => void;
-export type BeforeMethodHook<A extends THList, T = any> = (instance: T, methodArguments: THListToTuple<A>) => THListToTuple<A>;
+export type BeforeMethodHook<A extends THList = AnyArgs, T = any> = (instance: T, methodArguments: THListToTuple<A>) => THListToTuple<A>;
 export type AfterMethodHook<R = void, T = any> = (instance: T, methodResult: R) => R;
-export type MiddlewareMethodHook<A extends THList, R = void, T = any> = (instance: T, next: (methodArguments: THListToTuple<A>) => R, methodArguments: THListToTuple<A>) => R;
+export type MiddlewareMethodHook<A extends THList = AnyArgs, R = void, T = any> = (instance: T, next: (methodArguments: THListToTuple<A>) => R, methodArguments: THListToTuple<A>) => R;
 
 export type MixerDataProvider = {
     <T extends object>(targetObj: Class<T>): MixerData<T>;
@@ -26,7 +26,7 @@ function getSuper<T extends object, C extends T = T>(c: Class<C>): Class<T> {
 
 const getMixerData = classPrivateState<MixerData<object>>('mixer data', <T extends object>(c: Class<T>) => {
     const superClass = getSuper<T>(c);
-    return new MixerData<T>(c, superClass);
+    return new MixerData<T>(superClass);
 }) as MixerDataProvider;
 
 export const unsafeMixerData: MixerDataProvider['unsafe'] = getMixerData.unsafe;
@@ -59,30 +59,62 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C {
     return Extended as any;
 }
 
-export type FlaggedArray<T> = Array<{
-    ifExists?: boolean;
-} & T>
+export class List<T> {
+    private items: T[] = [];
 
-
-function getLazyListProp<O extends object, T extends keyof O>(obj: O, key: keyof O) {
-    let result = obj[key];
-    if (!result) {
-        obj[key] = result = [];
+    constructor(protected superList: List<T> | null) {
     }
-    return result;
+
+    private has(hook: T): boolean {
+        return Boolean(~this.items.indexOf(hook) || (this.superList && this.superList.has(hook)));
+    }
+
+    add(hook: T) {
+        if (!this.has(hook)) {
+            this.items.push(hook);
+        }
+    }
+
+    collect(): T[] {
+        const result: T[] = [];
+        this.collectInternal(result);
+        return result;
+    }
+
+    private collectInternal(collector: T[]) {
+        this.superList && this.superList.collectInternal(collector);
+        collector.push(...this.items);
+    }
 }
 
-export type LazyLists<T, H> = {[P in keyof T]?:FlaggedArray<H>}
+type MethodMeta = {
+    middleware?: List<MiddlewareMethodHook>;
+    before?: List<BeforeMethodHook>;
+    after?: List<AfterMethodHook>;
+}
 
+type Hooks = {
+    middleware: MiddlewareMethodHook;
+    before: BeforeMethodHook;
+    after: AfterMethodHook;
+}
+
+export type MethodData = {
+    middleware: MiddlewareMethodHook[] | null;
+    before: BeforeMethodHook[] | null;
+    after: AfterMethodHook[] | null;
+}
 export class MixerData<T extends object> {
+    private superData: MixerData<Partial<T>> | null;
     private constructorHooks: ConstructorHook<T>[] = [];
-    private beforeHooks: LazyLists<T, BeforeMethodHook<any, T>> = {};
-    private afterHooks: LazyLists<T, AfterMethodHook<any, T>> = {};
-    private middlewareHooks: LazyLists<T, MiddlewareMethodHook<any, any, T>> = {};
+    private functions: { [P: string]: MethodMeta } = {};
+    private methodNames: List<keyof T>;
 
-    constructor(public mixedClass: Class<T>, public userClass: Class<T>) {
+    constructor(userClass: Class<T>) {
+        this.superData = getMixerData.inherited(userClass);
+        this.methodNames = new List(this.superData && this.superData.methodNames);
         // TODO: generalize initEdgeClass to a new type of hook (once per edge class)
-        if (!getMixerData.inherited.hasState(userClass)) {
+        if (!this.superData) {
             const onClassInit = (firstInstance: T) => {
                 initEdgeClass(firstInstance.constructor as Class<T>);
             };
@@ -91,74 +123,70 @@ export class MixerData<T extends object> {
         }
     }
 
-    get superData(): MixerData<Partial<T>> | null {
-        return getMixerData.inherited(this.userClass);
+    /**
+     * searches up the inheritance tree for a property
+     */
+    private getInherited<P>(provider: (toCheck: MixerData<any>) => P | undefined): P | null {
+        let currentData: MixerData<any> = this;
+        let result = provider(currentData);
+        while (result === undefined && currentData.superData) {
+            currentData = currentData.superData;
+            result = provider(currentData);
+        }
+        return result === undefined ? null : result;
+    }
+
+    private addToList<H extends keyof Hooks>(name: H, key: keyof T, hook: Hooks[H]) {
+        this.methodNames.add(key);
+        if (!this.functions[key]) {
+            this.functions[key] = {};
+        }
+        let result: List<Hooks[H]> | undefined = this.functions[key][name];
+        if (!result) {
+            let inherited = this.getInherited<List<Hooks[H]>>(
+                (toCheck: MixerData<any>) => toCheck.functions[key] && toCheck.functions[key][name]);
+            result = new List<Hooks[H]>(inherited);
+            this.functions[key][name] = result as any;
+        }
+        result.add(hook);
     }
 
     hookedMethodNames(): Array<keyof T> {
+        return this.methodNames.collect();
+    }
 
-        return _union(
-            (this.superData && this.superData.hookedMethodNames()),
-            Object.keys(this.middlewareHooks),
-            Object.keys(this.beforeHooks),
-            Object.keys(this.afterHooks)) as Array<keyof T>;
+    getMethodData(methodName: keyof T): MethodData | null {
+        const before = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName].before);
+        const after = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName].after);
+        const middleware = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName].middleware);
+        if (before || after || middleware) {
+            return {
+                before: before && before.collect(),
+                after: after && after.collect().reverse(),
+                middleware: middleware && middleware.collect()
+            }
+        } else {
+            return null;
+        }
     }
 
     addConstructorHook(hook: ConstructorHook<T>) {
         this.constructorHooks.push(hook);
     }
 
-    addBeforeHook(hook: BeforeMethodHook<any, T>, methodName: keyof T) {
-        getLazyListProp(this.beforeHooks, methodName)!.push(hook);
-    }
-
-    addAfterHook(hook: AfterMethodHook<any, T>, methodName: keyof T) {
-        getLazyListProp(this.afterHooks, methodName)!.unshift(hook);
-    }
-
-    addMiddlewareHook(hook: MiddlewareMethodHook<any, any, T>, methodName: keyof T) {
-        getLazyListProp(this.middlewareHooks, methodName)!.push(hook);
-    }
-
-    shouldCreateMethod(methodName: keyof T): boolean {
-        return (this.superData && this.superData.shouldCreateMethod(methodName)) ||
-            _union(
-                this.beforeHooks[methodName],
-                this.middlewareHooks[methodName],
-                this.afterHooks[methodName]
-            ).some((hook) => !hook.ifExists);
-    }
-
     visitConstructorHooks(visitor: (value: ConstructorHook<T>) => void) {
         this.constructorHooks && this.constructorHooks.forEach(visitor);
     }
 
-    collectBeforeHooks(methodName: keyof T): Array<BeforeMethodHook<any, T>> | undefined {
-        const parentHooks = this.superData && this.superData.collectBeforeHooks(methodName);
-        const thisHooks = this.beforeHooks[methodName];
-        if (parentHooks) {
-            // notice: after order is reversed to before order
-            return thisHooks ? _union(parentHooks, thisHooks) : parentHooks;
-        }
-        return thisHooks;
+    addBeforeHook(hook: BeforeMethodHook<any, T>, methodName: keyof T) {
+        this.addToList('before', methodName, hook);
     }
 
-    collectAfterHooks(methodName: keyof T): Array<AfterMethodHook<any, T>> | undefined {
-        const parentHooks = this.superData && this.superData.collectAfterHooks(methodName);
-        const thisHooks = this.afterHooks[methodName];
-        if (parentHooks) {
-            // notice: after order is reversed to before order
-            return thisHooks ? _union(thisHooks, parentHooks) : parentHooks;
-        }
-        return thisHooks;
+    addAfterHook(hook: AfterMethodHook<any, T>, methodName: keyof T) {
+        this.addToList('after', methodName, hook);
     }
 
-    collectMiddlewareHooks(methodName: keyof T): Array<MiddlewareMethodHook<any, any, T>> | undefined {
-        const parentHooks = this.superData && this.superData.collectMiddlewareHooks(methodName);
-        const thisHooks = this.middlewareHooks[methodName];
-        if (parentHooks) {
-            return thisHooks ? _union(parentHooks, thisHooks) : parentHooks;
-        }
-        return thisHooks;
+    addMiddlewareHook(hook: MiddlewareMethodHook<any, any, T>, methodName: keyof T) {
+        this.addToList('middleware', methodName, hook);
     }
 }

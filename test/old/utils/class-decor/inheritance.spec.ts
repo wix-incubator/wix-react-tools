@@ -30,7 +30,7 @@ function makeBaseClass(spy?: sinon.SinonSpy): typeof Base {
     };
 }
 
-describe("class decor order", () => {
+describe("class decor inheritance", () => {
     describe("onInstance", () => {
         let first: sinon.SinonSpy;
         let last: sinon.SinonSpy;
@@ -227,6 +227,23 @@ describe("class decor order", () => {
                 });
                 checkClass(sampleTest);
 
+            });
+
+            describe('when apply on both parent and child, 2 generations apart', () => {
+                beforeEach('define classes', () => {
+                    const Parent = first(makeBaseClass(SPIES.superClassFunction));
+                    class P1 extends Parent {}
+                    class P2 extends P1 {}
+                    @second
+                    class _UserClass extends P2 {
+                        myMethod(foo: number): number {
+                            SPIES.childFunction(this, foo);
+                            return ORIGIN_RESULT;
+                        }
+                    }
+                    UserClass = _UserClass;
+                });
+                checkClass(sampleTest);
             });
 
             function checkClass(sampleTest = false) {
