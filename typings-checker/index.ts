@@ -16,13 +16,9 @@ type Result = { bar: number }
 
 interface Props {
     p1 : string;
-    onChange : number;
 }
 declare const p : Props;
 
 // $ExpectError Property 'className' is missing in type '{}'
 root(p, {})
-
-// $ExpectType Partial<Pick<Props, "p1">> & { className: string; }
-root(p, {className:'bar'}, ['onChange'])
 
