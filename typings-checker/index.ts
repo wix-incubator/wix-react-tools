@@ -22,3 +22,6 @@ declare const p : Props;
 // $ExpectError Property 'className' is missing in type '{}'
 root(p, {})
 
+// $ExpectType Partial<Props> & { className: string; }
+root(p, {className:'bar'})
+

@@ -1,6 +1,6 @@
 import {expect, sinon} from "test-drive-react";
-import {getHeritage, resetAll, spyAll} from "../../../test-drivers/test-tools";
-import {Class, after, before, chain, middleware, onInstance} from "../../../../src";
+import {getHeritage, resetAll, spyAll} from "../test-drivers/test-tools";
+import {Class, after, before, chain, middleware, onInstance} from "../../src";
 
 const METHOD = "myMethod";
 

@@ -1,10 +1,23 @@
-import {CreateElementArgs, registerForCreateElement} from "../../../src";
+import {CreateElementArgs, registerForCreateElement} from "../src";
 import * as React from "react";
 import {ClientRenderer, expect} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 
-describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
+declare const process:any;
+function inProduction(){
+    if (typeof process !== 'undefined' && process.env) {
+        return process.env.NODE_ENV === 'production';
+    }
+    return false;
+}
 
+describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
+    describe.assuming(inProduction(), 'only in production mode')('react contract regression tests', () => {
+        it('in production mode', () => {
+            // This test either passes or is ignored. It's here as a log artifact, to know whether other tests run in production mode
+            expect(process.env.NODE_ENV).to.eql('production');
+        });
+    });
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
 
@@ -80,34 +93,30 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         expect(select('1')).to.have.attribute('data-bar', 'bar');
     });
 
-    /*
-     xit('old WIP example', () => {
-     function hook<P extends { className?: string }>(instance: React.Component<any, any>,
-     next: CreateElementNext<P>,
-     type: ElementType<P>,
-     props: P,
-     children: Array<ReactNode>) {
+    it('multiple hooks work together on multiple levels', () => {
+        function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: CreateElementArgs<P>) {
+            args.props['data-foo'] = 'foo';
+            return args;
+        }
 
-     if (instance.props.className) {
-     props.className = instance.props.className + (props.className ? ' ' + props.className : '');
-     }
-     return next(type, props, children);
-     }
+        function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: CreateElementArgs<P>) {
+            args.props['data-bar'] = 'bar';
+            return args;
+        }
 
-     @registerForCreateElement(hook)
-     class MyComp extends React.Component<{ className: string }, {}> {
-     render() {
-     return <div className="rootClassName">
-     <div className="otherClassName"/>
-     </div>
-     }
-     }
+        @registerForCreateElement(FooHook)
+        class BaseComp extends React.Component {
 
-     renderToString(<MyComp className="App"/>)
-     // will return:
-     <div className="App rootClassName">
-     <div className="otherClassName"></div>
-     </div>
-     });
-     */
+        }
+
+        @registerForCreateElement(BarHook)
+        class MyComp extends BaseComp {
+            render() {
+                return <div data-automation-id="1"/>
+            }
+        }
+        const {select} = clientRenderer.render(<MyComp/>);
+        expect(select('1')).to.have.attribute('data-foo', 'foo');
+        expect(select('1')).to.have.attribute('data-bar', 'bar');
+    });
 });

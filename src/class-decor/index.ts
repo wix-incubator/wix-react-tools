@@ -7,7 +7,7 @@ import {
     mix,
     unsafeMixerData
 } from "./mixer";
-import {Class} from "../../../core/types";
+import {Class} from "../core/types";
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 

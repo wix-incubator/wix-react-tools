@@ -1,9 +1,16 @@
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import _union = require('lodash/union');
-import {getGlobalConfig} from "../../../core/config";
-import {AnyArgs, Class, GlobalConfig} from "../../../core/types";
-import {AfterMethodHook, BeforeMethodHook, inheritedMixerData, MiddlewareMethodHook, MixerData} from "./mixer";
-import {classPrivateState} from "../../../core/class-private-state";
+import {getGlobalConfig} from "../core/config";
+import {AnyArgs, Class, GlobalConfig} from "../core/types";
+import {
+    AfterMethodHook,
+    BeforeMethodHook,
+    inheritedMixerData,
+    MethodData,
+    MiddlewareMethodHook,
+    MixerData
+} from "./mixer";
+import {classPrivateState} from "../core/class-private-state";
 import {THList, THListToTuple} from "typelevel-ts";
 
 const edgeClassData = classPrivateState('edge class data', clazz => new EdgeClassData(clazz));
@@ -13,7 +20,14 @@ export const initEdgeClass = (clazz: Class<object>) => {
         edgeClassData(clazz).init();
     }
 };
-
+function notIfExists(hook: { ifExists?: boolean }){
+    return !hook.ifExists;
+}
+function shouldCreateMethod(methodData: MethodData): boolean {
+    return Boolean((methodData.before && methodData.before.some(notIfExists)) ||
+        (methodData.after && methodData.after.some(notIfExists)) ||
+        (methodData.middleware && methodData.middleware.some(notIfExists)));
+}
 export class EdgeClassData<T extends object = object> {
 
     // TODO move to function decor (use private state?)
@@ -34,23 +48,25 @@ export class EdgeClassData<T extends object = object> {
     init() {
         this.mixerData.hookedMethodNames()
             .forEach((methodName: keyof T) => {
-                // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
-                if (this.clazz.prototype[methodName]) {
-                    this.clazz.prototype[methodName] = this.wrapMethod(methodName, EdgeClassData.unwrapMethod(this.clazz.prototype[methodName]));
-                } else if (this.mixerData.shouldCreateMethod(methodName)) {
-                    this.clazz.prototype[methodName] = this.wrapMethod(methodName);
+                let methodData = this.mixerData.getMethodData(methodName);
+                if (methodData) {
+                    // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
+                    if (this.clazz.prototype[methodName]) {
+                        this.clazz.prototype[methodName] = this.wrapMethod(methodName, methodData, EdgeClassData.unwrapMethod(this.clazz.prototype[methodName]));
+                    } else if (shouldCreateMethod(methodData)) {
+                        this.clazz.prototype[methodName] = this.wrapMethod(methodName, methodData);
+                    }
                 }
             });
     }
 
-    private wrapMethod<P extends keyof T>(methodName: P, originalMethod?: T[P]): WrappedMethod {
-        const mixerData = this.mixerData;
+    private wrapMethod<P extends keyof T>(methodName: P, methodData: MethodData, originalMethod?: T[P]): WrappedMethod {
         // TODO dynamically named function
         const result = function wrappedClassDecorMethod(this: T) {
             let methodArgs: any[] = Array.prototype.slice.call(arguments);
-            methodArgs = runBeforeHooks(this, mixerData, methodName, methodArgs);
-            let methodResult = runMiddlewareHooksAndOrigin(this, mixerData, originalMethod || emptyMethod, methodName, methodArgs);
-            methodResult = runAfterHooks(this, mixerData, methodName, methodResult);
+            methodArgs = runBeforeHooks(this, methodData.before, methodName, methodArgs);
+            let methodResult = runMiddlewareHooksAndOrigin(this, methodData.middleware, originalMethod || emptyMethod, methodName, methodArgs);
+            methodResult = runAfterHooks(this, methodData.after, methodName, methodResult);
             return methodResult;
         } as any as WrappedMethod;
         result[wrappedFlag] = true;
@@ -80,8 +96,7 @@ function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
     throw new Error('before hook did not return an array-like object: ' + serialized)
 }
 
-function runBeforeHooks<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodArgs: any[]) {
-    const hooks = mixerMeta.collectBeforeHooks(methodName)
+function runBeforeHooks<T extends object>(target: T, hooks:Array<BeforeMethodHook>|null, methodName: keyof T, methodArgs: any[]) {
     if (hooks) {
         hooks.forEach((hook: BeforeMethodHook<AnyArgs, T>) => {
             methodArgs = hook(target, methodArgs);
@@ -107,8 +122,7 @@ const dummyTracker = {
     }
 };
 
-function runMiddlewareHooksAndOrigin<T extends object>(target: T, mixerMeta: MixerData<T>, originalMethod: (...args: any[]) => any, methodName: keyof T, methodArgs: any[]) {
-    const hooks = mixerMeta.collectMiddlewareHooks(methodName);
+function runMiddlewareHooksAndOrigin<T extends object>(target: T, hooks:Array<MiddlewareMethodHook>|null, originalMethod: (...args: any[]) => any, methodName: keyof T, methodArgs: any[]) {
     let retVal;
     if (hooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
@@ -134,12 +148,11 @@ function createNextForMiddlewareHook<T extends object, A extends THList, R>(targ
     };
 }
 
-function runAfterHooks<T extends object>(target: T, mixerMeta: MixerData<T>, methodName: keyof T, methodResult: any) {
-    const hooks = mixerMeta.collectAfterHooks(methodName);
+function runAfterHooks<T extends object>(target: T, hooks:Array<AfterMethodHook>|null, methodName: keyof T, methodResult: any) {
     const devMode = getGlobalConfig<GlobalConfig>().devMode;
 
     if (hooks) {
-        hooks.forEach((hook: AfterMethodHook<T, typeof methodResult>) => {
+        hooks.forEach((hook: AfterMethodHook) => {
             const hookMethodResult = hook(target, methodResult);
             if (devMode && methodResult !== undefined && hookMethodResult === undefined) {
                 console.warn(`@after ${methodName} Did you forget to return a value?`);
