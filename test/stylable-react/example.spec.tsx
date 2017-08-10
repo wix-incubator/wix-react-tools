@@ -1,10 +1,10 @@
-import {SBComponent} from "stylable-react-component/dist/stylable-react";
+import {SBComponent} from "stylable-react-component";
 import {fromCSS} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 
 
-describe('stylable', () => {
+describe('stylable-react', () => {
 
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
