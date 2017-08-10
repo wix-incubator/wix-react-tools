@@ -1,4 +1,4 @@
-import {CreateElementArgs, registerForCreateElement} from "../src";
+import {CreateElementArgs, registerForCreateElement} from "../../src";
 import * as React from "react";
 import {ClientRenderer, expect} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";

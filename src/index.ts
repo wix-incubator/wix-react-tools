@@ -15,7 +15,7 @@ export * from './features/disposable-decorator';
 export * from './old/mixins/global-id-decorator';
 //utils
 export * from './class-decor/index';
-export * from './react-decor';
+export * from './react/react-decor';
 export * from './core/disposers';
 
 // custom exports:

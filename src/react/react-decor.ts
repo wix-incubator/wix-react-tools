@@ -1,4 +1,5 @@
-import {ClassDecorator} from "./class-decor/index";
+import {ClassDecorator} from "../class-decor/index";
+import {before} from "../function-decor";
 import * as React from "react";
 import {
     Attributes,
@@ -13,9 +14,9 @@ import {
     ReactSVG,
     SFC
 } from "react";
-import {List, mix, MixerData, unsafeMixerData} from "./class-decor/mixer";
-import {Class, Instance, Rendered} from "./core/types";
-import {classPrivateState, ClassStateProvider} from "./core/class-private-state";
+import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
+import {Class, Instance, Rendered} from "../core/types";
+import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
@@ -64,21 +65,27 @@ class ReactDecorData<T extends Rendered<any>> {
         }
     }
 
-    createElementProxy = <P extends HTMLAttributes<HTMLElement>>(type: ElementType<P>, props: Attributes & Partial<P> = {}, ...children: Array<ReactNode>) => {
+    createElementProxy = before(
+        <P extends HTMLAttributes<HTMLElement>>(functionArgs:[ElementType<P>, Attributes & Partial<P>, ReactNode]) => {
         // check if original render is over, then clean up and call original
         if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
-            let args: CreateElementArgs<P> = {type, props, children};
+            let args: CreateElementArgs<P> = {
+                type : functionArgs[0],
+                props : functionArgs[1] || {},
+                children : functionArgs.length > 2 ? functionArgs.slice(2) : []
+            };
             this.createElementHooks.collect().forEach((hook: CreateElementHook<T>) => {
                 args = hook(this.lastRendering, args);
                 if (args === undefined) {
                     throw new Error('@registerForCreateElement Error: hook returned undefined');
                 }
             });
-            return original<Partial<P>>(args.type as any, args.props, ...args.children);
+            return [args.type, args.props, ...args.children];
         } else {
-            return cleanUpHook(type, props, children);
+            (React as any).createElement = original;
+            return functionArgs;
         }
-    };
+    })(original);
 }
 
 const reactMixData: ClassStateProvider<ReactDecorData<Rendered<any>>, Class<Rendered<any>>> =
