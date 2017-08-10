@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 import {ApiFunc, Args, NumberToString, root} from "../dist/src/index";
 
 type FIVE = NumberToString[5];
@@ -15,22 +15,35 @@ type Result = { bar: number }
 // $ExpectType (this: Ctx, a0: "0", a1: "1", a2: "2") => Result
 0 as any as ApiFunc<Args<['0', '1', '2']>, Result, Ctx>
 
-interface Props {
-    p1 : string;
-}
-declare const p : Props;
+describe('root function API', () => {
+    interface Props {
+        p1: string;
+        p2: string;
+    }
+    const p: Props = 0 as any;
 
+    it('mandatory className', () => {
 // $ExpectError Property 'className' is missing in type '{}'
-root(p, {})
+        root(p, {});
+    });
 
-// $ExpectType Partial<Props> & { className: string; }
-root(p, {className:'bar'})
+    it('non empty blacklist', () => {
+// $ExpectType Partial<Pick<Props, "p1">> & { className: string; }
+        root(p, {className: 'bar'}, ['p2']);
+    });
 
+    it('implicit empty blacklist', () => {
+// $ExpectType Partial<Pick<Props, "p1" | "p2">> & { className: string; }
+        root(p, {className: 'bar'});
+    });
 
-interface CompProps {
-    onChange(value: string): void;
-}
+    it('regression 1', () => {
+        interface CompProps {
+            onChange(value: string): void;
+        }
+        const compProps: CompProps = 0 as any;
 
-declare const compProps: CompProps;
+        const div = <div {...root(compProps, {className: 'test'}, ['onChange'])} />;
+    });
 
-const div = <div {...root(compProps, {className: 'test'})} />;
+});

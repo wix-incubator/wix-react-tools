@@ -55,6 +55,23 @@ describe('root', () => {
                 className: ""
             });
         });
+
+        it("should respect black-list", () => {
+            const result = root({
+                "data-1": "1",
+                "data-x": "test"
+            }, {
+                "data-2": "2",
+                "data-x": "overriden",
+                className: ""
+            }, ['data-1']);
+
+            expect(result).to.eql({
+                "data-x": "test",
+                "data-2": "2",
+                className: ""
+            });
+        });
     });
 
     describe('data-automation-id', () => {
