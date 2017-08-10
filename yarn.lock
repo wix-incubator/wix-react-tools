@@ -2622,9 +2622,9 @@ mocha-loader@^1.1.1:
     script-loader "~0.7.0"
     style-loader "~0.13.1"
 
-mocha-plugin-env@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/mocha-plugin-env/-/mocha-plugin-env-0.0.4.tgz#7792f7acbad39f14af7dc7367fc014137ef69555"
+mocha-plugin-env@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/mocha-plugin-env/-/mocha-plugin-env-0.1.0.tgz#0c80c2743808d9fb2da1c6f01a90b43224c9d737"
 
 mocha-teamcity-reporter@1.1.1:
   version "1.1.1"
