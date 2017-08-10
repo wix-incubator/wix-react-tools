@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {ApiFunc, Args, NumberToString, root} from "../dist/src/index";
 
 type FIVE = NumberToString[5];
@@ -25,3 +26,11 @@ root(p, {})
 // $ExpectType Partial<Props> & { className: string; }
 root(p, {className:'bar'})
 
+
+interface CompProps {
+    onChange(value: string): void;
+}
+
+declare const compProps: CompProps;
+
+const div = <div {...root(compProps, {className: 'test'})} />;
