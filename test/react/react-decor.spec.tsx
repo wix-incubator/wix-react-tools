@@ -1,4 +1,4 @@
-import {ChildElementArgs, onChildElement} from "../../src";
+import {ElementArgs, onChildElement, onRootElement} from "../../src";
 import * as React from "react";
 import {ClientRenderer, expect} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
@@ -20,31 +20,40 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
     });
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
-    describe('registerForRootElement', () => {
 
+    describe('example', () => {
+        function overrideClassesHook<P extends { className?: string }>(instance: React.Component<{ classOverride?: string }, any>, args: ElementArgs<P>) {
+            if (instance.props.classOverride) {
+                args.props.className = instance.props.classOverride;
+            }
+            return args;
+        }
+        class SuperComp extends React.Component<{ classOverride: string }, {}> {
+            render() {
+                return <div data-automation-id="Root" className="rootClassName">
+                    <div data-automation-id="Child" className="otherClassName"/>
+                </div>
+            }
+        }
+
+        it('onRootElement', () => {
+            @onRootElement(overrideClassesHook)
+            class MyComp extends SuperComp{}
+
+            const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
+            expect(select('Root')).to.have.property('className', 'App');
+            expect(select('Child')).to.have.property('className', 'otherClassName');
+        });
+        it('onChildElement', () => {
+            @onChildElement(overrideClassesHook)
+            class MyComp extends SuperComp{}
+
+            const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
+            expect(select('Root')).to.have.property('className', 'App');
+            expect(select('Child')).to.have.property('className', 'App');
+        });
     });
     describe('onChildElement', () => {
-        it('example', () => {
-            function overrideClassesHook<P extends { className?: string }>(instance: React.Component<{ classOverride?: string }, any>, args: ChildElementArgs<P>) {
-                if (instance.props.classOverride) {
-                    args.props.className = instance.props.classOverride;
-                }
-                return args;
-            }
-
-            @onChildElement(overrideClassesHook)
-            class MyComp extends React.Component<{ classOverride: string }, {}> {
-                render() {
-                    return <div data-automation-id="1" className="rootClassName">
-                        <div data-automation-id="2" className="otherClassName"/>
-                    </div>
-                }
-            }
-            const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
-            expect(select('1')).to.have.property('className', 'App');
-            expect(select('2')).to.have.property('className', 'App');
-        });
-
         it('throws when hook returns undefined', () => {
             @onChildElement((() => {
             }) as any)
@@ -74,12 +83,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
 
         it('multiple hooks work together', () => {
-            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: ChildElementArgs<P>) {
+            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: ElementArgs<P>) {
                 args.props['data-foo'] = 'foo';
                 return args;
             }
 
-            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: ChildElementArgs<P>) {
+            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: ElementArgs<P>) {
                 args.props['data-bar'] = 'bar';
                 return args;
             }
@@ -97,12 +106,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
 
         it('multiple hooks work together on multiple levels', () => {
-            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: ChildElementArgs<P>) {
+            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: ElementArgs<P>) {
                 args.props['data-foo'] = 'foo';
                 return args;
             }
 
-            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: ChildElementArgs<P>) {
+            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: ElementArgs<P>) {
                 args.props['data-bar'] = 'bar';
                 return args;
             }
