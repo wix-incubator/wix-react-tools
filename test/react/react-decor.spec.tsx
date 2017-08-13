@@ -1,10 +1,10 @@
-import {CreateElementArgs, registerForCreateElement} from "../../src";
+import {ChildElementArgs, onChildElement} from "../../src";
 import * as React from "react";
 import {ClientRenderer, expect} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 
-declare const process:any;
-function inProduction(){
+declare const process: any;
+function inProduction() {
     if (typeof process !== 'undefined' && process.env) {
         return process.env.NODE_ENV === 'production';
     }
@@ -20,103 +20,107 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
     });
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
+    describe('registerForRootElement', () => {
 
-    it('example', () => {
-        function overrideClassesHook<P extends { className?: string }>(instance: React.Component<{ classOverride?: string }, any>, args: CreateElementArgs<P>) {
-            if (instance.props.classOverride) {
-                args.props.className = instance.props.classOverride;
-            }
-            return args;
-        }
-
-        @registerForCreateElement(overrideClassesHook)
-        class MyComp extends React.Component<{ classOverride: string }, {}> {
-            render() {
-                return <div data-automation-id="1" className="rootClassName">
-                    <div data-automation-id="2" className="otherClassName"/>
-                </div>
-            }
-        }
-        const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
-        expect(select('1')).to.have.property('className', 'App');
-        expect(select('2')).to.have.property('className', 'App');
     });
-
-    it('throws when hook returns undefined', () => {
-        @registerForCreateElement((() => {
-        }) as any)
-        class MyComp extends React.Component {
-            render() {
-                return <div/>
+    describe('onChildElement', () => {
+        it('example', () => {
+            function overrideClassesHook<P extends { className?: string }>(instance: React.Component<{ classOverride?: string }, any>, args: ChildElementArgs<P>) {
+                if (instance.props.classOverride) {
+                    args.props.className = instance.props.classOverride;
+                }
+                return args;
             }
-        }
-        // expect the error to have a message with these two strings: `@registerForCreateElement` , `undefined`
-        expect(
-            () => clientRenderer.render(<MyComp/>)
-        ).to.throw(Error, /(?=.*\@registerForCreateElement.*)(?=.*undefined.*)/);
-    });
 
-    it('cleans up hook even if render throws', () => {
-        @registerForCreateElement((() => {
-            throw new Error('weeeeeee!!');
-        }) as any)
-        class MyComp extends React.Component {
-            render() {
-                return <div/>
+            @onChildElement(overrideClassesHook)
+            class MyComp extends React.Component<{ classOverride: string }, {}> {
+                render() {
+                    return <div data-automation-id="1" className="rootClassName">
+                        <div data-automation-id="2" className="otherClassName"/>
+                    </div>
+                }
             }
-        }
-        // expect the error to have a message with these two strings: `@registerForCreateElement` , `undefined`
-        expect(() => clientRenderer.render(<MyComp/>), 'render MyComp').to.throw(Error, 'weeeeeee');
-        expect(() => clientRenderer.render(<div/>), 'render after MyComp').not.to.throw(Error);
-    });
+            const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
+            expect(select('1')).to.have.property('className', 'App');
+            expect(select('2')).to.have.property('className', 'App');
+        });
 
-    it('multiple hooks work together', () => {
-        function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: CreateElementArgs<P>) {
-            args.props['data-foo'] = 'foo';
-            return args;
-        }
-
-        function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: CreateElementArgs<P>) {
-            args.props['data-bar'] = 'bar';
-            return args;
-        }
-
-        @registerForCreateElement(FooHook)
-        @registerForCreateElement(BarHook)
-        class MyComp extends React.Component {
-            render() {
-                return <div data-automation-id="1"/>
+        it('throws when hook returns undefined', () => {
+            @onChildElement((() => {
+            }) as any)
+            class MyComp extends React.Component {
+                render() {
+                    return <div/>
+                }
             }
-        }
-        const {select} = clientRenderer.render(<MyComp/>);
-        expect(select('1')).to.have.attribute('data-foo', 'foo');
-        expect(select('1')).to.have.attribute('data-bar', 'bar');
-    });
+            // expect the error to have a message with these strings: `onChildElement` , `hook`, `undefined`
+            expect(
+                () => clientRenderer.render(<MyComp/>)
+            ).to.throw(Error, /(?=.*onChildElement.*)(?=.*hook.*)(?=.*undefined.*)/);
+        });
 
-    it('multiple hooks work together on multiple levels', () => {
-        function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: CreateElementArgs<P>) {
-            args.props['data-foo'] = 'foo';
-            return args;
-        }
-
-        function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: CreateElementArgs<P>) {
-            args.props['data-bar'] = 'bar';
-            return args;
-        }
-
-        @registerForCreateElement(FooHook)
-        class BaseComp extends React.Component {
-
-        }
-
-        @registerForCreateElement(BarHook)
-        class MyComp extends BaseComp {
-            render() {
-                return <div data-automation-id="1"/>
+        it('cleans up hook even if render throws', () => {
+            @onChildElement((() => {
+                throw new Error('weeeeeee!!');
+            }) as any)
+            class MyComp extends React.Component {
+                render() {
+                    return <div/>
+                }
             }
-        }
-        const {select} = clientRenderer.render(<MyComp/>);
-        expect(select('1')).to.have.attribute('data-foo', 'foo');
-        expect(select('1')).to.have.attribute('data-bar', 'bar');
+            // expect the error to have a message with these two strings: `@onChildElement` , `undefined`
+            expect(() => clientRenderer.render(<MyComp/>), 'render MyComp').to.throw(Error, 'weeeeeee');
+            expect(() => clientRenderer.render(<div/>), 'render after MyComp').not.to.throw(Error);
+        });
+
+        it('multiple hooks work together', () => {
+            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: ChildElementArgs<P>) {
+                args.props['data-foo'] = 'foo';
+                return args;
+            }
+
+            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: ChildElementArgs<P>) {
+                args.props['data-bar'] = 'bar';
+                return args;
+            }
+
+            @onChildElement(FooHook)
+            @onChildElement(BarHook)
+            class MyComp extends React.Component {
+                render() {
+                    return <div data-automation-id="1"/>
+                }
+            }
+            const {select} = clientRenderer.render(<MyComp/>);
+            expect(select('1')).to.have.attribute('data-foo', 'foo');
+            expect(select('1')).to.have.attribute('data-bar', 'bar');
+        });
+
+        it('multiple hooks work together on multiple levels', () => {
+            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, args: ChildElementArgs<P>) {
+                args.props['data-foo'] = 'foo';
+                return args;
+            }
+
+            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, args: ChildElementArgs<P>) {
+                args.props['data-bar'] = 'bar';
+                return args;
+            }
+
+            @onChildElement(FooHook)
+            class BaseComp extends React.Component {
+
+            }
+
+            @onChildElement(BarHook)
+            class MyComp extends BaseComp {
+                render() {
+                    return <div data-automation-id="1"/>
+                }
+            }
+            const {select} = clientRenderer.render(<MyComp/>);
+            expect(select('1')).to.have.attribute('data-foo', 'foo');
+            expect(select('1')).to.have.attribute('data-bar', 'bar');
+        });
     });
 });

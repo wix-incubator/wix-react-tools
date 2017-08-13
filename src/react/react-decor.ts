@@ -20,7 +20,7 @@ import {classPrivateState, ClassStateProvider} from "../core/class-private-state
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
-export type CreateElementArgs<P extends {}> = {
+export type ChildElementArgs<P extends {}> = {
     type: ElementType<P>,
     props: Attributes & Partial<P>,
     children: Array<ReactNode>;
@@ -28,7 +28,7 @@ export type CreateElementArgs<P extends {}> = {
 
 // TODO: make union based of all different overloaded signatures of createElement
 // also consider <P extends HTMLAttributes<HTMLElement>>
-export type CreateElementHook<T extends Rendered<any>> = <P  = object>(instance: T, args: CreateElementArgs<P>) => CreateElementArgs<P>;
+export type ChildElementHook<T extends Rendered<any>> = <P  = object>(instance: T, args: ChildElementArgs<P>) => ChildElementArgs<P>;
 
 export type ElementType<P> =
     keyof ReactHTML
@@ -55,11 +55,11 @@ function preRenderHook<T extends Rendered<any>>(instance: Instance<T>, args: nev
 }
 
 class ReactDecorData<T extends Rendered<any>> {
-    createElementHooks: List<CreateElementHook<T>>;
+    childElementHooks: List<ChildElementHook<T>>;
     lastRendering: T;
 
     constructor(mixData: MixerData<T>, superData: ReactDecorData<any> | null) {
-        this.createElementHooks = new List(superData && superData.createElementHooks);
+        this.childElementHooks = new List(superData && superData.childElementHooks);
         if (!superData) {
             mixData.addBeforeHook(preRenderHook, 'render'); // hook react-decor's lifecycle
         }
@@ -69,15 +69,15 @@ class ReactDecorData<T extends Rendered<any>> {
         <P extends HTMLAttributes<HTMLElement>>(functionArgs:[ElementType<P>, Attributes & Partial<P>, ReactNode]) => {
         // check if original render is over, then clean up and call original
         if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
-            let args: CreateElementArgs<P> = {
+            let args: ChildElementArgs<P> = {
                 type : functionArgs[0],
                 props : functionArgs[1] || {},
                 children : functionArgs.length > 2 ? functionArgs.slice(2) : []
             };
-            this.createElementHooks.collect().forEach((hook: CreateElementHook<T>) => {
+            this.childElementHooks.collect().forEach((hook: ChildElementHook<T>) => {
                 args = hook(this.lastRendering, args);
                 if (args === undefined) {
-                    throw new Error('@registerForCreateElement Error: hook returned undefined');
+                    throw new Error('Error: onChildElement hook returned undefined');
                 }
             });
             return [args.type, args.props, ...args.children];
@@ -95,10 +95,10 @@ const reactMixData: ClassStateProvider<ReactDecorData<Rendered<any>>, Class<Rend
         return new ReactDecorData<T>(mixerData, inherited); // create react-decor data
     });
 
-export function registerForCreateElement<T extends Rendered<any>>(hook: CreateElementHook<T>): ClassDecorator<T> {
-    return function registerForCreateElementDecorator<C extends Class<T>>(componentClazz: C): C {
+export function onChildElement<T extends Rendered<any>>(hook: ChildElementHook<T>): ClassDecorator<T> {
+    return function onChildElementDecorator<C extends Class<T>>(componentClazz: C): C {
         let mixed = mix(componentClazz);
-        reactMixData(mixed).createElementHooks.add(hook);
+        reactMixData(mixed).childElementHooks.add(hook);
         return mixed;
     };
 }
