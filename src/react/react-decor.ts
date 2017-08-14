@@ -16,10 +16,11 @@ import {
     SFC
 } from "react";
 import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
-import {Args, Class, Instance, Rendered} from "../core/types";
+import {Class, GlobalConfig, Instance, Rendered} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
+import {getGlobalConfig} from "../core/config";
 
 export type ElementArgs<P extends {}> = {
     type: ElementType<P>,
@@ -66,9 +67,13 @@ function postRenderHook<T extends Rendered<any>>(instance: Instance<T>, methodRe
 class ReactDecorData<T extends Rendered<any>> {
     childElementHooks: List<ElementHook<T>>;
     rootElementHooks: List<ElementHook<T>>;
+    createElementProxy = decorFunction({
+        before: [this.beforeCreateElementHook.bind(this)],
+        after: [this.afterCreateElementHook.bind(this)]
+    })(original);
+    lastRendering: T;
     originalArgs = new Map<ReactElement<any>, ElementArgs<any>>();
     currentArgs:ElementArgs<any>|null = null;
-    lastRendering: T;
 
     constructor(mixData: MixerData<T>, superData: ReactDecorData<any> | null) {
         this.childElementHooks = new List(superData && superData.childElementHooks);
@@ -79,7 +84,27 @@ class ReactDecorData<T extends Rendered<any>> {
         }
     }
 
-    beforeCreateElementHook = (<P extends HTMLAttributes<HTMLElement>>(functionArgs: [ElementType<P>, Attributes & Partial<P>, ReactNode]) => {
+    handleRoot(rootElement: ReactElement<any>){
+        let rootArgs = this.originalArgs.get(rootElement);
+        this.originalArgs.clear();
+        if (rootArgs === undefined) {
+            if (getGlobalConfig<GlobalConfig>().devMode){
+                console.warn('unexpected root node');
+            }
+            return rootElement;
+        } else {
+            this.rootElementHooks.collect().forEach((hook: ElementHook<T>) => {
+                rootArgs = hook(this.lastRendering, rootArgs as ElementArgs<any>);
+                if (rootArgs === undefined) {
+                    throw new Error('Error: onRootElement hook returned undefined');
+                }
+            });
+            // TODO see what's the deal with cloneElement https://facebook.github.io/react/docs/react-api.html#cloneelement
+            return original(rootArgs.type as any, rootArgs.props, ...rootArgs.children);
+        }
+    }
+
+    beforeCreateElementHook<P extends HTMLAttributes<HTMLElement>>(functionArgs: [ElementType<P>, Attributes & Partial<P>, ReactNode]){
         // check if original render is over, then clean up and call original
         if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
             let args: ElementArgs<P> = {
@@ -99,38 +124,16 @@ class ReactDecorData<T extends Rendered<any>> {
             (React as any).createElement = original;
             return functionArgs;
         }
-    }) as BeforeHook<Args<[ElementType<HTMLAttributes<HTMLElement>>, Attributes & Partial<HTMLAttributes<HTMLElement>>, ReactNode]>>;
+    };
 
-    afterCreateElementHook = ((methodResult: ReactElement<any>)=>{
+    afterCreateElementHook(methodResult: ReactElement<any>){
         if (this.currentArgs) {
             this.originalArgs.set(methodResult, this.currentArgs);
             this.currentArgs = null;
         }
         return methodResult;
-    } ) as AfterHook<ReactElement<any>>;
+    };
 
-    handleRoot(methodResult: ReactElement<any>){
-        let args = this.originalArgs.get(methodResult);
-        this.originalArgs.clear();
-        if (args === undefined) {
-            // TODO in dev mode throw
-            //  throw new Error('unexpected returned node');
-            return methodResult;
-        } else {
-            this.rootElementHooks.collect().forEach((hook: ElementHook<T>) => {
-                args = hook(this.lastRendering, args as ElementArgs<any>);
-                if (args === undefined) {
-                    throw new Error('Error: onChildElement hook returned undefined');
-                }
-            });
-            return original(args.type as any, args.props, ...methodResult.props.children);
-        }
-    }
-
-    createElementProxy = decorFunction({
-        before: [this.beforeCreateElementHook],
-        after: [this.afterCreateElementHook]
-    })(original);
 }
 
 const reactMixData: ClassStateProvider<ReactDecorData<Rendered<any>>, Class<Rendered<any>>> =

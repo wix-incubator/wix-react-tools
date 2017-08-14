@@ -1,7 +1,9 @@
 import {ElementArgs, onChildElement, onRootElement} from "../../src";
 import * as React from "react";
-import {ClientRenderer, expect} from "test-drive-react";
+import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
+import {runInContext} from "../../src/core/config";
+import {GlobalConfig} from "../../src/core/types";
 
 declare const process: any;
 function inProduction() {
@@ -28,6 +30,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
             }
             return args;
         }
+
         class SuperComp extends React.Component<{ classOverride: string }, {}> {
             render() {
                 return <div data-automation-id="Root" className="rootClassName">
@@ -38,7 +41,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
 
         it('onRootElement', () => {
             @onRootElement(overrideClassesHook)
-            class MyComp extends SuperComp{}
+            class MyComp extends SuperComp {
+            }
 
             const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
             expect(select('Root')).to.have.property('className', 'App');
@@ -46,12 +50,52 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
         it('onChildElement', () => {
             @onChildElement(overrideClassesHook)
-            class MyComp extends SuperComp{}
+            class MyComp extends SuperComp {
+            }
 
             const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
             expect(select('Root')).to.have.property('className', 'App');
             expect(select('Child')).to.have.property('className', 'App');
         });
+    });
+    describe('onRootElement', () => {
+        let warn = console.warn;
+        beforeEach("replace console.warn with spy", () => {
+            console.warn = sinon.spy();
+        });
+
+        afterEach("reset console.warn", () => {
+            console.warn = warn;
+        });
+
+        const result = <div data-automation-id="Root"/>;
+
+        function justAHook(_: React.Component, args: ElementArgs<any>) {
+            return args;
+        }
+
+        @onRootElement(justAHook)
+        class MyComp extends React.Component {
+            render() {
+                return result;
+            }
+        }
+        it('warns on unknown root in dev mode', () => {
+            runInContext<GlobalConfig>({devMode: true}, () => {
+                //  clientRenderer.render(<MyComp/>);
+                new MyComp().render();
+                expect(console.warn).to.have.callCount(1);
+                expect(console.warn).to.have.been.calledWithMatch(/unexpected root/);
+            });
+        });
+
+        it('ignores unknown root out of dev mode', () => {
+            runInContext<GlobalConfig>({devMode: false}, () => {
+                new MyComp().render();
+                expect(console.warn).to.have.callCount(0);
+            });
+        });
+
     });
     describe('onChildElement', () => {
         it('throws when hook returns undefined', () => {

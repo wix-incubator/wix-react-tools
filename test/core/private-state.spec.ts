@@ -9,6 +9,10 @@ type State = {
     foo?: string
     bar?: string
 };
+
+const DEV_MODE_ON = {devMode : true};
+const DEV_MODE_OFF = {devMode : false};
+
 describe('Private state', () => {
     const pState0 = privateState<State>(ids[0], emptyState);
     const pState1 = privateState<State>(ids[1], emptyState);
@@ -35,7 +39,7 @@ describe('Private state', () => {
     });
 
     it("doesn't create gazillion fields on an instance", () => {
-        runInContext({devMode: true}, () => {
+        runInContext(DEV_MODE_ON, () => {
             const instance = {};
             pState0(instance).foo = "Hi";
             pState1(instance).foo = "Bye";
@@ -54,7 +58,7 @@ describe('Private state', () => {
     describe('dev mode', () => {
 
         it("in dev mode, expose an instance's private state but doesn't let you change it", () => {
-            runInContext({devMode: true}, () => {
+            runInContext(DEV_MODE_ON, () => {
                 const instance = {};
                 pState0(instance).foo = "Hi";
 
@@ -64,7 +68,7 @@ describe('Private state', () => {
         });
 
         it("outside dev mode, do not expose an instance's private state ", () => {
-            runInContext({devMode: false}, () => {
+            runInContext(DEV_MODE_OFF, () => {
                 const instance = {};
                 pState0(instance).foo = "Hi";
 
@@ -75,30 +79,30 @@ describe('Private state', () => {
 
         it("state initialized out of dev mode still available in dev mode", () => {
             const instance = {};
-            runInContext({devMode: false}, () => {
+            runInContext(DEV_MODE_OFF, () => {
                 pState0(instance).foo = "Hi";
             });
-            runInContext({devMode: true}, () => {
+            runInContext(DEV_MODE_ON, () => {
                 expect(pState0(instance)).to.eql({foo: "Hi"});
             });
         });
 
         it("state initialized in dev mode still available out of dev mode", () => {
             const instance = {};
-            runInContext({devMode: true}, () => {
+            runInContext(DEV_MODE_ON, () => {
                 pState0(instance).foo = "Hi";
             });
-            runInContext({devMode: false}, () => {
+            runInContext(DEV_MODE_OFF, () => {
                 expect(pState0(instance)).to.eql({foo: "Hi"});
             });
         });
 
         it("after fetching in dev mode, expose an instance's private state even if initialized outside dev mode", () => {
             const instance = {};
-            runInContext({devMode: false}, () => {
+            runInContext(DEV_MODE_OFF, () => {
                 pState0(instance).foo = "Hi";
             });
-            runInContext({devMode: true}, () => {
+            runInContext(DEV_MODE_ON, () => {
                 pState1(instance); // fetch once in dev mode, not even the state in question
                 const desc = Object.getOwnPropertyDescriptor(instance, STATE_DEV_MODE_KEY);
                 expect(desc).to.containSubset({writable: false, configurable: false});
@@ -116,14 +120,14 @@ describe('Private state', () => {
             expect(pState1.hasState(instance)).to.eql(false);
         });
         it('does not change the original instance', () => {
-            runInContext({devMode: false}, () => {
+            runInContext(DEV_MODE_OFF, () => {
                 const instance = {};
                 pState0.hasState(instance);
                 expect(instance).to.eql({});
             });
         });
         it('in dev mode, does not change the original instance', () => {
-            runInContext({devMode: true}, () => {
+            runInContext(DEV_MODE_ON, () => {
                 const instance = {};
                 pState0.hasState(instance);
                 expect(instance).to.eql({});
@@ -142,7 +146,7 @@ describe('Private state', () => {
             expect(() => pState0.unsafe(instance)).to.throw();
         });
         it('does not change the original instance', () => {
-            runInContext({devMode: false}, () => {
+            runInContext(DEV_MODE_OFF, () => {
                 const instance = {};
                 try {
                     pState0.unsafe(instance);
@@ -153,7 +157,7 @@ describe('Private state', () => {
             });
         });
         it('in dev mode, does not change the original instance', () => {
-            runInContext({devMode: true}, () => {
+            runInContext(DEV_MODE_ON, () => {
                 const instance = {};
                 try {
                     pState0.unsafe(instance);
