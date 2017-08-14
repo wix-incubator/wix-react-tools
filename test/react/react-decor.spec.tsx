@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { expect, ClientRenderer } from 'test-drive-react';
 import { spyAll, resetAll } from '../test-drivers/test-tools';
-import { decorReact, CreateElementHook, CreateElementArgs } from '../../src/react-decor';
+import { inBrowser } from "mocha-plugin-env/dist/src";
+import { decorReact, ElementHook, ElementArgs, CreateElementArgsTuple, translateArgumentsToObject, translateObjectToArguments } from '../../src/react-decor';
 
-describe('react-decor', () => {
+describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
     const clientRenderer = new ClientRenderer();
 
     const console = spyAll({
@@ -19,13 +20,13 @@ describe('react-decor', () => {
         clientRenderer.cleanup();
     });
 
-    const Comp: React.SFC<{ name: string }> = ({ name }) => (<div data-automation-id="root">
+    const Comp: React.SFC<{ name: string }> = ({ name }) => (<div data-delete-me="TBDeleted" data-change-me="TBChanged">
         <span data-automation-id="content">
             {name}
         </span>
     </div>);
 
-    const hook:CreateElementHook = function(componentProps: { name: string }, args: CreateElementArgs<any>): CreateElementArgs<any> {
+    const nodeHook: ElementHook = function (componentProps: { name: string }, args: ElementArgs<any>): ElementArgs<any> {
         console.log(args.elementProps['data-automation-id']);
         return args;
     };
@@ -35,25 +36,49 @@ describe('react-decor', () => {
         const WrappedComp = wrap(Comp);
 
         const { select } = clientRenderer.render(<WrappedComp name="Jon" />); // todo: maybe fix currently client only
+        const content = select('content');
 
-        expect(select('root')).to.exist;
+        expect(content).to.be.ok;
+        expect((content as HTMLSpanElement).innerText).to.equal('Jon');
     });
 
-    it('should allow adding a single hook (which prints every type of node rendered) to a stateless react component', () => {
-        const wrap = decorReact({ nodes: [hook] });
-        const WrappedComp = wrap(Comp);
+    describe('node hooks', () => {
+        it('should allow adding a single node hook (which prints every type of node rendered) to a stateless react component', () => {
+            const wrap = decorReact({ nodes: [nodeHook] });
+            const WrappedComp = wrap(Comp);
 
-        clientRenderer.render(<WrappedComp name="Jon" />); // todo: maybe fix currently client only
+            clientRenderer.render(<WrappedComp name="Jon" />);
 
-        expect(console.log).to.have.callCount(2);
+            expect(console.log).to.have.callCount(2);
+        });
+
+        it('should allow adding multiple nodes hooks to a stateless react component', () => {
+            const wrap = decorReact({ nodes: [nodeHook, nodeHook] });
+            const WrappedComp = wrap(Comp);
+
+            clientRenderer.render(<WrappedComp name="Jon" />);
+
+            expect(console.log).to.have.callCount(4);
+        });
     });
 
-    it('should allow adding multiple hooks to a stateless react component', () => {
-        const wrap = decorReact({ nodes: [hook, hook] });
-        const WrappedComp = wrap(Comp);
+    describe('root hooks', () => {
+        function rootHook(componentProps: { name: string }, args: ElementArgs<any>): ElementArgs<any> {
+            args.elementProps['data-automation-id'] = 'root';
+            args.elementProps['data-change-me'] = componentProps.name;
+            args.elementProps['data-delete-me'] = undefined;
+            return args;
+        }
 
-        clientRenderer.render(<WrappedComp name="Jon" />); // todo: maybe fix currently client only
+        it('should allow adding a single root hook to a stateless component', () => {
+            const wrap = decorReact({ root: [rootHook] });
+            const WrappedComp = wrap(Comp);
 
-        expect(console.log).to.have.callCount(4);
+            const { select } = clientRenderer.render(<WrappedComp name="Jon" />);
+
+            expect(select('root')).to.be.ok;
+            expect(select('root')).to.not.have.attribute('data-delete-me');
+            expect(select('root')).to.have.attribute('data-change-me', 'Jon');
+        });
     });
 });
