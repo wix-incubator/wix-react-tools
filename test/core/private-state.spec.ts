@@ -2,7 +2,7 @@ import {expect} from "test-drive";
 import {privateState, runInContext, STATE_DEV_MODE_KEY} from "../../src";
 
 let ids = ["ID0", "ID1", "ID2"];
-function emptyState(subj: any) {
+function emptyState(_: any) {
     return {};
 }
 type State = {
@@ -21,9 +21,10 @@ describe('Private state', () => {
         const instance = {};
         pState0(instance).foo = "Hi";
         expect(pState0(instance)).to.eql({foo: "Hi"});
-        expect(pState1(instance)).to.eql({});  //Make sure new key generates a new object
+        expect(pState1(instance), 'new key generates a new object').to.eql({});
 
-        expect(pState0({})).to.eql({});    //Check that new instance doesn't return information given to other instance
+        const instance2 = {};
+        expect(pState0(instance2), `instance doesn't have information given to other instance`).to.eql({});
     });
 
     it("doesn't show the added fields on original object", () => {
@@ -69,7 +70,7 @@ describe('Private state', () => {
             pState0(instance).foo = "Hi";
         });
         runInContext({devMode: true}, () => {
-            expect(pState0(instance)).to.eql({foo:"Hi"});
+            expect(pState0(instance)).to.eql({foo: "Hi"});
         });
     });
 
@@ -79,7 +80,7 @@ describe('Private state', () => {
             pState0(instance).foo = "Hi";
         });
         runInContext({devMode: false}, () => {
-            expect(pState0(instance)).to.eql({foo:"Hi"});
+            expect(pState0(instance)).to.eql({foo: "Hi"});
         });
     });
 
@@ -95,6 +96,7 @@ describe('Private state', () => {
             expect((instance as any)[STATE_DEV_MODE_KEY][ids[0]]).to.equal(pState0(instance));
         });
     });
+
     it("allows initializing (and prototype inheritance) between states", () => {
         const instance = {};
         expect(pState2(instance)).to.eql({foo: "bar"});
