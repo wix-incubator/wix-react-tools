@@ -3,6 +3,7 @@
     "strict": true,
     "noImplicitReturns": true,
     "strictNullChecks": true,
+    "jsx": "react",
     "experimentalDecorators": true,
     "target": "es6",
     "noEmit": true

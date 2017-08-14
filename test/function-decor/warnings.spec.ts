@@ -3,7 +3,7 @@ import {GlobalConfig, middleware, after, runInContext} from "../../src";
 
 
 // TODO: change tests to function-decor style (instead of class decor) and make them pass
-describe("function-decor dev mode warnings", () => {
+describe("class-decor dev mode warnings", () => {
     let warn = console.warn;
     beforeEach("replace console.warn with spy", () => {
         console.warn = sinon.spy();

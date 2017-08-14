@@ -3,7 +3,7 @@
 the ReactMixer adds middleware api to React.createElement,
 overriding React.createElement for the duration of the render
 
-## registerForCreateElement
+## onChildElement
 
 allows registering a middlewares to modify React.createElement
 
@@ -29,7 +29,7 @@ arguments:
 
 returns: void
 ```ts
-    function registerForCreateElement<T,D extends object>(
+    function onChildElement<T,D extends object>(
                           targetClass:typeof T,
                           callback:   (instance:T,
                                     /* pluginInstanceData:D, if requested in options */
@@ -47,7 +47,7 @@ returns: void
  ```tsx
 
  function namespaceIds(cls:React.ComponentClass){
-    registerForCreateElement(cls,function(instance:React.Component<any,any>,type ,
+    onChildElement(cls,function(instance:React.Component<any,any>,type ,
     props, children, next){
       if(props.id){
           props.id =  instance.props.id + '-ns-' + props.className;
@@ -83,7 +83,7 @@ react mixer supports an additional option:
  ```tsx
 
  function copyClassNamesToRoot(cls:React.ComponentClass){
-    registerForCreateElement(cls,function(instance:React.Component<any,any>,type ,
+    onChildElement(cls,function(instance:React.Component<any,any>,type ,
     props, children, next){
       if(instance.props.className){
           props.className = instance.props.className + (props.className ? ' ' + props.className : '');

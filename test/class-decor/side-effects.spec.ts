@@ -1,7 +1,6 @@
 import {expect, sinon} from "test-drive-react";
-import {getHeritage, resetAll, spyAll} from "../../../test-drivers/test-tools";
-import {after, before, chain, middleware, onInstance} from "../../../../src";
-import {Class} from "../../../../src/old/utils/class-decor/mixer";
+import {getHeritage, resetAll, spyAll} from "../test-drivers/test-tools";
+import {Class, after, before, chain, middleware, onInstance} from "../../src";
 
 const METHOD = "myMethod";
 
@@ -122,7 +121,7 @@ describe("class decor side-effect", () => {
             expect(hooks.spy1, 'after c2Inst.myMethod()').to.have.callCount(0);
         });
 
-        xdescribe("after decorator", () => {
+        describe("after decorator", () => {
             class Blah {
                 myMethod(): void {
                 }

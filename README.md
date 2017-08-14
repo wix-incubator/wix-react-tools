@@ -18,7 +18,6 @@ function root<T, S>(componentProps:T, rootProps:S = {className:"root"}): T & S;
    1. data-automation-id - Merge (concat) the ids of componentProps and rootProps. Duplicate ids are not handled at the moment.
 2. inline style - Merge the style attribute of componentProps and rootProps, in case of conflicting values, componentProps takes precedence
 3. className - Merge (concat) the className attribute of componentProps and rootProps. Duplicate classes are not handled at the moment.
-4. on* - Merge the event handlers componentProps and rootProps by means of `mergeEventHandlers` (see below)
 
 ### Usage Example
 ```tsx
@@ -46,8 +45,10 @@ rendered end result looks like this:
 ## merge Event Handlers
 merge two event handlers into one. 
 To avoid unnecessary render calls as a result of using this utility, this function is [memoized](https://en.wikipedia.org/wiki/Memoization), meaning calling it twice with the same arguments will produce the same result.
+Its twin function, `chainFunctions`, has the same output, without using a cache layer. use it when the arguments of the function are not expected to be chained again.
 ```ts
-function mergeEventHandlers<T extends Function>(first:T, last:T):T
+function cachedChainFunctions<T extends Function>(first:T, last:T):T & {clear():void}
+function chainFunctions<T extends Function>(first:T, last:T):T
 ```
 
 ## disposers
@@ -57,6 +58,10 @@ More details in [disposers](./docs/core/disposers.md)
 ## function-decor
 Wrapping tools for functions
 More details in [function-decor](./docs/function-decor)
+
+## private-state
+Privately extend any object, without inheritance or visibility concerns 
+More details in [private-state](./docs/core/private-state.md)
 
 ## configuraiton
 Static configuration allows passing any form of data/flags to tools.

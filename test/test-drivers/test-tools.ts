@@ -1,5 +1,5 @@
 import {sinon} from "test-drive-react";
-import {Class} from "../../src/old/utils/class-decor/mixer";
+import {Class} from "../../src/";
 import {flatten, isArray, map} from "lodash";
 
 // a type that adds spy type to each field

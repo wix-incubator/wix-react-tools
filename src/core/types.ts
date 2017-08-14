@@ -13,10 +13,32 @@ import {
     THNil,
     UnsafeTHListGet
 } from "typelevel-ts";
-export type Class<T extends object> = new(...args: any[]) => T;
+export type Class<T extends object> = {
+    prototype:T;
+    new(...args: any[]): T
+};
+
+export function isClass<T extends object>(protoValidator: (proto:object)=>proto is T, func:Function):func is Class<T>{
+    return func.prototype && (func.prototype.constructor === func) && protoValidator(func.prototype);
+}
+export type RenderResult = JSX.Element | null | false;
+
+export type Instance<T extends object, C extends Class<T> = Class<T>> = T & {
+    constructor: C & Class<Instance<T>>;
+}
+
+export type Rendered<P extends object> = {
+    props: P;
+    render(): RenderResult;
+};
+export function isRendered(obj:any): obj is Rendered<any>{
+    return obj && typeof obj.render === 'function';
+}
 export type GlobalConfig = {
     devMode?: boolean;
 }
+
+export type NotNull = object | number | boolean | string;
 
 export type NumberToString = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
@@ -45,3 +67,6 @@ export type Args<A, I = 0, L = THNil> = {
     true: Args<A, Increment[I], THCons<A[I], L>>;
     false: THListReverse<L>;
 }[ObjectHasKey<A, I>];
+
+export type AnyArgs = THNil| THCons<any, THNil>;
+export type NoArgs = THNil;

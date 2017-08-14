@@ -12,7 +12,7 @@ import {
     ComponentState,
     ClassicComponentClass
 } from 'react';
-import { after, before, FunctionWrapper, middleware, MiddlewareHook } from './function-decor';
+import { after, before, FunctionWrapper, middleware, MiddlewareHook } from '../function-decor';
 import { THList, THListToTuple } from "typelevel-ts";
 import { cloneDeep } from 'lodash';
 

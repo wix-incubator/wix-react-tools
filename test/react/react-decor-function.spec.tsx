@@ -2,7 +2,7 @@ import * as React from 'react';
 import { expect, ClientRenderer } from 'test-drive-react';
 import { spyAll, resetAll } from '../test-drivers/test-tools';
 import { inBrowser } from "mocha-plugin-env/dist/src";
-import { decorReact, ElementHook, ElementArgs, CreateElementArgsTuple, translateArgumentsToObject, translateObjectToArguments } from '../../src/react-decor';
+import { decorReact, ElementHook, ElementArgs, CreateElementArgsTuple, translateArgumentsToObject, translateObjectToArguments } from '../../src/react/react-decor-function';
 
 describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
     const clientRenderer = new ClientRenderer();
