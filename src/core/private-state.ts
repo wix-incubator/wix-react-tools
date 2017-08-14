@@ -4,11 +4,11 @@ import {NotNull} from "./types";
 export const STATE_DEV_MODE_KEY = "$private-context";
 const privates = new WeakMap();
 
-export interface OptionalStateProvider<P extends NotNull, T extends object = any> extends StateProvider<P|null, T>{
+export interface OptionalStateProvider<P extends NotNull, T extends object = any> extends StateProvider<P | null, T> {
     unsafe(targetObj: T): P;
 }
 
-export interface StateProvider<P = any, T extends object = any>{
+export interface StateProvider<P = any, T extends object = any> {
     /**
      * provides a private state for a supplied instance. initializes a new state if none exists.
      * @param targetObj object to which the private state is affiliated.
@@ -34,7 +34,7 @@ export interface StateProvider<P = any, T extends object = any>{
  * @param initializer {{(targetObj: T): P}} initializer of a new private state.
  * @returns {StateProvider<P, T>} Provider for the private state object.
  */
-export function privateState<P = any, T extends object = any>(key: string, initializer: {(targetObj: T): P}): StateProvider<P, T> {
+export function privateState<P = any, T extends object = any>(key: string, initializer: { (targetObj: T): P }): StateProvider<P, T> {
     const result = function getPrivateState(targetObj: T) {
         let stateContext: { [key: string]: P } = getStateContext(targetObj, true);
         // If key doesn't exist for that instance, create a new object for that key
@@ -45,7 +45,7 @@ export function privateState<P = any, T extends object = any>(key: string, initi
         return stateContext[key];
     } as StateProvider<P, T>;
 
-    result.hasState = function hasState(targetObj: T):boolean {
+    result.hasState = function hasState(targetObj: T): boolean {
         let stateContext = getStateContext(targetObj, false);
         return null !== stateContext && undefined !== stateContext[key];
     };
@@ -72,23 +72,21 @@ export function unsafe<P, T extends object>(key: string, provider: OptionalState
  * @param initIfNone initialize a new store if none is affilitated with targetObj
  * @returns a context, or null if none existed and initIfNone was set to false
  */
-function getStateContext<T extends object = any>(targetObj: T, initIfNone:true):{ [key: string]: any };
-function getStateContext<T extends object = any>(targetObj: T, initIfNone:false):{ [key: string]: any } | null;
-function getStateContext<T extends object = any>(targetObj: T, initIfNone:boolean):{ [key: string]: any } | null {
+function getStateContext<T extends object = any>(targetObj: T, initIfNone: true): { [key: string]: any };
+function getStateContext<T extends object = any>(targetObj: T, initIfNone: false): { [key: string]: any } | null;
+function getStateContext<T extends object = any>(targetObj: T, initIfNone: boolean): { [key: string]: any } | null {
     let privateContext: { [key: string]: any } | null = null;
-    if (getGlobalConfig().devMode) {
-        const targetObject = targetObj as any;
-        if (targetObject.hasOwnProperty(STATE_DEV_MODE_KEY)) {
-            privateContext = targetObject[STATE_DEV_MODE_KEY];
-        } else if (initIfNone){
-            // create a new private context
-            Object.defineProperty(targetObject, STATE_DEV_MODE_KEY, {value: privateContext = {}});
+    if (privates.has(targetObj)) {
+        privateContext = privates.get(targetObj);
+        if (getGlobalConfig().devMode) {
+            if (!targetObj.hasOwnProperty(STATE_DEV_MODE_KEY)) {
+                Object.defineProperty(targetObj, STATE_DEV_MODE_KEY, {value: privateContext});
+            }
         }
-    } else {
-        if (privates.has(targetObj)) {
-            privateContext = privates.get(targetObj);
-        } else if (initIfNone){
-            privates.set(targetObj, privateContext = {});
+    } else if (initIfNone) {
+        privates.set(targetObj, privateContext = {});
+        if (getGlobalConfig().devMode) {
+            Object.defineProperty(targetObj, STATE_DEV_MODE_KEY, {value: privateContext});
         }
     }
     return privateContext;

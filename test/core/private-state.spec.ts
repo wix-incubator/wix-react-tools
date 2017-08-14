@@ -2,13 +2,17 @@ import {expect} from "test-drive";
 import {privateState, runInContext, STATE_DEV_MODE_KEY} from "../../src";
 
 let ids = ["ID0", "ID1", "ID2"];
-function emptyState(subj: any) {
+function emptyState(_: any) {
     return {};
 }
 type State = {
     foo?: string
     bar?: string
 };
+
+const DEV_MODE_ON = {devMode : true};
+const DEV_MODE_OFF = {devMode : false};
+
 describe('Private state', () => {
     const pState0 = privateState<State>(ids[0], emptyState);
     const pState1 = privateState<State>(ids[1], emptyState);
@@ -21,9 +25,10 @@ describe('Private state', () => {
         const instance = {};
         pState0(instance).foo = "Hi";
         expect(pState0(instance)).to.eql({foo: "Hi"});
-        expect(pState1(instance)).to.eql({});  //Make sure new key generates a new object
+        expect(pState1(instance), 'new key generates a new object').to.eql({});
 
-        expect(pState0({})).to.eql({});    //Check that new instance doesn't return information given to other instance
+        const instance2 = {};
+        expect(pState0(instance2), `instance doesn't have information given to other instance`).to.eql({});
     });
 
     it("doesn't show the added fields on original object", () => {
@@ -34,7 +39,7 @@ describe('Private state', () => {
     });
 
     it("doesn't create gazillion fields on an instance", () => {
-        runInContext({devMode: true}, () => {
+        runInContext(DEV_MODE_ON, () => {
             const instance = {};
             pState0(instance).foo = "Hi";
             pState1(instance).foo = "Bye";
@@ -43,31 +48,67 @@ describe('Private state', () => {
         });
     });
 
-    it("in dev mode, expose an instance's private state but doesn't let you change it", () => {
-        runInContext({devMode: true}, () => {
-            const instance = {};
-            pState0(instance).foo = "Hi";
-
-            const desc = Object.getOwnPropertyDescriptor(instance, STATE_DEV_MODE_KEY);
-            expect(desc).to.containSubset({writable: false, configurable: false});
-        });
-    });
-
-    it("outside dev mode, do not expose an instance's private state ", () => {
-        runInContext({devMode: false}, () => {
-            const instance = {};
-            pState0(instance).foo = "Hi";
-
-            expect(instance.hasOwnProperty(STATE_DEV_MODE_KEY)).to.eql(false);
-            expect((instance as any)[STATE_DEV_MODE_KEY]).to.equal(undefined);
-        });
-    });
-
     it("allows initializing (and prototype inheritance) between states", () => {
         const instance = {};
         expect(pState2(instance)).to.eql({foo: "bar"});
         pState1(instance).bar = "Hi";
         expect(pState2(instance)).to.eql({foo: "bar", bar: "Hi"});
+    });
+
+    describe('dev mode', () => {
+
+        it("in dev mode, expose an instance's private state but doesn't let you change it", () => {
+            runInContext(DEV_MODE_ON, () => {
+                const instance = {};
+                pState0(instance).foo = "Hi";
+
+                const desc = Object.getOwnPropertyDescriptor(instance, STATE_DEV_MODE_KEY);
+                expect(desc).to.containSubset({writable: false, configurable: false});
+            });
+        });
+
+        it("outside dev mode, do not expose an instance's private state ", () => {
+            runInContext(DEV_MODE_OFF, () => {
+                const instance = {};
+                pState0(instance).foo = "Hi";
+
+                expect(instance.hasOwnProperty(STATE_DEV_MODE_KEY)).to.eql(false);
+                expect((instance as any)[STATE_DEV_MODE_KEY]).to.equal(undefined);
+            });
+        });
+
+        it("state initialized out of dev mode still available in dev mode", () => {
+            const instance = {};
+            runInContext(DEV_MODE_OFF, () => {
+                pState0(instance).foo = "Hi";
+            });
+            runInContext(DEV_MODE_ON, () => {
+                expect(pState0(instance)).to.eql({foo: "Hi"});
+            });
+        });
+
+        it("state initialized in dev mode still available out of dev mode", () => {
+            const instance = {};
+            runInContext(DEV_MODE_ON, () => {
+                pState0(instance).foo = "Hi";
+            });
+            runInContext(DEV_MODE_OFF, () => {
+                expect(pState0(instance)).to.eql({foo: "Hi"});
+            });
+        });
+
+        it("after fetching in dev mode, expose an instance's private state even if initialized outside dev mode", () => {
+            const instance = {};
+            runInContext(DEV_MODE_OFF, () => {
+                pState0(instance).foo = "Hi";
+            });
+            runInContext(DEV_MODE_ON, () => {
+                pState1(instance); // fetch once in dev mode, not even the state in question
+                const desc = Object.getOwnPropertyDescriptor(instance, STATE_DEV_MODE_KEY);
+                expect(desc).to.containSubset({writable: false, configurable: false});
+                expect((instance as any)[STATE_DEV_MODE_KEY][ids[0]]).to.equal(pState0(instance));
+            });
+        });
     });
 
     describe('.hasState', () => {
@@ -79,14 +120,14 @@ describe('Private state', () => {
             expect(pState1.hasState(instance)).to.eql(false);
         });
         it('does not change the original instance', () => {
-            runInContext({devMode: false}, () => {
+            runInContext(DEV_MODE_OFF, () => {
                 const instance = {};
                 pState0.hasState(instance);
                 expect(instance).to.eql({});
             });
         });
         it('in dev mode, does not change the original instance', () => {
-            runInContext({devMode: true}, () => {
+            runInContext(DEV_MODE_ON, () => {
                 const instance = {};
                 pState0.hasState(instance);
                 expect(instance).to.eql({});
@@ -95,32 +136,32 @@ describe('Private state', () => {
     });
 
     describe('.unsafe', () => {
-        it('returns state of own class if exists', ()=>{
+        it('returns state of own class if exists', () => {
             const instance = {};
             pState0(instance); // init private state
             expect(pState0.unsafe(instance)).to.equal(pState0(instance))
         });
-        it('throws if no state exists', ()=>{
+        it('throws if no state exists', () => {
             const instance = {};
             expect(() => pState0.unsafe(instance)).to.throw();
         });
         it('does not change the original instance', () => {
-            runInContext({devMode: false}, () => {
+            runInContext(DEV_MODE_OFF, () => {
                 const instance = {};
                 try {
                     pState0.unsafe(instance);
-                } catch(e){
+                } catch (e) {
 
                 }
                 expect(instance).to.eql({});
             });
         });
         it('in dev mode, does not change the original instance', () => {
-            runInContext({devMode: true}, () => {
+            runInContext(DEV_MODE_ON, () => {
                 const instance = {};
                 try {
                     pState0.unsafe(instance);
-                } catch(e){
+                } catch (e) {
 
                 }
                 expect(instance).to.eql({});

@@ -34,8 +34,8 @@
     "test": "yarn typings-checker && yarn test:node && yarn test:browser",
     "test:node": "mocha --require dist/test/setup.js --require source-map-support/register --reporter mocha-env-reporter \"dist/test/**/*.spec.js\"",
     "test:browser": "karma start --single-run",
-    "start": "rimraf dist && yarn build && concurrently --kill-others --success first \"yarn build -- -w\" \"webpack-dev-server --no-info\"",
-    "start:no-prod": "rimraf dist && yarn build && concurrently --kill-others --success first \"yarn build -- -w\" \"NODE_ENV='development' webpack-dev-server --no-info\""
+    "start:prod": "rimraf dist && yarn build && concurrently --kill-others --success first \"yarn build -- -w\" \"webpack-dev-server --no-info\"",
+    "start": "rimraf dist && yarn build && concurrently --kill-others --success first \"yarn build -- -w\" \"NODE_ENV='development' webpack-dev-server --no-info\""
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.8",
@@ -60,13 +60,15 @@
     "mocha": "^3.4.2",
     "mocha-env-reporter": "^2.0.4",
     "mocha-loader": "^1.1.1",
-    "mocha-plugin-env": "^0.0.4",
+    "mocha-plugin-env": "^0.1.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "rimraf": "^2.6.1",
     "sinon": "^3.0.0",
     "sinon-chai": "^2.11.0",
     "source-map-support": "^0.4.15",
+    "stylable": "^3.0.0",
+    "stylable-react-component": "^1.0.3",
     "test-drive-react": "^0.5.0",
     "typescript": "^2.4.2",
     "typings-checker": "^1.1.2",

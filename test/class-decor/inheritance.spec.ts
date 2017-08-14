@@ -153,7 +153,6 @@ describe("class decor inheritance", () => {
                         return result + 1;
                     }, METHOD))(cls);
             }
-
             // first is outer, last is inner
             checkDecorationStyles(outer, inner);
         });
