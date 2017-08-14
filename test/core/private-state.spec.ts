@@ -63,6 +63,38 @@ describe('Private state', () => {
         });
     });
 
+    it("state initialized out of dev mode still available in dev mode", () => {
+        const instance = {};
+        runInContext({devMode: false}, () => {
+            pState0(instance).foo = "Hi";
+        });
+        runInContext({devMode: true}, () => {
+            expect(pState0(instance)).to.eql({foo:"Hi"});
+        });
+    });
+
+    it("state initialized in dev mode still available out of dev mode", () => {
+        const instance = {};
+        runInContext({devMode: true}, () => {
+            pState0(instance).foo = "Hi";
+        });
+        runInContext({devMode: false}, () => {
+            expect(pState0(instance)).to.eql({foo:"Hi"});
+        });
+    });
+
+    it("after fetching in dev mode, expose an instance's private state even if initialized outside dev mode", () => {
+        const instance = {};
+        runInContext({devMode: false}, () => {
+            pState0(instance).foo = "Hi";
+        });
+        runInContext({devMode: true}, () => {
+            pState1(instance); // fetch once in dev mode, not even the state in question
+            const desc = Object.getOwnPropertyDescriptor(instance, STATE_DEV_MODE_KEY);
+            expect(desc).to.containSubset({writable: false, configurable: false});
+            expect((instance as any)[STATE_DEV_MODE_KEY][ids[0]]).to.equal(pState0(instance));
+        });
+    });
     it("allows initializing (and prototype inheritance) between states", () => {
         const instance = {};
         expect(pState2(instance)).to.eql({foo: "bar"});
@@ -95,12 +127,12 @@ describe('Private state', () => {
     });
 
     describe('.unsafe', () => {
-        it('returns state of own class if exists', ()=>{
+        it('returns state of own class if exists', () => {
             const instance = {};
             pState0(instance); // init private state
             expect(pState0.unsafe(instance)).to.equal(pState0(instance))
         });
-        it('throws if no state exists', ()=>{
+        it('throws if no state exists', () => {
             const instance = {};
             expect(() => pState0.unsafe(instance)).to.throw();
         });
@@ -109,7 +141,7 @@ describe('Private state', () => {
                 const instance = {};
                 try {
                     pState0.unsafe(instance);
-                } catch(e){
+                } catch (e) {
 
                 }
                 expect(instance).to.eql({});
@@ -120,7 +152,7 @@ describe('Private state', () => {
                 const instance = {};
                 try {
                     pState0.unsafe(instance);
-                } catch(e){
+                } catch (e) {
 
                 }
                 expect(instance).to.eql({});
