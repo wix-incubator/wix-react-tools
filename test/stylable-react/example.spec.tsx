@@ -1,4 +1,4 @@
-import {SBComponent} from "stylable-react-component";
+import {SBComponent} from "../../src";
 import {fromCSS} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
@@ -21,11 +21,11 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root">
-                    <div data-automation-id="Node" className="SomeClass External"></div>
+                    <div data-automation-id="Node" className="SomeClass External" />
                 </div>
             }
         }
-        const {select, container} = clientRenderer.render(<Comp></Comp>);
+        const {select, container} = clientRenderer.render(<Comp> </Comp>);
 
         expect(select('Root')).to.equal(container.querySelector(`.${css.classes.root}`));
         expect(container.querySelectorAll(`.${css.classes.root}`)).to.have.length(1);
@@ -51,12 +51,12 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         @SBComponent(css)
         class Comp extends React.Component {
             render() {
-                return <div data-automation-id="Root" cssStates={rootState}>
-                    <div data-automation-id="Node" className="SomeClass" cssStates={nodeState}></div>
+                return <div data-automation-id="Root" data-temp={rootState}>
+                    <div data-automation-id="Node" className="SomeClass" data-temp={nodeState} />
                 </div>
             }
         }
-        const {select} = clientRenderer.render(<Comp ></Comp>);
+        const {select} = clientRenderer.render(<Comp > </Comp>);
 
         expect(select('Root')!.attributes.getNamedItem(rootStateAttrName)).to.be.ok;
         expect(select('Node')!.attributes.getNamedItem(nodeStateAttrName)).to.be.ok;

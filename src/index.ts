@@ -6,6 +6,12 @@ export * from './core/config';
 export {privateState, StateProvider, STATE_DEV_MODE_KEY} from './core/private-state';
 export * from './core/class-private-state';
 export * from "./function-decor";
+export * from './core/disposers';
+
+// decorator libs
+export * from './react/react-decor';
+export * from './stylable-react/stylable-class';
+export * from './class-decor/index';
 
 // legacy :
 //bases
@@ -14,10 +20,6 @@ export * from './old/bases/observable-component';
 export * from './features/disposable-decorator';
 export * from './old/mixins/global-id-decorator';
 //utils
-export * from './class-decor/index';
-export * from './react/react-decor';
-export * from './core/disposers';
-
 // custom exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
 import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./class-decor/index";
