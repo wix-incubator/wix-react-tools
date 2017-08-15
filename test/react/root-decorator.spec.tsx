@@ -8,19 +8,9 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
     afterEach(() => clientRenderer.cleanup());
 
 
-    type Props = {
-        'data-automation-id'?: string;
-        'data-x'?: string;
-        'data-1'?: string;
-        'data-2'?: string;
-    };
-    class Comp extends React.Component<Props> {
-        render() {
-            return <div data-automation-id="Root" data-x="overriden" data-2="2"/>
-        }
-    }
 
     it("works with empty", () => {
+        @root
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root"/>
@@ -32,7 +22,21 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
     });
 
     it("use the root function to process props (detect by behavior)", () => {
-        //@root(['data-1'])
+
+        type Props = {
+            'data-automation-id'?: string;
+            'data-x'?: string;
+            'data-1'?: string;
+            'data-2'?: string;
+        };
+
+        @root(['data-1'])
+        class Comp extends React.Component<Props> {
+            render() {
+                return <div data-automation-id="Root" data-x="overriden" data-2="2"/>
+            }
+        }
+
         const {select} = clientRenderer.render(<Comp data-x="test" data-1="1" data-automation-id="custom"/>);
 
         expect(select('custom')).to.equal(select('Root'));
