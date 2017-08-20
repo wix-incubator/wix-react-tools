@@ -147,7 +147,7 @@ describe(`after`, () => {
 })
 
 describe(`decorFunction`, () => {
-    // $ExpectType Function
+    // $ExpectType <T1 extends Function>(originalMethod: T1) => T1
     decorFunction({
         middleware: [mwHook],
         before: [bHook],
