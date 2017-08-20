@@ -67,7 +67,7 @@
     "sinon": "^3.0.0",
     "sinon-chai": "^2.11.0",
     "source-map-support": "^0.4.15",
-    "stylable": "^3.0.0",
+    "stylable": "^4.0.0",
     "stylable-react-component": "^1.0.3",
     "test-drive-react": "^0.5.0",
     "typescript": "^2.4.2",
