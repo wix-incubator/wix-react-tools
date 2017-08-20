@@ -17,6 +17,7 @@ export * from './old/mixins/global-id-decorator';
 export * from './class-decor/index';
 export * from './react/react-decor-class';
 export * from './core/disposers';
+export {decorReact as decorReactFunc, ElementHook as FuncElementHook} from './react/react-decor-function';
 
 // custom exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";

@@ -26,13 +26,13 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
         </div>
     );
 
-    const nodeHook: ElementHook = function (componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+    const nodeHook: ElementHook<PropsWithName> = function (componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
         console.log(args.elementProps['data-automation-id']);
         return args;
     };
 
     it('should wrap a react component, without any hooks', () => {
-        const wrap = decorReact({});
+        const wrap = decorReact<PropsWithName>({});
         const WrappedComp = wrap(Comp);
 
         const { select } = clientRenderer.render(<WrappedComp name="Jon" />); // todo: maybe fix currently client only

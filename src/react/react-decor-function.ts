@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { decorFunction } from '../function-decor';
 
-export type ElementHook = <P = object>(componentProps: any, args: ElementArgs<P>) => ElementArgs<P>;
+export type ElementHook<T extends object> = <P = object>(componentProps: T, args: ElementArgs<P>) => ElementArgs<P>;
 
 export type ElementArgs<P extends {}> = {
     type: any,
@@ -20,31 +20,31 @@ export type CreateElementArgsTuple<P extends {}> = [any, Attributes & Partial<P>
 type ReactCreateElement = typeof React.createElement;
 const originalCreateElement = React.createElement;
 
-export interface DecorReactHooks {
-    nodes?: Array<ElementHook>;
-    root?: Array<ElementHook>;
+export interface DecorReactHooks<T extends object> {
+    nodes?: Array<ElementHook<T>>;
+    root?: Array<ElementHook<T>>;
 }
 
-export interface makeCustomElementContext<P extends {}> {
-    hooks: DecorReactHooks;
-    componentProps: object;
-    createArgsMap: Map<object, ElementArgs<P>>;
+export interface HookContext<T extends object> {
+    hooks: DecorReactHooks<T>;
+    componentProps: T;
+    createArgsMap: Map<object, ElementArgs<any>>;
 }
 
-function hooksDefined(hooks: Array<ElementHook> | undefined): hooks is Array<ElementHook> {
-    return !!(hooks && (hooks.length > 0));
+function isNotEmptyArray(arr: Array<any> | undefined): arr is Array<any> {
+    return !!(arr && (arr.length > 0));
 }
 
-function getHooksReducer(componentProps: object): (res: ElementArgs<any>, hook: ElementHook) => ElementArgs<any> {
-    return <P extends {}>(res: ElementArgs<P>, hook: ElementHook) => hook(componentProps, res);
+function getHooksReducer<T extends object>(componentProps: T) {
+    return <P extends {}>(res: ElementArgs<P>, hook: ElementHook<T>) => hook(componentProps, res);
 }
 
-export function decorReact<T = any>(hooks: DecorReactHooks): (comp: SFC<T>) => SFC<T> {
-    const context: makeCustomElementContext<T> = {
+export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): <T1 extends T>(comp: SFC<T1>) => SFC<T1> {
+    const context = {
         hooks,
-        componentProps: {},
+        componentProps: {} as T,
         createArgsMap: new Map()
-    };
+    } as HookContext<T>; // componentProps will be overwritten before render
     const wrappedCreateElement = makeCustomCreateElement(context);
 
     const replaceCreateElement = (args: CreateElementArgsTuple<any>): CreateElementArgsTuple<any> => {
@@ -54,12 +54,12 @@ export function decorReact<T = any>(hooks: DecorReactHooks): (comp: SFC<T>) => S
     };
 
     const applyRootHooks = <P extends {}>(renderResult: ReactElement<P>): ReactElement<P> => {
-        if (hooksDefined(hooks.root)) {
+        if (isNotEmptyArray(hooks.root)) {
             let rootElementArgs = context.createArgsMap.get(renderResult);
 
             if (rootElementArgs) {
                 rootElementArgs = hooks.root.reduce(getHooksReducer(context.componentProps), rootElementArgs);
-                renderResult = cloneElement(renderResult, rootElementArgs.elementProps);
+                renderResult = cloneElement(renderResult, (rootElementArgs as ElementArgs<any>).elementProps);
             } else {
                 console.warn('unable to find matching component for: ', renderResult);
             }
@@ -76,16 +76,15 @@ export function decorReact<T = any>(hooks: DecorReactHooks): (comp: SFC<T>) => S
 }
 
 // create a custom react create element function that applies the given hooks
-function makeCustomCreateElement<P extends {}>(context: makeCustomElementContext<P>): typeof React.createElement {
+function makeCustomCreateElement<P extends {}>(context: HookContext<P>): typeof React.createElement {
     let createElementArgsObject: ElementArgs<P>;
 
     const applyHooksOnArguments = (createElementArgsTuple: CreateElementArgsTuple<P>): CreateElementArgsTuple<P> => {
         createElementArgsObject = translateArgumentsToObject(createElementArgsTuple);
-        if (hooksDefined(context.hooks.nodes)) {
+        if (isNotEmptyArray(context.hooks.nodes)) {
             createElementArgsObject = context.hooks.nodes.reduce(getHooksReducer(context.componentProps), createElementArgsObject);
             return translateObjectToArguments(createElementArgsObject);
         }
-
         return createElementArgsTuple;
     };
 
