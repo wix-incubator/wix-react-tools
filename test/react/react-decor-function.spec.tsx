@@ -2,14 +2,13 @@ import * as React from 'react';
 import { expect, ClientRenderer } from 'test-drive-react';
 import { spyAll, resetAll } from '../test-drivers/test-tools';
 import { inBrowser } from "mocha-plugin-env/dist/src";
-import { decorReact, ElementHook, ElementArgs, CreateElementArgsTuple, translateArgumentsToObject, translateObjectToArguments } from '../../src/react/react-decor-function';
+import { decorReact, ElementHook, ElementArgs } from '../../src/react/react-decor-function';
 
 describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => {
     const clientRenderer = new ClientRenderer();
 
     const console = spyAll({
-        log: () => {
-        }
+        log: () => { }
     });
 
     afterEach("cleanup and reset console.log", () => {
@@ -17,9 +16,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
         clientRenderer.cleanup();
     });
 
-    type PropsWithName = {
-        name: string
-    };
+    type PropsWithName = { name: string };
 
     const Comp: React.SFC<PropsWithName> = ({ name }) => (
         <div data-delete-me="TBDeleted" data-change-me="TBChanged">
@@ -72,6 +69,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
         });
 
         it('should allow adding a node hook to a stateless component that will add/remove/change the element props', () => {
+            let index = 0;
             function multiActionNodeHook(componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
                 args.elementProps['data-automation-id'] = index;
                 args.elementProps['data-change-me'] = componentProps.name + index;
@@ -79,7 +77,6 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
                 index++;
                 return args;
             }
-            let index = 0;
 
             const wrap = decorReact({ nodes: [multiActionNodeHook] });
             const WrappedComp = wrap(Comp);
@@ -112,6 +109,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
             expect(select('root')).to.be.ok;
             expect(select('root')).to.not.have.attribute('data-delete-me');
             expect(select('root')).to.have.attribute('data-change-me', 'Jon');
+            expect(select('content')).to.be.ok;
         });
     });
 });

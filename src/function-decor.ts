@@ -43,8 +43,8 @@ export type HookWrappers = {
     after?: Array<Function>
 }
 
-export function decorFunction(wrappers: HookWrappers): Function {
-    return function (originalMethod: Function): Function {
+export function decorFunction<T extends Function>(wrappers: HookWrappers) {
+    return function wrapper<T1 extends T>(originalMethod: T1): T1 {
         return chain(
         concat(
             map(wrappers.middleware, (mw:any) => middleware(mw)),
