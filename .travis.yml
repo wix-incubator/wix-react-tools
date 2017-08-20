@@ -8,6 +8,12 @@ os:
 
 addons:
   firefox: "latest"
+  sauce_connect:
+    username: "wix-react-tools"
+  jwt:
+    secure: "mr2J8ZnTSDM7XEiokgi0ecKeOuba3p/0pXlpf7BtsKv7zw9S5AlmfhS/PLgmsrNlQsGLGuwBICGAoRj0UQPx8QjLqvyy3/MkwgZpbeoQbx9eDh5wa7vglTZgenTtziu/Kv0Wp0I3TDDSFkchxiMOxMQTjN3eugXnQCpwXmUitVoirV36xeX7jdNAAQ8syD8iN5jO3F/o6C58mz7a3nhcZvCPPz7pdrl9sR1Dj2vqHBZjIDp5H6kPczpk6dWlvj1KXJCy0Ca13tsBr5KNmHfxZfTPJxINkBBSEi2L0xV1C+ehuONm3zh5S1YDLpPLzLMRmNPgGalx6Y8dHtUYFMWYYcq5BOp8JjsOMC6mlzetcdBwfKDkzf3g9Xf2hJIPTSehsL/uaBxGJtMwExEUYwXwtQYfRgbRDQ3OSqXuopD7juzJubC8W3IToslpcdVAmjcEyD/zvU+GUfFNq3NJee/GtIKZFgawk0d45ecyjRDOzJXQkiUhBowo87AOB3GJ/rqG2zaSJ7eaUjGwm/KQxyNXRQnjhZas2LfkjDfKJILNZSgyGI+86osu8iDJ5ysx43WHglSyz19ONlverIyGECDbXTbA1GV7chv5GYk8r9GUVM19bVTwOq5HJznoxOkkaaWknc5KpPutSUSdtdcIVmGSCnOTzydvsLnlQE4U6JexSkg="
+
+
 
 before_install: yarn global add greenkeeper-lockfile@1
 
@@ -18,3 +24,4 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sh -e /etc/init.d/xvfb start; fi
 
 after_script: greenkeeper-lockfile-upload
+

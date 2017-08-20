@@ -108,3 +108,4 @@ The following are all of the project's flags:
 The process is similar to that of new features, only the bar of explanations and documentations may be lower. start by opening an issue describing the bug.
 
 
+

@@ -73,7 +73,9 @@
     "typescript": "^2.4.2",
     "typings-checker": "^1.1.2",
     "webpack": "^3.3.0",
-    "webpack-dev-server": "^2.5.1"
+    "webpack-dev-server": "^2.5.1",
+    "c3-platform": "^1.0.1",
+    "karma-sauce-launcher": "^1.1.0"
   },
   "dependencies": {
     "fp-ts": "^0.4.3",
