@@ -39,7 +39,7 @@ function getHooksReducer(componentProps: object): (res: ElementArgs<any>, hook: 
     return <P extends {}>(res: ElementArgs<P>, hook: ElementHook) => hook(componentProps, res);
 }
 
-export function decorReact<T extends {}>(hooks: DecorReactHooks): (comp: SFC<T>) => SFC<T> {
+export function decorReact<T = any>(hooks: DecorReactHooks): (comp: SFC<T>) => SFC<T> {
     const context: makeCustomElementContext<T> = {
         hooks,
         componentProps: {},
