@@ -1,4 +1,4 @@
-import {ElementArgs, onChildElement, onRootElement} from "../react/react-decor";
+import {ElementArgs, onChildElement, onRootElement} from "../react/react-decor-class";
 import {Rendered} from "../core/types";
 import {chain} from "../class-decor/index";
 import {Stylesheet} from "stylable";
