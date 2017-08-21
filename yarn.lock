@@ -4077,7 +4077,7 @@ stylable-react-component@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/stylable-react-component/-/stylable-react-component-1.0.3.tgz#8dd58b352f3b57c0991487e6d00a9dde2109f317"
 
-stylable@^3.0.0:
+stylable@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/stylable/-/stylable-3.0.0.tgz#e409d7df9595f73d17d9b94ace70ea321a393a64"
   dependencies:
@@ -4268,9 +4268,9 @@ typescript@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.4.2.tgz#f8395f85d459276067c988aa41837a8f82870844"
 
-typings-checker@^1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/typings-checker/-/typings-checker-1.1.2.tgz#ccd1a4e33e0c64681d70d31b3474054caaa4c291"
+typings-checker@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/typings-checker/-/typings-checker-1.2.1.tgz#26ff18483cd1f2cbd3c33d75de5062724bebbc0e"
   dependencies:
     lodash "^4.17.4"
     yargs "^6.6.0"
