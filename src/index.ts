@@ -9,18 +9,15 @@ export * from "./function-decor";
 export * from './core/disposers';
 
 // decorator libs
-export * from './react/react-decor';
+export * from './react/react-decor-class';
+export {decorReact as decorReactFunc, ElementHook as FuncElementHook} from './react/react-decor-function';
 export * from './stylable-react/stylable-class';
 export * from './class-decor/index';
 
-// legacy :
-//bases
-export * from './old/bases/observable-component';
-//mixins
-export * from './features/disposable-decorator';
-export * from './old/mixins/global-id-decorator';
 //utils
-// custom exports:
+export * from './core/disposers';
+
+// customized exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
 import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./class-decor/index";
 
@@ -39,3 +36,12 @@ function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc:F, cDF
 export const before = mergeFuncAndClass(FDBefore, CDBefore);
 export const after = mergeFuncAndClass(FDAfter, CDAfter);
 export const middleware = mergeFuncAndClass(FDMiddleware, CDMiddleware);
+
+
+// legacy :
+//bases
+export * from './old/bases/observable-component';
+
+//mixins
+export * from './features/disposable-decorator';
+export * from './old/mixins/global-id-decorator';
