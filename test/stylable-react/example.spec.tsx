@@ -1,5 +1,5 @@
 import {SBComponent} from "stylable-react-component";
-import {fromCSS} from "stylable";
+import { createGenerator } from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
@@ -11,13 +11,12 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
     afterEach(() => clientRenderer.cleanup());
 
     it('supports class names', () => {
+        const {fromCSS} = createGenerator();
+        const {runtime} = fromCSS(`
+            .SomeClass {}
+        `);
 
-        const css = fromCSS(`
-    .SomeClass {
-    
-    }
-`);
-        @SBComponent(css)
+        @SBComponent(runtime)
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root">
@@ -27,28 +26,30 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         }
         const {select, container} = clientRenderer.render(<Comp></Comp>);
 
-        expect(select('Root')).to.equal(container.querySelector(`.${css.classes.root}`));
-        expect(container.querySelectorAll(`.${css.classes.root}`)).to.have.length(1);
-        expect(select('Node')).to.equal(container.querySelector(`.${css.classes.SomeClass}`));
+        expect(select('Root')).to.equal(container.querySelector(`.${runtime.root}`));
+        expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
+        expect(select('Node')).to.equal(container.querySelector(`.${runtime.SomeClass}`));
         expect(select('Node')).to.equal(container.querySelector(`.External`));
-        expect(container.querySelectorAll(`.${css.classes.SomeClass}`)).to.have.length(1);
+        expect(container.querySelectorAll(`.${runtime.SomeClass}`)).to.have.length(1);
     });
 
     it('supports style state', () => {
-        const css = fromCSS(`
-    .root {
-        -st-state:a,b;
-    }
-    .SomeClass {
-        -st-state:x,y;
-    }
-`);
-        const rootState = {a:true, b:false};
-        const rootStateAttrName = Object.keys(css.cssStates(rootState))[0]; // css.cssStates(...) will only have keys for states which are true
-        const nodeState = {x:true, y:false};
-        const nodeStateAttrName = Object.keys(css.cssStates(nodeState))[0];
+        const {fromCSS} = createGenerator();
+        const {runtime} = fromCSS(`
+            .root {
+                -st-state:a,b;
+            }
+            .SomeClass {
+                -st-state:x,y;
+            }
+        `);
 
-        @SBComponent(css)
+        const rootState = {a:true, b:false};
+        const rootStateAttrName = Object.keys(runtime.$stylesheet.cssStates(rootState))[0]; // css.cssStates(...) will only have keys for states which are true
+        const nodeState = {x:true, y:false};
+        const nodeStateAttrName = Object.keys(runtime.$stylesheet.cssStates(nodeState))[0];
+
+        @SBComponent(runtime)
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root" cssStates={rootState}>
