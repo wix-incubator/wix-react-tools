@@ -6,8 +6,11 @@ node_js:
 os:
   - linux
 
+dist: trusty
+
 addons:
-  firefox: "latest"
+  chrome: stable
+# firefox: latest
 
 before_install: yarn global add greenkeeper-lockfile@1
 

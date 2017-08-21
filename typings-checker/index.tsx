@@ -1,5 +1,5 @@
 import * as React from "react";
-import {ApiFunc, Args, NumberToString, root, decorReactFunc, FuncElementHook} from "../dist/src/index";
+import {ApiFunc, Args, NumberToString, root} from "../dist/src/index";
 
 type FIVE = NumberToString[5];
 const n2s1: FIVE = '5';
@@ -46,21 +46,4 @@ describe('root function API', () => {
         const div = <div {...root(compProps, {className: 'test'}, ['onChange'])} />;
     });
 
-});
-
-declare const Comp: React.SFC<PropsWithName>;
-declare const Comp2: React.SFC<PropsWithName2>;
-declare const hooks: FuncElementHook<PropsWithName>
-type PropsWithName = { name: string };
-type PropsWithName2 = { name: Function };
-
-describe('react decor function', () => {
-    // $ExpectType <T1 extends {}>(comp: StatelessComponent<T1>) => StatelessComponent<T1>
-    decorReactFunc({});
-
-    // $ExpectType <T1 extends PropsWithName>(comp: StatelessComponent<T1>) => StatelessComponent<T1>
-    decorReactFunc<PropsWithName>(hooks);
-
-    // $ExpectType StatelessComponent<PropsWithName2>
-    decorReactFunc(hooks)(Comp2); // todo: This should fail, but doesn't. check again with TS 2.5
 });
