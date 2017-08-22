@@ -567,7 +567,7 @@ chai-subset@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/chai-subset/-/chai-subset-1.5.0.tgz#d03dbcfa8c9daad848643bbde4e63376b7882427"
 
-chai@^4.1.0:
+chai@^4.1.0, chai@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.1.1.tgz#66e21279e6f3c6415ff8231878227900e2171b39"
   dependencies:
@@ -2622,7 +2622,7 @@ mocha-teamcity-reporter@1.1.1:
   dependencies:
     mocha ">=1.13.0"
 
-mocha@>=1.13.0, mocha@^3.4.2:
+mocha@>=1.13.0, mocha@^3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-3.5.0.tgz#1328567d2717f997030f8006234bce9b8cd72465"
   dependencies:
@@ -3789,7 +3789,7 @@ signal-exit@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
-sinon-chai@^2.11.0, sinon-chai@^2.12.0:
+sinon-chai@^2.12.0, sinon-chai@^2.13.0:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/sinon-chai/-/sinon-chai-2.13.0.tgz#b9a42e801c20234bfc2f43b29e6f4f61b60990c4"
 
@@ -3806,7 +3806,7 @@ sinon@^2.4.1:
     text-encoding "0.6.4"
     type-detect "^4.0.0"
 
-sinon@^3.0.0:
+sinon@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/sinon/-/sinon-3.2.1.tgz#d8adabd900730fd497788a027049c64b08be91c2"
   dependencies:
@@ -3902,7 +3902,7 @@ source-list-map@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/source-list-map/-/source-list-map-2.0.0.tgz#aaa47403f7b245a92fbc97ea08f250d6087ed085"
 
-source-map-support@^0.4.15:
+source-map-support@^0.4.16:
   version "0.4.16"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.16.tgz#16fecf98212467d017d586a2af68d628b9421cd8"
   dependencies:
@@ -4067,7 +4067,7 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stylable@3.0.0:
+stylable@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/stylable/-/stylable-3.0.0.tgz#e409d7df9595f73d17d9b94ace70ea321a393a64"
   dependencies:
@@ -4468,7 +4468,7 @@ webpack-sources@^1.0.1:
     source-list-map "^2.0.0"
     source-map "~0.5.3"
 
-webpack@^3.3.0:
+webpack@^3.5.5:
   version "3.5.5"
   resolved "https://registry.yarnpkg.com/webpack/-/webpack-3.5.5.tgz#3226f09fc8b3e435ff781e7af34f82b68b26996c"
   dependencies:
