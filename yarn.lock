@@ -567,7 +567,7 @@ chai-subset@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/chai-subset/-/chai-subset-1.5.0.tgz#d03dbcfa8c9daad848643bbde4e63376b7882427"
 
-chai@^4.1.0:
+chai@^4.1.0, chai@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.1.1.tgz#66e21279e6f3c6415ff8231878227900e2171b39"
   dependencies:
@@ -1062,6 +1062,10 @@ deep-extend@~0.4.0:
 defined@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/defined/-/defined-1.0.0.tgz#c98d9bcef75674188e110969151199e39b1fa693"
+
+deindent@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/deindent/-/deindent-0.1.0.tgz#62e1dcdd1d849709e5c7403c890e47e3cebe399d"
 
 del@^3.0.0:
   version "3.0.0"
@@ -2353,6 +2357,10 @@ lodash.camelcase@^3.0.1:
   dependencies:
     lodash._createcompounder "^3.0.0"
 
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+
 lodash.create@3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/lodash.create/-/lodash.create-3.1.1.tgz#d7f2849f0dbda7e04682bb8cd72ab022461debe7"
@@ -2622,7 +2630,7 @@ mocha-teamcity-reporter@1.1.1:
   dependencies:
     mocha ">=1.13.0"
 
-mocha@>=1.13.0, mocha@^3.4.2:
+mocha@>=1.13.0, mocha@^3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-3.5.0.tgz#1328567d2717f997030f8006234bce9b8cd72465"
   dependencies:
@@ -2660,6 +2668,10 @@ multicast-dns@^6.0.1:
   dependencies:
     dns-packet "^1.0.1"
     thunky "^0.1.0"
+
+murmurhash@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/murmurhash/-/murmurhash-0.0.2.tgz#6f07bd8a1105e709c26fc89420cb5930c24585fe"
 
 nan@^2.3.0:
   version "2.6.2"
@@ -3789,7 +3801,7 @@ signal-exit@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
-sinon-chai@^2.11.0, sinon-chai@^2.12.0:
+sinon-chai@^2.12.0, sinon-chai@^2.13.0:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/sinon-chai/-/sinon-chai-2.13.0.tgz#b9a42e801c20234bfc2f43b29e6f4f61b60990c4"
 
@@ -3806,7 +3818,7 @@ sinon@^2.4.1:
     text-encoding "0.6.4"
     type-detect "^4.0.0"
 
-sinon@^3.0.0:
+sinon@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/sinon/-/sinon-3.2.1.tgz#d8adabd900730fd497788a027049c64b08be91c2"
   dependencies:
@@ -3902,7 +3914,7 @@ source-list-map@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/source-list-map/-/source-list-map-2.0.0.tgz#aaa47403f7b245a92fbc97ea08f250d6087ed085"
 
-source-map-support@^0.4.15:
+source-map-support@^0.4.16:
   version "0.4.16"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.16.tgz#16fecf98212467d017d586a2af68d628b9421cd8"
   dependencies:
@@ -4071,17 +4083,21 @@ stylable-react-component@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/stylable-react-component/-/stylable-react-component-1.0.3.tgz#8dd58b352f3b57c0991487e6d00a9dde2109f317"
 
-stylable@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-3.0.0.tgz#e409d7df9595f73d17d9b94ace70ea321a393a64"
+stylable@^4.0.3:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-4.0.4.tgz#9bb3bef02c76ea4b06cf74f36878d231e8998186"
   dependencies:
     camelcase-css "^1.0.1"
     css-selector-tokenizer "^0.7.0"
+    deindent "^0.1.0"
     kebab-case "^1.0.0"
+    lodash.clonedeep "^4.5.0"
+    murmurhash "0.0.2"
     postcss "^6.0.3"
     postcss-js "^1.0.0"
     postcss-nested "^2.0.2"
     postcss-safe-parser "^3.0.1"
+    postcss-value-parser "^3.3.0"
     stylis "^3.2.3"
 
 style-loader@~0.13.1:
@@ -4472,7 +4488,7 @@ webpack-sources@^1.0.1:
     source-list-map "^2.0.0"
     source-map "~0.5.3"
 
-webpack@^3.3.0:
+webpack@^3.5.5:
   version "3.5.5"
   resolved "https://registry.yarnpkg.com/webpack/-/webpack-3.5.5.tgz#3226f09fc8b3e435ff781e7af34f82b68b26996c"
   dependencies:

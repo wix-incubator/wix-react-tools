@@ -1,6 +1,7 @@
-import {ApiFunc} from "./core/types";
-import { THList, THListToTuple} from "typelevel-ts";
+import {ApiFunc, THList} from "./core/types";
+// import { THList, THListToTuple} from "typelevel-ts";
 import { chain, concat, map } from "lodash";
+import {THListToTuple} from "./class-decor/mixer";
 
 export type FunctionWrapper<A extends THList, R = void, T = any> =  <F extends ApiFunc<A, R, T>>(func: F) => F
 

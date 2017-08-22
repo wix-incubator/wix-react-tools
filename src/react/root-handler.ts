@@ -1,4 +1,4 @@
-import {If, ObjectOmit, StringContains} from "typelevel-ts";
+// import {If, ObjectOmit, StringContains} from "typelevel-ts";
 export interface ComponentProps {
     className?: string;
     style?: { [k: string]: string };
@@ -11,7 +11,7 @@ export interface Props extends ComponentProps {
 
 // Partial because there is no way more precise to express data-* and on* filtering
 // pending https://github.com/Microsoft/TypeScript/issues/6579
-export type PartialProps<T, B extends keyof T> = Partial<ObjectOmit<T, B>>
+export type PartialProps<T, B extends keyof T> = any
 
 export function root<T extends ComponentProps, S extends Props, B extends keyof T = never>(componentProps: T, rootProps: S, blacklist?: B[]): PartialProps<T, B> & S {
     if (typeof rootProps.className !== "string") {
