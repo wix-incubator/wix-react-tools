@@ -11,7 +11,9 @@ import {
     MixerData
 } from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
-import {THList, THListToTuple} from "typelevel-ts";
+// import {THList, THListToTuple} from "typelevel-ts";
+export type THList = any;
+export type THListToTuple<T> = any;
 
 const edgeClassData = classPrivateState('edge class data', clazz => new EdgeClassData(clazz));
 
