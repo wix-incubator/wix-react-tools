@@ -13,6 +13,7 @@
 //     THNil,
 //     UnsafeTHListGet
 // } from "typelevel-ts";
+import { Component } from 'react';
 export type THList = any;
 export type Nat = any;
 export type THNil = any;
@@ -33,10 +34,11 @@ export type Instance<T extends object, C extends Class<T> = Class<T>> = T & {
     constructor: C & Class<Instance<T>>;
 }
 
-export type Rendered<P extends object> = {
-    props: P;
-    render(): RenderResult;
-};
+export type Rendered<P extends object> = Component<P>
+// export type Rendered<P extends object> = {
+//     props: P;
+//     render(): RenderResult;
+// };
 export function isRendered(obj:any): obj is Rendered<any>{
     return obj && typeof obj.render === 'function';
 }

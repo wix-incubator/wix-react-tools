@@ -52,7 +52,6 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
             expect(console.log).to.have.callCount(2);
             expect(console.log).to.have.been.calledWith(undefined); // no data-automation-id for root
             expect(console.log).to.have.been.calledWithMatch(/content/);
-
         });
 
         it('should allow adding multiple nodes hooks to a stateless react component', () => {

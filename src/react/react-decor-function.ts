@@ -7,6 +7,7 @@ import {
     cloneElement
 } from 'react';
 import { decorFunction } from '../function-decor';
+import { isNotEmptyArray } from './common';
 
 export type ElementHook<T extends object> = <P = object>(componentProps: T, args: ElementArgs<P>) => ElementArgs<P>;
 
@@ -20,6 +21,8 @@ export type CreateElementArgsTuple<P extends {}> = [any, Attributes & Partial<P>
 type ReactCreateElement = typeof React.createElement;
 const originalCreateElement = React.createElement;
 
+export type SFCDecorator<T extends object> = <T1 extends T>(comp: SFC<T1>) => SFC<T1>;
+
 export interface DecorReactHooks<T extends object> {
     nodes?: Array<ElementHook<T>>;
     root?: Array<ElementHook<T>>;
@@ -31,15 +34,12 @@ export interface HookContext<T extends object> {
     createArgsMap: Map<object, ElementArgs<any>>;
 }
 
-function isNotEmptyArray(arr: Array<any> | undefined): arr is Array<any> {
-    return !!(arr && (arr.length > 0));
-}
 
 function getHooksReducer<T extends object>(componentProps: T) {
     return <P extends {}>(res: ElementArgs<P>, hook: ElementHook<T>) => hook(componentProps, res);
 }
 
-export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): <T1 extends T>(comp: SFC<T1>) => SFC<T1> {
+export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
     const context = {
         hooks,
         componentProps: {} as T,
