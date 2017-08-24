@@ -2,12 +2,18 @@
 export interface ComponentProps {
     className?: string;
     style?: { [k: string]: string };
+    'style-state'?: { [k: string]: boolean };
     'data-automation-id'?: string;
+    'aria-label'?:string;
+    'aria-labelledby'?:string;
+    'aria-describedby'?:string;
     [k: string]: any;
 }
 export interface Props extends ComponentProps {
     className: string;
 }
+
+const copyAttributes = ['aria-label', 'aria-labelledby', 'aria-describedby'];
 
 // Partial because there is no way more precise to express data-* and on* filtering
 // pending https://github.com/Microsoft/TypeScript/issues/6579
@@ -34,6 +40,8 @@ export function root<T extends ComponentProps, S extends Props, B extends keyof 
                 } else {
                     result[key] = componentProps[key];
                 }
+            } else if (~copyAttributes.indexOf(key)){
+                result[key] = componentProps[key];
             }
         }
     }
