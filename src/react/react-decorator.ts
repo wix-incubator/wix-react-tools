@@ -1,11 +1,9 @@
 import * as React from 'react';
 import { Component, SFC, ComponentType, ComponentClass } from 'react';
 import { ElementHook as ClassElementHook, onChildElement, onRootElement } from './react-decor-class';
-import { Rendered, Class, isClass } from '../core/types';
-import { isReactClassComponent, isNotEmptyArray } from './common';
+import { Class } from '../core/types';
+import { isReactClassComponent, isNotEmptyArray, Rendered } from './common';
 import { decorReact as decorReactFunc, ElementHook as SFCElementHook, DecorReactHooks as SFCDecorReactHooks, SFCDecorator } from './react-decor-function'; // todo: fix exports in index
-
-export type ClassProps<P extends object> = { props?: P };
 
 export interface ClassDecorReactHooks<T extends Rendered<any>> {
     root?: Array<ClassElementHook<T>>;
@@ -19,15 +17,14 @@ function getHooker<P extends object, T extends Component<P>>(applyHook: typeof o
 }
 
 export function decorateReactComponent<P extends object, T extends Component<P> = Component<P>>(sfcHooks?: SFCDecorReactHooks<P>, classHooks?: ClassDecorReactHooks<T>) {
-    function classWrapper(comp: ComponentClass<P> & Class<T>) {
-        let wrapper = comp;
+    function classWrapper(Comp: ComponentClass<P> & Class<T>) {
         if (classHooks && isNotEmptyArray(classHooks.nodes)) {
-            wrapper = classHooks.nodes.reduce(getHooker(onChildElement), wrapper);
+            Comp = classHooks.nodes.reduce(getHooker(onChildElement), Comp);
         }
         if (classHooks && isNotEmptyArray(classHooks.root)) {
-            wrapper = classHooks.root.reduce(getHooker(onRootElement), wrapper);
+            Comp = classHooks.root.reduce(getHooker(onRootElement), Comp);
         }
-        return wrapper;
+        return Comp;
     }
 
     function funcWrapper(sfc: SFC<P>) {

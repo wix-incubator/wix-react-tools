@@ -3,9 +3,10 @@ import { findDOMNode } from 'react-dom';
 import { expect, ClientRenderer } from 'test-drive-react';
 import { spyAll, resetAll } from '../test-drivers/test-tools';
 import { inBrowser } from "mocha-plugin-env/dist/src";
-import { ElementHook as SFCElementHook, ElementArgs as SFCElementArgs } from '../../src/react/react-decor-function';
-import { onChildElement, onRootElement, ElementHook as ClassElementHook, ElementArgs as ClassElementArgs } from '../../src/react/react-decor-class';
-import { Rendered } from '../../src/core/types';
+import { ElementHook as SFCElementHook } from '../../src/react/react-decor-function';
+import { onChildElement, onRootElement, ElementHook as ClassElementHook } from '../../src/react/react-decor-class';
+import { } from '../../src/core/types';
+import { ElementArgs, Rendered } from '../../src/react/common';
 import { decorateReactComponent } from '../../src/react/react-decorator'; // todo: implement
 
 describe.assuming(inBrowser(), 'only in browser')('react-decor2', () => {
@@ -23,7 +24,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor2', () => {
     type PropsWithName = { name: string };
 
     describe('react stateless functional component', () => {
-        const nodeHook: SFCElementHook<PropsWithName> = function (componentProps: PropsWithName, args: SFCElementArgs<any>): SFCElementArgs<any> {
+        const nodeHook: SFCElementHook<PropsWithName> = function (componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
             console.log(args.elementProps['data-automation-id']);
             return args;
         };
@@ -73,7 +74,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor2', () => {
 
             it('should allow adding a node hook to a stateless component that will add/remove/change the element props', () => {
                 let index = 0;
-                function multiActionNodeHook(componentProps: PropsWithName, args: SFCElementArgs<any>): SFCElementArgs<any> {
+                function multiActionNodeHook(componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
                     args.elementProps['data-automation-id'] = index;
                     args.elementProps['data-change-me'] = componentProps.name + index;
                     args.elementProps['data-delete-me'] = undefined;
@@ -96,7 +97,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor2', () => {
         });
 
         describe('root hooks', () => {
-            function rootHook(componentProps: PropsWithName, args: SFCElementArgs<any>): SFCElementArgs<any> {
+            function rootHook(componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
                 args.elementProps['data-automation-id'] = 'root';
                 args.elementProps['data-change-me'] = componentProps.name;
                 args.elementProps['data-delete-me'] = undefined;
@@ -118,12 +119,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor2', () => {
     });
 
     describe('react class component', () => {
-        const nodeHook1: ClassElementHook<Rendered<PropsWithName>> = function (instance: Rendered<PropsWithName>, args: ClassElementArgs<any>): ClassElementArgs<any> {
-            console.log(args.props['data-automation-id']);
+        const nodeHook1: ClassElementHook<Rendered<PropsWithName>> = function (instance: Rendered<PropsWithName>, args: ElementArgs<any>): ElementArgs<any> {
+            console.log(args.elementProps['data-automation-id']);
             return args;
         };
-        const nodeHook2: ClassElementHook<Rendered<PropsWithName>> = function (instance: Rendered<PropsWithName>, args: ClassElementArgs<any>): ClassElementArgs<any> {
-            console.log(args.props['data-automation-id']);
+        const nodeHook2: ClassElementHook<Rendered<PropsWithName>> = function (instance: Rendered<PropsWithName>, args: ElementArgs<any>): ElementArgs<any> {
+            console.log(args.elementProps['data-automation-id']);
             return args;
         };
 
@@ -177,10 +178,10 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor2', () => {
 
             it('should allow adding a node hook to a stateless component that will add/remove/change the element props', () => {
                 let index = 0;
-                function multiActionNodeHook(instance: Rendered<PropsWithName>, args: ClassElementArgs<any>): ClassElementArgs<any> {
-                    args.props['data-automation-id'] = index;
-                    args.props['data-change-me'] = instance.props.name + index;
-                    args.props['data-delete-me'] = undefined;
+                function multiActionNodeHook(instance: Rendered<PropsWithName>, args: ElementArgs<any>): ElementArgs<any> {
+                    args.elementProps['data-automation-id'] = index;
+                    args.elementProps['data-change-me'] = instance.props.name + index;
+                    args.elementProps['data-delete-me'] = undefined;
                     index++;
                     return args;
                 }
@@ -200,10 +201,10 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor2', () => {
         });
 
         describe('root hooks', () => {
-            function rootHook(instance: Rendered<PropsWithName>, args: ClassElementArgs<any>): ClassElementArgs<any> {
-                args.props['data-automation-id'] = 'root';
-                args.props['data-change-me'] = instance.props.name;
-                args.props['data-delete-me'] = undefined;
+            function rootHook(instance: Rendered<PropsWithName>, args: ElementArgs<any>): ElementArgs<any> {
+                args.elementProps['data-automation-id'] = 'root';
+                args.elementProps['data-change-me'] = instance.props.name;
+                args.elementProps['data-delete-me'] = undefined;
                 return args;
             }
 

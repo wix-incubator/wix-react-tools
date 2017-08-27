@@ -15,30 +15,17 @@ import {
     ReactSVG,
     SFC
 } from "react";
+import {ElementArgs, ElementType, Rendered} from './common';
 import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
-import {Class, GlobalConfig, Instance, Rendered} from "../core/types";
+import {Class, GlobalConfig, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 import {getGlobalConfig} from "../core/config";
 
-export type ElementArgs<P extends {}> = {
-    type: ElementType<P>,
-    props: Attributes & Partial<P>,
-    children: Array<ReactNode>;
-}
-
 // TODO: make union based of all different overloaded signatures of createElement
 // also consider <P extends HTMLAttributes<HTMLElement>>
 export type ElementHook<T extends Rendered<any>> = <P  = object>(instance: T, args: ElementArgs<P>) => ElementArgs<P>;
-
-export type ElementType<P> =
-    keyof ReactHTML
-    | keyof ReactSVG
-    | string
-    | SFC<P>
-    | ComponentClass<P>
-    | ClassType<P, ClassicComponent<P, ComponentState>, ClassicComponentClass<P>>;
 
 const original: typeof React.createElement = React.createElement;
 // for root replication use React.cloneElement()
@@ -100,7 +87,7 @@ class ReactDecorData<T extends Rendered<any>> {
                 }
             });
             // TODO see what's the deal with cloneElement https://facebook.github.io/react/docs/react-api.html#cloneelement
-            return original(rootArgs.type as any, rootArgs.props, ...rootArgs.children);
+            return original(rootArgs.type as any, rootArgs.elementProps, ...rootArgs.children);
         }
     }
 
@@ -109,7 +96,7 @@ class ReactDecorData<T extends Rendered<any>> {
         if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
             let args: ElementArgs<P> = {
                 type: functionArgs[0],
-                props: functionArgs[1] || {},
+                elementProps: functionArgs[1] || {},
                 children: functionArgs.length > 2 ? functionArgs.slice(2) : []
             };
             this.childElementHooks.collect().forEach((hook: ElementHook<T>) => {
@@ -119,7 +106,7 @@ class ReactDecorData<T extends Rendered<any>> {
                 }
             });
             this.currentArgs = args;
-            return [args.type, args.props, ...args.children];
+            return [args.type, args.elementProps, ...args.children];
         } else {
             (React as any).createElement = original;
             return functionArgs;
