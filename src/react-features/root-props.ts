@@ -9,9 +9,6 @@ export interface ComponentProps {
     'aria-describedby'?:string;
     [k: string]: any;
 }
-export interface Props extends ComponentProps {
-    className: string;
-}
 
 const copyAttributes = ['aria-label', 'aria-labelledby', 'aria-describedby'];
 
@@ -19,11 +16,7 @@ const copyAttributes = ['aria-label', 'aria-labelledby', 'aria-describedby'];
 // pending https://github.com/Microsoft/TypeScript/issues/6579
 export type PartialProps<T, B extends keyof T> = any
 
-export function rootProps<T extends ComponentProps, S extends Props, B extends keyof T = never>(componentProps: T, rootProps: S, blacklist?: B[]): PartialProps<T, B> & S {
-    if (typeof rootProps.className !== "string") {
-        throw new Error(`root properties does not contain valid className defintion: ${rootProps.className}`);
-    }
-
+export function rootProps<T extends ComponentProps, S extends ComponentProps, B extends keyof T = never>(componentProps: T, rootProps: S, blacklist?: B[]): PartialProps<T, B> & S {
     const result = Object.assign({}, rootProps);
 
     for (let key in componentProps) {
@@ -57,7 +50,11 @@ export function rootProps<T extends ComponentProps, S extends Props, B extends k
     }
 
     if (typeof componentProps.className === "string") {
-        result.className = rootProps.className.trim() + ' ' + componentProps.className.trim();
+        if (typeof rootProps.className === "string") {
+            result.className = rootProps.className.trim() + ' ' + componentProps.className.trim();
+        } else {
+            result.className = componentProps.className;
+        }
     }
 
     return result as any;

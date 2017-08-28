@@ -1,6 +1,6 @@
 // business logic
-export {rootProps, ComponentProps} from './react/root-handler';
-import {rootProps} from './react/root-handler';
+export {rootProps, ComponentProps} from './react-features/root-props';
+import {rootProps} from './react-features/root-props';
 export * from './core/functional';
 export * from './core/types';
 export * from './core/config';
@@ -8,17 +8,20 @@ export {privateState, StateProvider, STATE_DEV_MODE_KEY} from './core/private-st
 export * from './core/class-private-state';
 export * from "./function-decor";
 
+// react features
+export * from './react-features/disposable-decorator';
+export * from './react-features/properties-decorator';
+
 // legacy :
 //bases
 export * from './old/bases/observable-component';
 //mixins
-export * from './features/disposable-decorator';
 export * from './old/mixins/global-id-decorator';
 //utils
 export * from './class-decor/index';
-export * from './react/react-decor-class';
+export * from './react-decor/react-decor-class';
 export * from './core/disposers';
-export {decorReact as decorReactFunc, ElementHook as FuncElementHook} from './react/react-decor-function';
+export {decorReact as decorReactFunc, ElementHook as FuncElementHook} from './react-decor/react-decor-function';
 
 // custom exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";

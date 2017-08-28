@@ -1,5 +1,6 @@
 import {inBrowser} from "mocha-plugin-env";
 import {ClientRenderer, expect} from "test-drive-react";
+import {properties} from "../../src";
 import * as React from "react";
 
 describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {

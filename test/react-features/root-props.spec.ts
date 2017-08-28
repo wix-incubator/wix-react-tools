@@ -13,17 +13,14 @@ describe('rootProps', () => {
         const result = rootProps({
             foo: "foo"
         }, {
-            bar: "bar",
-            className: ""
+            bar: "bar"
         });
-        expect(result).to.eql({className: "", bar: "bar"});
+        expect(result).to.eql({bar: "bar"});
     });
 
     it("should merge empty objects", () => {
-        const result = rootProps({}, {
-            className: ""
-        });
-        expect(result).to.eql({className: ""});
+        const result = rootProps({}, {});
+        expect(result).to.eql({});
     });
 
     describe("data-*", () => {
@@ -31,13 +28,11 @@ describe('rootProps', () => {
             const result = rootProps({
                 "data-x": "test"
             }, {
-                "data-x": "overriden",
-                className: ""
+                "data-x": "overriden"
             });
 
             expect(result).to.eql({
-                "data-x": "test",
-                className: ""
+                "data-x": "test"
             });
         });
 
@@ -45,14 +40,12 @@ describe('rootProps', () => {
             const result = rootProps({
                 "data-1": "1"
             }, {
-                "data-2": "2",
-                className: ""
+                "data-2": "2"
             });
 
             expect(result).to.eql({
                 "data-1": "1",
-                "data-2": "2",
-                className: ""
+                "data-2": "2"
             });
         });
 
@@ -62,14 +55,12 @@ describe('rootProps', () => {
                 "data-x": "test"
             }, {
                 "data-2": "2",
-                "data-x": "overriden",
-                className: ""
+                "data-x": "overriden"
             }, ['data-1']);
 
             expect(result).to.eql({
                 "data-x": "test",
-                "data-2": "2",
-                className: ""
+                "data-2": "2"
             });
         });
     });
@@ -98,9 +89,6 @@ describe('rootProps', () => {
     });
 
     describe('className', () => {
-        it("should throw if no className provided in rootProps", () => {
-            expect(() => rootProps({}, {} as any)).to.throw(Error, 'className');
-        });
 
         it("should concatenate classNames", () => {
             const result = rootProps({
@@ -115,15 +103,15 @@ describe('rootProps', () => {
 
     describe('style', () => {
         it("should assign componentProps to root if nothing exists on root", () => {
-            const result = rootProps({style: {color: "green"}}, {className: "root"});
+            const result = rootProps({style: {color: "green"}}, {});
 
-            expect(result).to.eql({style: {color: "green"}, className: "root"});
+            expect(result).to.eql({style: {color: "green"}});
         });
 
         it("should maintain root style even when component style is empty", () => {
-            const result = rootProps({}, {style: {color: "red"}, className: "root"});
+            const result = rootProps({}, {style: {color: "red"}});
 
-            expect(result).to.eql({style: {color: "red"}, className: "root"});
+            expect(result).to.eql({style: {color: "red"}});
         });
 
         it("should merge props", () => {
@@ -134,26 +122,25 @@ describe('rootProps', () => {
             }, {
                 style: {
                     color: "red"
-                },
-                className: "root"
+                }
             });
 
-            expect(result).to.eql({style: {color: "green"}, className: "root"});
+            expect(result).to.eql({style: {color: "green"}});
         });
     });
 
     describe('aria', () => {
         it("should assign aria-label componentProps to root if nothing exists on root", () => {
-            const result = rootProps({['aria-label']: "foo"}, {className: "root"});
-            expect(result).to.eql({['aria-label']: "foo", className: "root"});
+            const result = rootProps({['aria-label']: "foo"}, {});
+            expect(result).to.eql({['aria-label']: "foo"});
         });
         it("should assign aria-labelledby componentProps to root if nothing exists on root", () => {
-            const result = rootProps({['aria-labelledby']: "foo"}, {className: "root"});
-            expect(result).to.eql({['aria-labelledby']: "foo", className: "root"});
+            const result = rootProps({['aria-labelledby']: "foo"}, {});
+            expect(result).to.eql({['aria-labelledby']: "foo"});
         });
         it("should assign aria-describedby componentProps to root if nothing exists on root", () => {
-            const result = rootProps({['aria-describedby']: "foo"}, {className: "root"});
-            expect(result).to.eql({['aria-describedby']: "foo", className: "root"});
+            const result = rootProps({['aria-describedby']: "foo"}, {});
+            expect(result).to.eql({['aria-describedby']: "foo"});
         });
     });
 
@@ -164,24 +151,23 @@ describe('rootProps', () => {
         const f1 = func();
         const f2 = func();
         it("should assign componentProps to root if nothing exists on root", () => {
-            const result = rootProps({onFoo: f1}, {className: "root"});
-            expect(result).to.eql({onFoo: f1, className: "root"});
+            const result = rootProps({onFoo: f1}, {});
+            expect(result).to.eql({onFoo: f1});
         });
 
         it("should maintain root handlers even when component style is empty", () => {
-            const result = rootProps({}, {onFoo: f1, className: "root"});
-            expect(result).to.eql({onFoo: f1, className: "root"});
+            const result = rootProps({}, {onFoo: f1});
+            expect(result).to.eql({onFoo: f1});
         });
 
         it("should merge handlers", () => {
             const result = rootProps({
                 onFoo: f1
             }, {
-                onFoo: f2,
-                className: "root"
+                onFoo: f2
             });
 
-            expect(result).to.eql({onFoo: cachedChainFunctions(f1, f2), className: "root"});
+            expect(result).to.eql({onFoo: cachedChainFunctions(f1, f2)});
             expect(result.onFoo).to.equal(cachedChainFunctions(f1, f2)); // notice the use of .equal and *not* .eql
         });
     });
