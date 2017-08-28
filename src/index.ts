@@ -1,5 +1,6 @@
 // business logic
 export {rootProps, ComponentProps} from './react/root-handler';
+import {rootProps} from './react/root-handler';
 export * from './core/functional';
 export * from './core/types';
 export * from './core/config';
@@ -38,3 +39,14 @@ function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc:F, cDF
 export const before = mergeFuncAndClass(FDBefore, CDBefore);
 export const after = mergeFuncAndClass(FDAfter, CDAfter);
 export const middleware = mergeFuncAndClass(FDMiddleware, CDMiddleware);
+
+
+
+// TODO: remove backwaerd compatible support
+export const root = function DEPRECATED(componentProps: any, rootProps: any, blacklist?: any[]): any {
+    console.warn(`
+    The 'root' namespace is deprecated. 
+    please use 'rootProps' to access the same function,
+    or consider using @properties `);
+    return rootProps(componentProps, rootProps, blacklist);
+} as typeof rootProps;

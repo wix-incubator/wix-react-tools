@@ -19,15 +19,6 @@ const copyAttributes = ['aria-label', 'aria-labelledby', 'aria-describedby'];
 // pending https://github.com/Microsoft/TypeScript/issues/6579
 export type PartialProps<T, B extends keyof T> = any
 
-// TODO: remove backwaerd compatible support
-export const root = function DEPRECATED(componentProps: any, rootProps: any, blacklist?: any[]): any {
-    console.warn(`
-    The 'root' namespace is deprecated. 
-    please use 'rootProps' to access the same function,
-    or consider using @properties `);
-    return rootProps(componentProps, rootProps, blacklist);
-} as typeof rootProps;
-
 export function rootProps<T extends ComponentProps, S extends Props, B extends keyof T = never>(componentProps: T, rootProps: S, blacklist?: B[]): PartialProps<T, B> & S {
     if (typeof rootProps.className !== "string") {
         throw new Error(`root properties does not contain valid className defintion: ${rootProps.className}`);
