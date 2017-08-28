@@ -8,7 +8,7 @@ function func() {
     };
 }
 
-describe('root', () => {
+describe('rootProps', () => {
     it("does not copy everything", () => {
         const result = rootProps({
             foo: "foo"
@@ -144,15 +144,15 @@ describe('root', () => {
 
     describe('aria', () => {
         it("should assign aria-label componentProps to root if nothing exists on root", () => {
-            const result = root({['aria-label']: "foo"}, {className: "root"});
+            const result = rootProps({['aria-label']: "foo"}, {className: "root"});
             expect(result).to.eql({['aria-label']: "foo", className: "root"});
         });
         it("should assign aria-labelledby componentProps to root if nothing exists on root", () => {
-            const result = root({['aria-labelledby']: "foo"}, {className: "root"});
+            const result = rootProps({['aria-labelledby']: "foo"}, {className: "root"});
             expect(result).to.eql({['aria-labelledby']: "foo", className: "root"});
         });
         it("should assign aria-describedby componentProps to root if nothing exists on root", () => {
-            const result = root({['aria-describedby']: "foo"}, {className: "root"});
+            const result = rootProps({['aria-describedby']: "foo"}, {className: "root"});
             expect(result).to.eql({['aria-describedby']: "foo", className: "root"});
         });
     });
