@@ -2,8 +2,8 @@ import * as React from 'react';
 import { expect, ClientRenderer } from 'test-drive-react';
 import { spyAll, resetAll } from '../test-drivers/test-tools';
 import { inBrowser } from "mocha-plugin-env/dist/src";
-import { decorReact, ElementHook } from '../../src/react/react-decor-function';
-import { ElementArgs } from '../../src/react/common';
+import { decorReact } from '../../src/react/react-decor-function';
+import { ElementArgs, ElementHook } from '../../src/react/common';
 
 describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => {
     const clientRenderer = new ClientRenderer();
@@ -27,7 +27,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
         </div>
     );
 
-    const nodeHook: ElementHook<PropsWithName> = function (componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+    const elementHook: ElementHook<PropsWithName> = function (instance: null, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
         console.log(args.elementProps['data-automation-id']);
         return args;
     };
@@ -45,7 +45,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
 
     describe('node hooks', () => {
         it('should allow adding a single node hook (which prints every type of node rendered) to a stateless react component', () => {
-            const wrap = decorReact({ nodes: [nodeHook] });
+            const wrap = decorReact({ onEachElement: [elementHook] });
             const WrappedComp = wrap(Comp);
 
             clientRenderer.render(<WrappedComp name="Jon" />);
@@ -56,7 +56,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
         });
 
         it('should allow adding multiple nodes hooks to a stateless react component', () => {
-            const wrap = decorReact({ nodes: [nodeHook, nodeHook] });
+            const wrap = decorReact({ onEachElement: [elementHook, elementHook] });
             const WrappedComp = wrap(Comp);
 
             clientRenderer.render(<WrappedComp name="Jon" />);
@@ -70,7 +70,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
 
         it('should allow adding a node hook to a stateless component that will add/remove/change the element props', () => {
             let index = 0;
-            function multiActionNodeHook(componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+            function multiActionNodeHook(instance: null, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
                 args.elementProps['data-automation-id'] = index;
                 args.elementProps['data-change-me'] = componentProps.name + index;
                 args.elementProps['data-delete-me'] = undefined;
@@ -78,7 +78,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
                 return args;
             }
 
-            const wrap = decorReact({ nodes: [multiActionNodeHook] });
+            const wrap = decorReact({ onEachElement: [multiActionNodeHook] });
             const WrappedComp = wrap(Comp);
 
             const { select } = clientRenderer.render(<WrappedComp name="Jon" />);
@@ -93,7 +93,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
     });
 
     describe('root hooks', () => {
-        function rootHook(componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+        function rootHook(instance: null, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
             args.elementProps['data-automation-id'] = 'root';
             args.elementProps['data-change-me'] = componentProps.name;
             args.elementProps['data-delete-me'] = undefined;
@@ -101,7 +101,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
         }
 
         it('should allow adding a single root hook to a stateless component that will add/remove/change the root elements props', () => {
-            const wrap = decorReact({ root: [rootHook] });
+            const wrap = decorReact({ onRootElement: [rootHook] });
             const WrappedComp = wrap(Comp);
 
             const { select } = clientRenderer.render(<WrappedComp name="Jon" />);

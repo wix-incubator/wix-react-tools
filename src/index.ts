@@ -18,7 +18,7 @@ export * from './class-decor/index';
 export * from './react/react-decor-class';
 export * from './core/disposers';
 export * from './react/common';
-export {decorReact as decorReactFunc, ElementHook as FuncElementHook} from './react/react-decor-function';
+export {decorReact as decorReactFunc} from './react/react-decor-function';
 
 // custom exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";

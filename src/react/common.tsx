@@ -7,9 +7,12 @@ import {
     ClassicComponentClass,
     Component,
     ComponentState,
+    ComponentType,
+    HTMLAttributes,
     ReactNode,
     ReactHTML,
     ReactSVG,
+    ReactType,
     SFC
 } from 'react';
 
@@ -34,11 +37,36 @@ keyof ReactHTML
 | ClassType<P, ClassicComponent<P, ComponentState>, ClassicComponentClass<P>>;
 
 export type ElementArgs<P extends {}> = {
-    type: any,
+    type: ReactType,
     elementProps: Attributes & Partial<P>,
     children: Array<ReactNode>
 }
+export type ElementArgsTuple<E extends HTMLAttributes<HTMLElement>> = [ElementType<E>, Attributes & Partial<E>, ReactNode]
 
 export type RenderResult = JSX.Element | null | false; // fits the render result of react's component
 
-export type Rendered<P extends object> = Component<P>
+export type Rendered<P = {}> = Component<P>
+
+
+export interface ElementHook<P extends object, T extends Rendered<P> = Rendered<P>> {
+    <E = object>(instance: T|null, props:P, args: ElementArgs<E>): ElementArgs<E>
+};
+
+export interface StatefulElementHook<P extends object, T extends Rendered<P> = Rendered<P>> {
+    <E = object>(instance: T, props:P, args: ElementArgs<E>): ElementArgs<E>
+};
+
+export interface StatelessElementHook<P extends object> {
+    <E = object>(instance: null, props:P, args: ElementArgs<E>): ElementArgs<E>
+};
+
+export interface StatelessDecorReactHooks<P extends object> {
+    onRootElement?: Array<StatelessElementHook<P>>;
+    onEachElement?: Array<ElementHook<P>>;
+}
+
+export interface DecorReactHooks<P extends object, T extends Rendered<P> = Rendered<P>> {
+    onRootElement?: Array<StatefulElementHook<P, T>|StatelessElementHook<P>>;
+    onEachElement?: Array<StatefulElementHook<P, T>|StatelessElementHook<P>>;
+}
+
