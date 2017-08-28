@@ -80,7 +80,7 @@ module.exports = function (config) {
     };
 
     if (process.env.TRAVIS) {
-        karmaConfig.browsers = ['Firefox']; // ['chrome_travis_ci', 'Firefox'];
+        karmaConfig.browsers = ['chrome_travis_ci']; // ['chrome_travis_ci', 'Firefox'];
     }
     config.set(karmaConfig)
 };

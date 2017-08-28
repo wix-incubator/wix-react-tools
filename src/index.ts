@@ -1,5 +1,5 @@
 // business logic
-export {rootProps} from './react/root-handler';
+export {rootProps, ComponentProps} from './react/root-handler';
 export * from './core/functional';
 export * from './core/types';
 export * from './core/config';
@@ -15,8 +15,9 @@ export * from './features/disposable-decorator';
 export * from './old/mixins/global-id-decorator';
 //utils
 export * from './class-decor/index';
-export * from './react/react-decor';
+export * from './react/react-decor-class';
 export * from './core/disposers';
+export {decorReact as decorReactFunc, ElementHook as FuncElementHook} from './react/react-decor-function';
 
 // custom exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
