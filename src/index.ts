@@ -1,5 +1,5 @@
 // business logic
-export {root} from './react/root-handler';
+export {root, ComponentProps} from './react/root-handler';
 export * from './core/functional';
 export * from './core/types';
 export * from './core/config';

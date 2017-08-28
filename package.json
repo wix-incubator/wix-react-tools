@@ -1,6 +1,6 @@
 {
   "name": "wix-react-tools",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Utilities and helpers to build stunning react components",
   "author": "Amir Arad (amira@wix.com)",
   "license": "MIT",
@@ -30,8 +30,8 @@
     "bundle": "webpack --progress",
     "pretest": "rimraf dist && yarn build && yarn bundle",
     "reset": "rimraf node_modules dist && yarn install && yarn test",
-    "typings-checker": "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/*.tsx typings-checker/*.ts",
-    "test": "yarn test:node && yarn test:browser",
+    "test:types": "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/*.tsx typings-checker/*.ts",
+    "test": "yarn test:types && yarn test:node && yarn test:browser",
     "test:node": "mocha --require dist/test/setup.js --require source-map-support/register --reporter mocha-env-reporter \"dist/test/**/*.spec.js\"",
     "test:browser": "karma start --single-run",
     "start:prod": "rimraf dist && yarn build && concurrently --kill-others --success first \"yarn build -- -w\" \"webpack-dev-server --no-info\"",
