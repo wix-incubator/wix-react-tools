@@ -3,6 +3,8 @@ import {ClientRenderer, expect} from "test-drive-react";
 import {properties} from "../../src";
 import * as React from "react";
 
+const ROOT_ATTRIBUTE_NAME = 'data-reactroot';
+
 describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
 
     const clientRenderer = new ClientRenderer();
@@ -17,7 +19,7 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
         }
         const {select} = clientRenderer.render(<Comp />);
 
-        expect(select('Root')).to.have.attribute('class', '');
+        expect(select('Root')).to.have.attribute(ROOT_ATTRIBUTE_NAME);
     });
 
     it("use the rootProps function to process props (detect by behavior)", () => {
