@@ -42,7 +42,7 @@ export const middleware = mergeFuncAndClass(FDMiddleware, CDMiddleware);
 
 
 
-// TODO: remove backwaerd compatible support
+// TODO: remove backward compatible support
 export const root = function DEPRECATED(componentProps: any, rootProps: any, blacklist?: any[]): any {
     console.warn(`
     The 'root' namespace is deprecated. 
