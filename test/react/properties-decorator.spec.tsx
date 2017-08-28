@@ -7,10 +7,8 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
 
-
-
     it("works with empty", () => {
-        @root
+        @properties
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root"/>
@@ -21,7 +19,7 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
         expect(select('Root')).to.have.attribute('class', '');
     });
 
-    it("use the root function to process props (detect by behavior)", () => {
+    it("use the rootProps function to process props (detect by behavior)", () => {
 
         type Props = {
             'data-automation-id'?: string;
@@ -30,7 +28,7 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
             'data-2'?: string;
         };
 
-        @root(['data-1'])
+        @properties(['data-1'])
         class Comp extends React.Component<Props> {
             render() {
                 return <div data-automation-id="Root" data-x="overriden" data-2="2"/>

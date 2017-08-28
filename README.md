@@ -5,12 +5,12 @@
 
 > This library provides helpful utilities for creating React components.
 
-## root function
+## rootProps function
 Bridge between component's API and root element attributes.
 Use this bridge in order to create components that are easily extendable in their usage, merging specific attributes passed as props onto the component's root element.
 
 ```tsx
-function root<T, S>(componentProps:T, rootProps:S = {className:"root"}): T & S;
+function rootProps<T, S>(componentProps:T, rootProps:S = {className:"root"}): T & S;
 ```
 
 0. By default returns rootProps. An error will be thrown if rootProps does not contain a className attribute with string value.
@@ -21,10 +21,10 @@ function root<T, S>(componentProps:T, rootProps:S = {className:"root"}): T & S;
 
 ### Usage Example
 ```tsx
-import { root } from "wix-react-tools";
+import { rootProps } from "wix-react-tools";
 ...
 
-<div {...root(props, {className:"foo bar"})} />
+<div {...rootProps(props, {className:"foo bar"})} />
 ```
 
 parent code:
@@ -34,7 +34,7 @@ parent code:
 
 Checkbox implementation :
 ```tsx
-<div data-foo="123" {...root(props, {className:"root foo1" })} > ... </div>
+<div data-foo="123" {...rootProps(props, {className:"root foo1" })} > ... </div>
 ```
 
 rendered end result looks like this:

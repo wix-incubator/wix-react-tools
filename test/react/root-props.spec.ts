@@ -1,5 +1,5 @@
 import {expect} from "test-drive-react";
-import {cachedChainFunctions, root} from "../../src";
+import {cachedChainFunctions, rootProps} from "../../src";
 
 // make a new function
 function func() {
@@ -10,7 +10,7 @@ function func() {
 
 describe('root', () => {
     it("does not copy everything", () => {
-        const result = root({
+        const result = rootProps({
             foo: "foo"
         }, {
             bar: "bar",
@@ -20,7 +20,7 @@ describe('root', () => {
     });
 
     it("should merge empty objects", () => {
-        const result = root({}, {
+        const result = rootProps({}, {
             className: ""
         });
         expect(result).to.eql({className: ""});
@@ -28,7 +28,7 @@ describe('root', () => {
 
     describe("data-*", () => {
         it("should merge data attributes", () => {
-            const result = root({
+            const result = rootProps({
                 "data-x": "test"
             }, {
                 "data-x": "overriden",
@@ -42,7 +42,7 @@ describe('root', () => {
         });
 
         it("should combine different attributes", () => {
-            const result = root({
+            const result = rootProps({
                 "data-1": "1"
             }, {
                 "data-2": "2",
@@ -57,7 +57,7 @@ describe('root', () => {
         });
 
         it("should respect black-list", () => {
-            const result = root({
+            const result = rootProps({
                 "data-1": "1",
                 "data-x": "test"
             }, {
@@ -77,16 +77,16 @@ describe('root', () => {
     describe('data-automation-id', () => {
         const DAID = "data-automation-id";
         it("should assign componentProps to root if nothing exists on root", () => {
-            const result = root({[DAID]: "foo"}, {className: "root"});
+            const result = rootProps({[DAID]: "foo"}, {className: "root"});
             expect(result).to.eql({[DAID]: "foo", className: "root"});
         });
 
         it("should maintain root data-automation-id even when component style is empty", () => {
-            const result = root({}, {[DAID]: "foo", className: "root"});
+            const result = rootProps({}, {[DAID]: "foo", className: "root"});
             expect(result).to.eql({[DAID]: "foo", className: "root"});
         });
         it("should concatenate data-automation-ids", () => {
-            const result = root({
+            const result = rootProps({
                 [DAID]: "foo"
             }, {
                 [DAID]: "bar",
@@ -99,11 +99,11 @@ describe('root', () => {
 
     describe('className', () => {
         it("should throw if no className provided in rootProps", () => {
-            expect(() => root({}, {} as any)).to.throw(Error, 'className');
+            expect(() => rootProps({}, {} as any)).to.throw(Error, 'className');
         });
 
         it("should concatenate classNames", () => {
-            const result = root({
+            const result = rootProps({
                 className: "blah"
             }, {
                 className: "root"
@@ -115,19 +115,19 @@ describe('root', () => {
 
     describe('style', () => {
         it("should assign componentProps to root if nothing exists on root", () => {
-            const result = root({style: {color: "green"}}, {className: "root"});
+            const result = rootProps({style: {color: "green"}}, {className: "root"});
 
             expect(result).to.eql({style: {color: "green"}, className: "root"});
         });
 
         it("should maintain root style even when component style is empty", () => {
-            const result = root({}, {style: {color: "red"}, className: "root"});
+            const result = rootProps({}, {style: {color: "red"}, className: "root"});
 
             expect(result).to.eql({style: {color: "red"}, className: "root"});
         });
 
         it("should merge props", () => {
-            const result = root({
+            const result = rootProps({
                 style: {
                     color: "green"
                 }
@@ -149,17 +149,17 @@ describe('root', () => {
         const f1 = func();
         const f2 = func();
         it("should assign componentProps to root if nothing exists on root", () => {
-            const result = root({onFoo: f1}, {className: "root"});
+            const result = rootProps({onFoo: f1}, {className: "root"});
             expect(result).to.eql({onFoo: f1, className: "root"});
         });
 
         it("should maintain root handlers even when component style is empty", () => {
-            const result = root({}, {onFoo: f1, className: "root"});
+            const result = rootProps({}, {onFoo: f1, className: "root"});
             expect(result).to.eql({onFoo: f1, className: "root"});
         });
 
         it("should merge handlers", () => {
-            const result = root({
+            const result = rootProps({
                 onFoo: f1
             }, {
                 onFoo: f2,
