@@ -53,7 +53,7 @@ function postRenderHook<T extends Rendered<any>>(instance: Instance<T>, methodRe
 
 class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
     onEachElementHooks: List<ElementHook<P, T>>;
-    rootElementHooks: List<ElementHook<P, T>>;
+    onRootElementHooks: List<ElementHook<P, T>>;
     createElementProxy = decorFunction({
         before: [this.beforeCreateElementHook.bind(this)],
         after: [this.afterCreateElementHook.bind(this)]
@@ -64,7 +64,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
 
     constructor(mixData: MixerData<T>, superData: ReactDecorData<any> | null) {
         this.onEachElementHooks = new List(superData && superData.onEachElementHooks);
-        this.rootElementHooks = new List(superData && superData.rootElementHooks);
+        this.onRootElementHooks = new List(superData && superData.onRootElementHooks);
         if (!superData) {
             mixData.addBeforeHook(preRenderHook, 'render'); // hook react-decor's lifecycle
             mixData.addAfterHook(postRenderHook, 'render'); // hook react-decor's lifecycle
@@ -80,7 +80,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
             }
             return rootElement;
         } else {
-            this.rootElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
+            this.onRootElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
                 rootArgs = hook(this.lastRendering, this.lastRendering.props, rootArgs as ElementArgs<any>);
                 if (rootArgs === undefined) {
                     throw new Error('Error: onRootElement hook returned undefined');
@@ -141,7 +141,7 @@ export function onChildElement<P extends object, T extends Rendered<any>>(hook: 
 export function onRootElement<P extends object, T extends Rendered<any>>(hook: ElementHook<P, T>): ClassDecorator<T> {
     return function onRootElementDecorator<C extends Class<T>>(componentClazz: C): C {
         let mixed = mix(componentClazz);
-        reactMixData(mixed).rootElementHooks.add(hook);
+        reactMixData(mixed).onRootElementHooks.add(hook);
         return mixed;
     };
 }
@@ -151,7 +151,7 @@ export function decorReactClass<P extends object, T extends Rendered<any>>(hooks
         let mixed = mix(componentClazz);
         const mixData = reactMixData(mixed);
         hooks.onEachElement && hooks.onEachElement.forEach(h => mixData.onEachElementHooks.add(h));
-        hooks.onRootElement && hooks.onRootElement.forEach(h => mixData.rootElementHooks.add(h));
+        hooks.onRootElement && hooks.onRootElement.forEach(h => mixData.onRootElementHooks.add(h));
         return mixed;
     };
 }

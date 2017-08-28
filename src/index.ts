@@ -15,10 +15,9 @@ export * from './features/disposable-decorator';
 export * from './old/mixins/global-id-decorator';
 //utils
 export * from './class-decor/index';
-export * from './react/react-decor-class';
 export * from './core/disposers';
 export * from './react/common';
-export {decorReact as decorReactFunc} from './react/react-decor-function';
+export * from './react/react-decorator';
 
 // custom exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";

@@ -7,7 +7,7 @@ import {
     cloneElement
 } from 'react';
 import { decorFunction } from '../function-decor';
-import { isNotEmptyArray, ElementArgs, ElementHook, DecorReactHooks } from './common';
+import { isNotEmptyArrayLike, ElementArgs, ElementHook, DecorReactHooks } from './common';
 
 export type CreateElementArgsTuple<P extends {}> = [any, Attributes & Partial<P>, ReactNode];
 export type SFCDecorator<T extends object> = <T1 extends T>(comp: SFC<T1>) => SFC<T1>;
@@ -39,7 +39,7 @@ export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorato
     };
 
     const applyRootHooks = <P extends {}>(renderResult: ReactElement<P>): ReactElement<P> => {
-        if (isNotEmptyArray(hooks.onRootElement)) {
+        if (isNotEmptyArrayLike(hooks.onRootElement)) {
             let rootElementArgs = context.createArgsMap.get(renderResult);
 
             if (rootElementArgs) {
@@ -66,7 +66,7 @@ function makeCustomCreateElement<P extends {}>(context: HookContext<P>): typeof 
 
     const applyHooksOnArguments = (createElementArgsTuple: CreateElementArgsTuple<P>): CreateElementArgsTuple<P> => {
         createElementArgsObject = translateArgumentsToObject(createElementArgsTuple);
-        if (isNotEmptyArray(context.hooks.onEachElement)) {
+        if (isNotEmptyArrayLike(context.hooks.onEachElement)) {
             createElementArgsObject = context.hooks.onEachElement.reduce(getHooksReducer(context.componentProps), createElementArgsObject);
             return translateObjectToArguments(createElementArgsObject);
         }

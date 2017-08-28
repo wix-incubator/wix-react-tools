@@ -1,4 +1,5 @@
-import {ElementArgs, onChildElement, onRootElement} from "../../src";
+import {onChildElement, onRootElement} from "../../src/react/react-decor-class";
+import {ElementArgs} from "../../src/react/common";
 import * as React from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";

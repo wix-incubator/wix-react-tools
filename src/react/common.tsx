@@ -16,7 +16,7 @@ import {
     SFC
 } from 'react';
 
-export function isNotEmptyArray(arr: Array<any> | undefined): arr is Array<any> {
+export function isNotEmptyArrayLike(arr: Array<any> | undefined): arr is Array<any> {
     return !!(arr && (arr.length > 0));
 }
 
