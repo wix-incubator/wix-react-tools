@@ -11,12 +11,8 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
     afterEach(() => clientRenderer.cleanup());
 
     it("works with empty", () => {
-        @properties
-        class Comp extends React.Component {
-            render() {
-                return <div data-automation-id="Root"/>
-            }
-        }
+        const Comp = properties(()=><div data-automation-id="Root"/>);
+
         const {select} = clientRenderer.render(<Comp />);
 
         expect(select('Root')).to.have.attribute(ROOT_ATTRIBUTE_NAME);
