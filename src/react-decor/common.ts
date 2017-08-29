@@ -23,10 +23,6 @@ export function isReactClassComponent(value: any): value is React.ComponentClass
     return value && value.prototype && value.prototype instanceof React.Component;
 }
 
-export function isRendered(obj: any): obj is Rendered<any> {
-    return obj && typeof obj.render === 'function';
-}
-
 export type ElementType<P> =
     keyof ReactHTML
     | keyof ReactSVG
@@ -41,8 +37,6 @@ export type ElementArgs<P extends {}> = {
     children: Array<ReactNode>
 }
 export type ElementArgsTuple<E extends HTMLAttributes<HTMLElement>> = [ElementType<E>, Attributes & Partial<E>, ReactNode]
-
-export type RenderResult = JSX.Element | null | false; // fits the render result of react's component
 
 export type Rendered<P = {}> = Component<P>;
 
