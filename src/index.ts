@@ -14,9 +14,7 @@ export * from './class-decor/index';
 export * from "./function-decor";
 
 // react decor
-export * from './react-decor/common';
-export * from './react-decor/react-decorator';
-export * from './react-decor/react-decor-class';
+export * from './react-decor/index';
 
 // react features
 export * from './react-features/disposable-decorator';

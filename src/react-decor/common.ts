@@ -46,11 +46,9 @@ export type RenderResult = JSX.Element | null | false; // fits the render result
 
 export type Rendered<P = {}> = Component<P>;
 
-
 export interface ElementHook<P extends object, T extends Rendered<P> = Rendered<P>> {
     <E = object>(instance: T | null, props: P, args: ElementArgs<E>): ElementArgs<E>
 }
-
 
 export interface StatefulElementHook<P extends object, T extends Rendered<P> = Rendered<P>> {
     <E = object>(instance: T, props: P, args: ElementArgs<E>): ElementArgs<E>
@@ -64,7 +62,7 @@ export interface StatelessElementHook<P extends object> {
 
 export interface StatelessDecorReactHooks<P extends object> {
     onRootElement ?: Array<StatelessElementHook<P>>;
-    onEachElement?: Array<ElementHook<P>>;
+    onEachElement?: Array<StatelessElementHook<P>>;
 }
 
 export interface DecorReactHooks<P extends object, T extends Rendered<P> = Rendered<P>> {

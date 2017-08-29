@@ -1,7 +1,7 @@
 import {ComponentProps, rootProps} from "./root-props";
 import {ComponentType} from "react";
-import {ElementArgs, Rendered} from "../react-decor/common";
-import {decorateReactComponent, Wrapper} from "../react-decor/react-decorator";
+import {ElementArgs} from "../react-decor/common";
+import {decorateReactComponent, Wrapper} from "../react-decor";
 
 
 function makeDecorator(blacklist?:Array<string>){

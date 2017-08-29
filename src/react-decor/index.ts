@@ -1,3 +1,6 @@
+export {decorReactClass} from "./react-decor-class";
+export {DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook, StatelessElementHook} from "./common";
+
 import {Component, ComponentType} from "react";
 import {decorReactClass} from "./react-decor-class";
 import {DecorReactHooks, isReactClassComponent, StatelessDecorReactHooks} from "./common";

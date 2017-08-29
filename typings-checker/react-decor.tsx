@@ -1,5 +1,6 @@
 import { decorReact as decorReactFunc } from "../dist/src/react-decor/react-decor-function";
-import { decorateReactComponent, ElementHook } from "../dist/src/index";
+import { ElementHook } from "../dist/src/react-decor/common";
+import { decorateReactComponent } from "../dist/src/index";
 
 
 declare const Comp: React.SFC<PropsWithName>;

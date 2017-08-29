@@ -3,7 +3,7 @@ import {ClientRenderer, expect} from "test-drive-react";
 import {resetAll, spyAll} from "../test-drivers/test-tools";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 import {ElementArgs, Rendered, StatefulElementHook, StatelessElementHook} from "../../src/react-decor/common";
-import {decorateReactComponent} from "../../src/react-decor/react-decorator"; // todo: implement
+import {decorateReactComponent} from "../../src/react-decor";
 
 describe.assuming(inBrowser(), 'only in browser')('react-decor2', () => {
     const clientRenderer = new ClientRenderer();
