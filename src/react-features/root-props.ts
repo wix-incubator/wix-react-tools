@@ -4,9 +4,9 @@ export interface ComponentProps {
     style?: { [k: string]: string };
     'style-state'?: { [k: string]: boolean };
     'data-automation-id'?: string;
-    'aria-label'?:string;
-    'aria-labelledby'?:string;
-    'aria-describedby'?:string;
+    'aria-label'?: string;
+    'aria-labelledby'?: string;
+    'aria-describedby'?: string;
     [k: string]: any;
 }
 
@@ -33,7 +33,7 @@ export function rootProps<T extends ComponentProps, S extends ComponentProps, B 
                 } else {
                     result[key] = componentProps[key];
                 }
-            } else if (~copyAttributes.indexOf(key)){
+            } else if (~copyAttributes.indexOf(key)) {
                 result[key] = componentProps[key];
             }
         }

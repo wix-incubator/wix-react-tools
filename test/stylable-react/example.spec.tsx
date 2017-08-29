@@ -1,5 +1,5 @@
 import {SBComponent} from "stylable-react-component";
-import { createGenerator } from "stylable";
+import {createGenerator} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
@@ -44,9 +44,9 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
             }
         `);
 
-        const rootState = {a:true, b:false};
+        const rootState = {a: true, b: false};
         const rootStateAttrName = Object.keys(runtime.$stylesheet.cssStates(rootState))[0]; // css.cssStates(...) will only have keys for states which are true
-        const nodeState = {x:true, y:false};
+        const nodeState = {x: true, y: false};
         const nodeStateAttrName = Object.keys(runtime.$stylesheet.cssStates(nodeState))[0];
 
         @SBComponent(runtime)

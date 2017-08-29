@@ -1,13 +1,7 @@
 import React = require('react');
-import {
-    Attributes,
-    ReactElement,
-    ReactNode,
-    SFC,
-    cloneElement
-} from 'react';
-import { decorFunction } from '../function-decor';
-import { isNotEmptyArrayLike, ElementArgs, ElementHook, DecorReactHooks } from './common';
+import {Attributes, cloneElement, ReactElement, ReactNode, SFC} from "react";
+import {decorFunction} from "../function-decor";
+import {DecorReactHooks, ElementArgs, ElementHook, isNotEmptyArrayLike} from "./common";
 
 export type CreateElementArgsTuple<P extends {}> = [any, Attributes & Partial<P>, ReactNode];
 export type SFCDecorator<T extends object> = <T1 extends T>(comp: SFC<T1>) => SFC<T1>;

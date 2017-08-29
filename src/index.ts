@@ -1,6 +1,5 @@
 // business logic
 export {rootProps, ComponentProps} from './react-features/root-props';
-import {rootProps} from './react-features/root-props';
 export * from './core/functional';
 export * from './core/types';
 export * from './core/config';
@@ -30,10 +29,11 @@ export * from './old/bases/observable-component';
 export * from './old/mixins/global-id-decorator';
 
 // custom exports:
+import {rootProps} from "./react-features/root-props";
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
 import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./class-decor/index";
 
-function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc:F, cDFunc:C) : F & C{
+function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc: F, cDFunc: C): F & C {
     function ApiHook() {
         if (arguments.length > 1) {
             return cDFunc.apply(null, arguments);
@@ -41,6 +41,7 @@ function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc:F, cDF
             return fDFunc.apply(null, arguments);
         }
     }
+
     Object.setPrototypeOf(ApiHook, cDFunc);
     return ApiHook as any as F & C;
 }
@@ -48,7 +49,6 @@ function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc:F, cDF
 export const before = mergeFuncAndClass(FDBefore, CDBefore);
 export const after = mergeFuncAndClass(FDAfter, CDAfter);
 export const middleware = mergeFuncAndClass(FDMiddleware, CDMiddleware);
-
 
 
 // TODO: remove backward compatible support
