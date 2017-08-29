@@ -1,5 +1,4 @@
 // business logic
-export {rootProps, ComponentProps} from './react-features/root-props';
 export * from './core/functional';
 export * from './core/types';
 export * from './core/config';

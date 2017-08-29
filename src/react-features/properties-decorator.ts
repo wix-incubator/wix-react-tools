@@ -24,3 +24,5 @@ export function properties<P extends object>(clazzOrBlacklist: ComponentType<P> 
         return makeDecorator(clazzOrBlacklist);
     }
 }
+
+export type PropertiesProps = ComponentProps;

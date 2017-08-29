@@ -1,12 +1,5 @@
 import {expect} from "test-drive-react";
-import {cachedChainFunctions, rootProps} from "../../src";
-
-// make a new function
-function func() {
-    return () => {
-
-    };
-}
+import {rootProps} from "../../src/react-features/root-props";
 
 describe('rootProps', () => {
     it("does not copy everything", () => {
@@ -144,31 +137,36 @@ describe('rootProps', () => {
         });
     });
 
-
     // removed disabled feature
     // https://github.com/wix/stylable-components/pull/144#issuecomment-320871672
-    xdescribe('noevent handlers (on*)', () => {
-        const f1 = func();
-        const f2 = func();
-        it("should assign componentProps to root if nothing exists on root", () => {
-            const result = rootProps({onFoo: f1}, {});
-            expect(result).to.eql({onFoo: f1});
-        });
-
-        it("should maintain root handlers even when component style is empty", () => {
-            const result = rootProps({}, {onFoo: f1});
-            expect(result).to.eql({onFoo: f1});
-        });
-
-        it("should merge handlers", () => {
-            const result = rootProps({
-                onFoo: f1
-            }, {
-                onFoo: f2
-            });
-
-            expect(result).to.eql({onFoo: cachedChainFunctions(f1, f2)});
-            expect(result.onFoo).to.equal(cachedChainFunctions(f1, f2)); // notice the use of .equal and *not* .eql
-        });
-    });
+    // make a new function
+    //     function func() {
+    //         return () => {
+    //
+    //         };
+    //     }
+    // describe('noevent handlers (on*)', () => {
+    //     const f1 = func();
+    //     const f2 = func();
+    //     it("should assign componentProps to root if nothing exists on root", () => {
+    //         const result = rootProps({onFoo: f1}, {});
+    //         expect(result).to.eql({onFoo: f1});
+    //     });
+    //
+    //     it("should maintain root handlers even when component style is empty", () => {
+    //         const result = rootProps({}, {onFoo: f1});
+    //         expect(result).to.eql({onFoo: f1});
+    //     });
+    //
+    //     it("should merge handlers", () => {
+    //         const result = rootProps({
+    //             onFoo: f1
+    //         }, {
+    //             onFoo: f2
+    //         });
+    //
+    //         expect(result).to.eql({onFoo: cachedChainFunctions(f1, f2)});
+    //         expect(result.onFoo).to.equal(cachedChainFunctions(f1, f2)); // notice the use of .equal and *not* .eql
+    //     });
+    // });
 });

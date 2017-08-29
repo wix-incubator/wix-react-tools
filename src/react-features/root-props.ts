@@ -7,16 +7,18 @@ export interface ComponentProps {
     'aria-label'?: string;
     'aria-labelledby'?: string;
     'aria-describedby'?: string;
-    [k: string]: any;
 }
 
+export interface JSComponentProps extends ComponentProps {
+    [k: string]: any;
+}
 const copyAttributes = ['aria-label', 'aria-labelledby', 'aria-describedby'];
 
 // Partial because there is no way more precise to express data-* and on* filtering
 // pending https://github.com/Microsoft/TypeScript/issues/6579
 export type PartialProps<T, B extends keyof T> = any
 
-export function rootProps<T extends ComponentProps, S extends ComponentProps, B extends keyof T = never>(componentProps: T, rootProps: S, blacklist?: B[]): PartialProps<T, B> & S {
+export function rootProps<T extends JSComponentProps, S extends JSComponentProps, B extends keyof T = never>(componentProps: T, rootProps: S, blacklist?: B[]): PartialProps<T, B> & S {
     const result = Object.assign({}, rootProps);
 
     for (let key in componentProps) {
