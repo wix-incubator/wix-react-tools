@@ -1,4 +1,4 @@
-import {SBComponent} from "stylable-react-component";
+import {stylable} from "../../src";
 import {createGenerator} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
@@ -16,15 +16,15 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
             .SomeClass {}
         `);
 
-        @SBComponent(runtime)
+        @stylable(runtime)
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root">
-                    <div data-automation-id="Node" className="SomeClass External"></div>
+                    <div data-automation-id="Node" className="SomeClass External" />
                 </div>
             }
         }
-        const {select, container} = clientRenderer.render(<Comp></Comp>);
+        const {select, container} = clientRenderer.render(<Comp> </Comp>);
 
         expect(select('Root')).to.equal(container.querySelector(`.${runtime.root}`));
         expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
@@ -49,15 +49,15 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         const nodeState = {x: true, y: false};
         const nodeStateAttrName = Object.keys(runtime.$stylesheet.cssStates(nodeState))[0];
 
-        @SBComponent(runtime)
+        @stylable(runtime)
         class Comp extends React.Component {
             render() {
-                return <div data-automation-id="Root" cssStates={rootState}>
-                    <div data-automation-id="Node" className="SomeClass" cssStates={nodeState}></div>
+                return <div data-automation-id="Root" style-state={rootState}>
+                    <div data-automation-id="Node" className="SomeClass" style-state={nodeState} />
                 </div>
             }
         }
-        const {select} = clientRenderer.render(<Comp ></Comp>);
+        const {select} = clientRenderer.render(<Comp > </Comp>);
 
         expect(select('Root')!.attributes.getNamedItem(rootStateAttrName)).to.be.ok;
         expect(select('Node')!.attributes.getNamedItem(nodeStateAttrName)).to.be.ok;

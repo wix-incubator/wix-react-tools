@@ -18,6 +18,7 @@ export * from './react-decor/index';
 // react features
 export * from './react-features/disposable-decorator';
 export * from './react-features/properties-decorator';
+export * from './react-features/stylable-decorator';
 
 // legacy :
 //bases
@@ -25,7 +26,8 @@ export * from './old/bases/observable-component';
 //mixins
 export * from './old/mixins/global-id-decorator';
 
-// custom exports:
+
+// customized exports:
 import {rootProps} from "./react-features/root-props";
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
 import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./class-decor/index";
@@ -49,10 +51,9 @@ export const middleware = mergeFuncAndClass(FDMiddleware, CDMiddleware);
 
 
 // TODO: remove backward compatible support
-export const root = function DEPRECATED(componentProps: any, rootProps: any, blacklist?: any[]): any {
+export const root = function DEPRECATED(componentProps: any, propsArg: any, blacklist?: any[]): any {
     console.warn(`
     The 'root' namespace is deprecated. 
-    please use 'rootProps' to access the same function,
-    or consider using @properties `);
-    return rootProps(componentProps, rootProps, blacklist);
+    please use @properties decorator`);
+    return rootProps(componentProps, propsArg, blacklist);
 } as typeof rootProps;
