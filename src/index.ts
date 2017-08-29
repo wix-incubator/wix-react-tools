@@ -6,7 +6,18 @@ export * from './core/types';
 export * from './core/config';
 export {privateState, StateProvider, STATE_DEV_MODE_KEY} from './core/private-state';
 export * from './core/class-private-state';
+
+//utils
+export * from './core/disposers';
+
+// js decor
+export * from './class-decor/index';
 export * from "./function-decor";
+
+// react decor
+export * from './react-decor/common';
+export * from './react-decor/react-decorator';
+export * from './react-decor/react-decor-class';
 
 // react features
 export * from './react-features/disposable-decorator';
@@ -17,11 +28,6 @@ export * from './react-features/properties-decorator';
 export * from './old/bases/observable-component';
 //mixins
 export * from './old/mixins/global-id-decorator';
-//utils
-export * from './class-decor/index';
-export * from './react-decor/react-decor-class';
-export * from './core/disposers';
-export {decorReact as decorReactFunc, ElementHook as FuncElementHook} from './react-decor/react-decor-function';
 
 // custom exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";

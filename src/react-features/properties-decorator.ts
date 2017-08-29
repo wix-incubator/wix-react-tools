@@ -1,10 +1,11 @@
-import {onRootElement, ElementArgs} from "../react-decor/react-decor-class";
-import {Class, Rendered} from "../core/types";
+import {onRootElement} from "../react-decor/react-decor-class";
+import {Class} from "../core/types";
 import {ComponentProps, rootProps} from "./root-props";
 import {Component} from "react";
+import {ElementArgs, Rendered} from "../react-decor/common";
 
-const defaultWrapper = onRootElement((instance: Rendered<any>, args: ElementArgs<any>)=>{
-    args.props = rootProps(instance.props, args.props);
+const defaultWrapper = onRootElement((_instance: Rendered<any>, props:any, args: ElementArgs<any>)=>{
+    args.elementProps = rootProps(props, args.elementProps);
     return args;
 });
 
@@ -14,8 +15,8 @@ export function properties<T extends Rendered<any>>(clazzOrBlacklist: Class<T> |
     if (typeof clazzOrBlacklist === 'function'){
         return defaultWrapper(clazzOrBlacklist as Class<T>);
     } else {
-        return onRootElement((instance: Rendered<any>, args: ElementArgs<any>)=>{
-            args.props = rootProps(instance.props, args.props, clazzOrBlacklist);
+        return onRootElement((_instance: Rendered<any>, props:any, args: ElementArgs<any>)=>{
+            args.elementProps = rootProps(props, args.elementProps, clazzOrBlacklist);
             return args;
         })
     }
