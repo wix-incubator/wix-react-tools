@@ -1,43 +1,44 @@
-import {ElementArgs, onChildElement, onRootElement} from "../react/react-decor-class";
-import {Rendered} from "../core/types";
 import {chain} from "../class-decor/index";
-import {Stylesheet} from "stylable";
+import {RuntimeStylesheet, StateMap, Stylesheet} from "stylable";
 import {__rest} from "tslib";
+import {decorateReactComponent} from "../react-decor/index";
+import {ElementArgs, StatelessElementHook} from "../react-decor/common";
+import {Component} from "react";
 
-
-export interface StyleState{
-    [key: string]: boolean;
-}
 
 // TODO data-temp is pending final name decision at https://github.com/wixplosives/stylable-components-guide/issues/24
 const styleStatePropName = ['data-temp'];
 type StylableProps = {
-    className?: string;
-    'data-temp'?:StyleState;
+    className: string;
+    'data-temp': StateMap;
 }
 
-function childElementHook(sheet: Stylesheet) {
+function eachElementHook(sheet: Stylesheet) : StatelessElementHook<any>{
     function classNameMapper(name: string) {
         return sheet.get(name) || name;
     }
-    return function SBComponentElement<T extends Rendered<any>, P extends StylableProps>(instance: T, args: ElementArgs<P>): ElementArgs<P> {
-        if (typeof args.props.className === 'string') {
-            args.props.className = args.props.className.split(' ').map(classNameMapper).join(' ');
+
+    return function stylableEachElementHook(_instance: never, _props:any, args: ElementArgs<any>): ElementArgs<any> {
+        if (typeof args.elementProps.className === 'string') {
+            args.elementProps.className = args.elementProps.className.split(' ').map(classNameMapper).join(' ');
         }
-        if (typeof args.type === 'string' && args.props['data-temp']) {
-            const otherProps = __rest(args.props, styleStatePropName);
-            const cssStates = args.props['data-temp'];
-            args.props = { ...sheet.cssStates(cssStates), ...otherProps };
+        const cssStates = args.elementProps['data-temp'];
+        if (cssStates) {
+            const otherProps = __rest(args.elementProps, styleStatePropName);
+            args.elementProps = {...sheet.cssStates(cssStates), ...otherProps};
         }
         return args;
     }
 }
 
 function rootElementHook(sheet: Stylesheet) {
-    return function SBComponentRoot<T extends Rendered<any>, P extends StylableProps>(instance: T, args: ElementArgs<P>): ElementArgs<P> {
-        args.props.className = sheet.get(sheet.root) + ' ' + args.props.className;
+    return function stylableRootElementHook(_instance: never, _props:any, args: ElementArgs<any>): ElementArgs<any> {
+        args.elementProps.className = sheet.get(sheet.root) + ' ' + args.elementProps.className;
         return args;
     }
 }
 
-export const SBComponent = (sheet: Stylesheet) => chain(onChildElement(childElementHook(sheet)), onRootElement(rootElementHook(sheet)));
+export const stylable = (sheet: RuntimeStylesheet) => decorateReactComponent({
+    onEachElement: [eachElementHook(sheet.$stylesheet)],
+    onRootElement: [rootElementHook(sheet.$stylesheet)]
+});

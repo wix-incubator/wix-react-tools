@@ -1,4 +1,4 @@
-import {SBComponent} from "../../src";
+import {stylable} from "../../src";
 import {createGenerator} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
@@ -16,7 +16,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
             .SomeClass {}
         `);
 
-        @SBComponent(runtime)
+        @stylable(runtime)
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root">
@@ -49,7 +49,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         const nodeState = {x: true, y: false};
         const nodeStateAttrName = Object.keys(runtime.$stylesheet.cssStates(nodeState))[0];
 
-        @SBComponent(runtime)
+        @stylable(runtime)
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root" data-temp={rootState}>
