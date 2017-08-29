@@ -1063,6 +1063,10 @@ defined@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/defined/-/defined-1.0.0.tgz#c98d9bcef75674188e110969151199e39b1fa693"
 
+deindent@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/deindent/-/deindent-0.1.0.tgz#62e1dcdd1d849709e5c7403c890e47e3cebe399d"
+
 del@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/del/-/del-3.0.0.tgz#53ecf699ffcbcb39637691ab13baf160819766e5"
@@ -2353,6 +2357,10 @@ lodash.camelcase@^3.0.1:
   dependencies:
     lodash._createcompounder "^3.0.0"
 
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+
 lodash.create@3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/lodash.create/-/lodash.create-3.1.1.tgz#d7f2849f0dbda7e04682bb8cd72ab022461debe7"
@@ -2660,6 +2668,10 @@ multicast-dns@^6.0.1:
   dependencies:
     dns-packet "^1.0.1"
     thunky "^0.1.0"
+
+murmurhash@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/murmurhash/-/murmurhash-0.0.2.tgz#6f07bd8a1105e709c26fc89420cb5930c24585fe"
 
 nan@^2.3.0:
   version "2.6.2"
@@ -4067,17 +4079,21 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stylable@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/stylable/-/stylable-3.0.0.tgz#e409d7df9595f73d17d9b94ace70ea321a393a64"
+stylable@^4.0.3:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/stylable/-/stylable-4.0.4.tgz#9bb3bef02c76ea4b06cf74f36878d231e8998186"
   dependencies:
     camelcase-css "^1.0.1"
     css-selector-tokenizer "^0.7.0"
+    deindent "^0.1.0"
     kebab-case "^1.0.0"
+    lodash.clonedeep "^4.5.0"
+    murmurhash "0.0.2"
     postcss "^6.0.3"
     postcss-js "^1.0.0"
     postcss-nested "^2.0.2"
     postcss-safe-parser "^3.0.1"
+    postcss-value-parser "^3.3.0"
     stylis "^3.2.3"
 
 style-loader@~0.13.1:

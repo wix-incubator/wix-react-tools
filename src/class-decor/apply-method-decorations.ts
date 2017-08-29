@@ -11,7 +11,9 @@ import {
     MixerData
 } from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
-import {THList, THListToTuple} from "typelevel-ts";
+// import {THList, THListToTuple} from "typelevel-ts";
+export type THList = any;
+export type THListToTuple<T> = any;
 
 const edgeClassData = classPrivateState('edge class data', clazz => new EdgeClassData(clazz));
 
@@ -20,7 +22,7 @@ export const initEdgeClass = (clazz: Class<object>) => {
         edgeClassData(clazz).init();
     }
 };
-function notIfExists(hook: { ifExists?: boolean }){
+function notIfExists(hook: { ifExists?: boolean }) {
     return !hook.ifExists;
 }
 function shouldCreateMethod(methodData: MethodData): boolean {
@@ -96,7 +98,7 @@ function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
     throw new Error('before hook did not return an array-like object: ' + serialized)
 }
 
-function runBeforeHooks<T extends object>(target: T, hooks:Array<BeforeMethodHook>|null, methodName: keyof T, methodArgs: any[]) {
+function runBeforeHooks<T extends object>(target: T, hooks: Array<BeforeMethodHook> | null, methodName: keyof T, methodArgs: any[]) {
     if (hooks) {
         hooks.forEach((hook: BeforeMethodHook<AnyArgs, T>) => {
             methodArgs = hook(target, methodArgs);
@@ -122,7 +124,7 @@ const dummyTracker = {
     }
 };
 
-function runMiddlewareHooksAndOrigin<T extends object>(target: T, hooks:Array<MiddlewareMethodHook>|null, originalMethod: (...args: any[]) => any, methodName: keyof T, methodArgs: any[]) {
+function runMiddlewareHooksAndOrigin<T extends object>(target: T, hooks: Array<MiddlewareMethodHook> | null, originalMethod: (...args: any[]) => any, methodName: keyof T, methodArgs: any[]) {
     let retVal;
     if (hooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
@@ -148,7 +150,7 @@ function createNextForMiddlewareHook<T extends object, A extends THList, R>(targ
     };
 }
 
-function runAfterHooks<T extends object>(target: T, hooks:Array<AfterMethodHook>|null, methodName: keyof T, methodResult: any) {
+function runAfterHooks<T extends object>(target: T, hooks: Array<AfterMethodHook> | null, methodName: keyof T, methodResult: any) {
     const devMode = getGlobalConfig<GlobalConfig>().devMode;
 
     if (hooks) {

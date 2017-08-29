@@ -3,9 +3,9 @@ import {add, after, before, middleware, onInstance} from "../../src";
 import {expect} from "test-drive";
 
 describe('class-decor documentation examples', () => {
-    let log:string[] = [];
+    let log: string[] = [];
     const console = spyAll({
-        log: (...args:string[]) => {
+        log: (...args: string[]) => {
             log.push(args.join(' '));
         },
         warn: () => {

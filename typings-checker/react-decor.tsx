@@ -1,17 +1,19 @@
-import {decorReactFunc, FuncElementHook} from "../dist/src/index";
+import { decorReact as decorReactFunc } from "../dist/src/react-decor/react-decor-function";
+import { ElementHook } from "../dist/src/react-decor/common";
+import { decorateReactComponent } from "../dist/src/index";
 
 
 declare const Comp: React.SFC<PropsWithName>;
 declare const Comp2: React.SFC<PropsWithName2>;
-declare const hooks: FuncElementHook<PropsWithName>
+declare const hooks: ElementHook<PropsWithName>
 type PropsWithName = { name: string };
 type PropsWithName2 = { name: Function };
 
 describe('react decor function', () => {
-    // $ExpectType <T1 extends {}>(comp: StatelessComponent<T1>) => StatelessComponent<T1>
+    // $ExpectType SFCDecorator<{}>
     decorReactFunc({});
 
-    // $ExpectType <T1 extends PropsWithName>(comp: StatelessComponent<T1>) => StatelessComponent<T1>
+    // $ExpectType SFCDecorator<PropsWithName>
     decorReactFunc<PropsWithName>(hooks);
 
     // $ExpectType StatelessComponent<PropsWithName2>

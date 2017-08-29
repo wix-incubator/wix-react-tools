@@ -10,8 +10,8 @@ type State = {
     bar?: string
 };
 
-const DEV_MODE_ON = {devMode : true};
-const DEV_MODE_OFF = {devMode : false};
+const DEV_MODE_ON = {devMode: true};
+const DEV_MODE_OFF = {devMode: false};
 
 describe('Private state', () => {
     const pState0 = privateState<State>(ids[0], emptyState);
