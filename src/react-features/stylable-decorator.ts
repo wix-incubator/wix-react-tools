@@ -1,17 +1,9 @@
-import {chain} from "../class-decor/index";
 import {RuntimeStylesheet, StateMap, Stylesheet} from "stylable";
 import {__rest} from "tslib";
 import {decorateReactComponent} from "../react-decor/index";
 import {ElementArgs, StatelessElementHook} from "../react-decor/common";
-import {Component} from "react";
 
-
-// TODO data-temp is pending final name decision at https://github.com/wixplosives/stylable-components-guide/issues/24
-const styleStatePropName = ['data-temp'];
-type StylableProps = {
-    className: string;
-    'data-temp': StateMap;
-}
+const STATE_ATTR_ARR = ['style-state'];
 
 function eachElementHook(sheet: Stylesheet) : StatelessElementHook<any>{
     function classNameMapper(name: string) {
@@ -22,9 +14,9 @@ function eachElementHook(sheet: Stylesheet) : StatelessElementHook<any>{
         if (typeof args.elementProps.className === 'string') {
             args.elementProps.className = args.elementProps.className.split(' ').map(classNameMapper).join(' ');
         }
-        const cssStates = args.elementProps['data-temp'];
+        const cssStates = args.elementProps['style-state'];
         if (cssStates) {
-            const otherProps = __rest(args.elementProps, styleStatePropName);
+            const otherProps = __rest(args.elementProps, STATE_ATTR_ARR);
             args.elementProps = {...sheet.cssStates(cssStates), ...otherProps};
         }
         return args;

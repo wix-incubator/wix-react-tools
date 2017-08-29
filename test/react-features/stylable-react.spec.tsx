@@ -52,8 +52,8 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         @stylable(runtime)
         class Comp extends React.Component {
             render() {
-                return <div data-automation-id="Root" data-temp={rootState}>
-                    <div data-automation-id="Node" className="SomeClass" data-temp={nodeState} />
+                return <div data-automation-id="Root" style-state={rootState}>
+                    <div data-automation-id="Node" className="SomeClass" style-state={nodeState} />
                 </div>
             }
         }

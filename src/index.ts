@@ -18,7 +18,7 @@ export * from './react-decor/index';
 // react features
 export * from './react-features/disposable-decorator';
 export * from './react-features/properties-decorator';
-export * from './stylable-react/stylable-class';
+export * from './react-features/stylable-decorator';
 
 // legacy :
 //bases
