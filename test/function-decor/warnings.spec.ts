@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {GlobalConfig, middleware, after, runInContext} from "../../src";
+import {after, GlobalConfig, middleware, runInContext} from "../../src";
 
 
 // TODO: change tests to function-decor style (instead of class decor) and make them pass

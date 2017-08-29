@@ -1,9 +1,10 @@
-import * as React from 'react';
-import { Component, SFC, ComponentType, ComponentClass } from 'react';
-import { onChildElement, onRootElement, decorReactClass } from './react-decor-class';
-import { Class } from '../core/types';
-import { isReactClassComponent, isNotEmptyArrayLike, Rendered, ElementHook, DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook } from './common';
-import { decorReact as decorReactFunc } from './react-decor-function'; // todo: fix exports in index
+export {decorReactClass} from "./react-decor-class";
+export {DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook, StatelessElementHook} from "./common";
+
+import {Component, ComponentType} from "react";
+import {decorReactClass} from "./react-decor-class";
+import {DecorReactHooks, isReactClassComponent, StatelessDecorReactHooks} from "./common";
+import {decorReact as decorReactFunc} from "./react-decor-function"; // todo: fix exports in index
 
 export type Wrapper<P extends object, T extends Component<P> = Component<P>> = <T1 extends ComponentType<P>>(comp: T1) => T1
 
@@ -22,5 +23,6 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
         }
         return comp;
     }
+
     return wrapper;
 }

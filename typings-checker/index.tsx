@@ -11,11 +11,6 @@ describe('root function API', () => {
     }
     const p: Props = 0 as any;
 
-    it('mandatory className', () => {
-// $ExpectError Property 'className' is missing in type '{}'
-        root(p, {});
-    });
-
     it('regression 1', () => {
         interface CompProps {
             onChange(value: string): void;

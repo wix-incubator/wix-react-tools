@@ -1,27 +1,14 @@
 import {ClassDecorator} from "../class-decor/index";
-import {AfterHook, BeforeHook, decorFunction} from "../function-decor";
+import {decorFunction} from "../function-decor";
 import * as React from "react";
-import {
-    Attributes,
-    ClassicComponent,
-    ClassicComponentClass,
-    ClassType,
-    ComponentClass,
-    ComponentState,
-    HTMLAttributes,
-    ReactElement,
-    ReactHTML,
-    ReactNode,
-    ReactSVG,
-    SFC
-} from "react";
-import {ElementArgs, ElementType, Rendered, ElementHook, ElementArgsTuple, DecorReactHooks} from './common';
+import {HTMLAttributes, ReactElement, ReactNode} from "react";
+import {DecorReactHooks, ElementArgs, ElementArgsTuple, ElementHook, ElementType, Rendered} from "./common";
 import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
 import {Class, GlobalConfig, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
+import {getGlobalConfig} from "../core/config";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
-import {getGlobalConfig} from "../core/config";
 
 // TODO: make union based of all different overloaded signatures of createElement
 // also consider <P extends HTMLAttributes<HTMLElement>>
@@ -60,7 +47,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
     })(original);
     lastRendering: T;
     originalArgs = new Map<ReactElement<any>, ElementArgs<any>>();
-    currentArgs:ElementArgs<any>|null = null;
+    currentArgs: ElementArgs<any> | null = null;
 
     constructor(mixData: MixerData<T>, superData: ReactDecorData<any> | null) {
         this.onEachElementHooks = new List(superData && superData.onEachElementHooks);
@@ -71,11 +58,11 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
         }
     }
 
-    handleRoot(rootElement: ReactElement<any>){
+    handleRoot(rootElement: ReactElement<any>) {
         let rootArgs = this.originalArgs.get(rootElement);
         this.originalArgs.clear();
         if (rootArgs === undefined) {
-            if (getGlobalConfig<GlobalConfig>().devMode){
+            if (getGlobalConfig<GlobalConfig>().devMode) {
                 console.warn('unexpected root node');
             }
             return rootElement;
@@ -91,7 +78,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
         }
     }
 
-    beforeCreateElementHook<E extends HTMLAttributes<HTMLElement>>(functionArgs: ElementArgsTuple<E>){
+    beforeCreateElementHook<E extends HTMLAttributes<HTMLElement>>(functionArgs: ElementArgsTuple<E>) {
         // check if original render is over, then clean up and call original
         if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
             let args: ElementArgs<E> = {
@@ -113,7 +100,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
         }
     };
 
-    afterCreateElementHook(methodResult: ReactElement<any>){
+    afterCreateElementHook(methodResult: ReactElement<any>) {
         if (this.currentArgs) {
             this.originalArgs.set(methodResult, this.currentArgs);
             this.currentArgs = null;
@@ -123,7 +110,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
 
 }
 
-const reactMixData: ClassStateProvider<ReactDecorData<object, Rendered<object>>, Class<Rendered<any>>> =
+const reactMixData: ClassStateProvider<ReactDecorData<object, Rendered<any>>, Class<Rendered<any>>> =
     classPrivateState('react-decor data', <T extends Rendered<any>>(clazz: Class<T>) => {
         let mixerData = unsafeMixerData<T>(clazz); // get data of mixer
         const inherited = reactMixData.inherited(clazz);

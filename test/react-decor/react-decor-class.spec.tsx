@@ -1,5 +1,5 @@
-import {onChildElement, onRootElement} from "../../src/react/react-decor-class";
-import {ElementArgs} from "../../src/react/common";
+import {onChildElement, onRootElement} from "../../src/react-decor/react-decor-class";
+import {ElementArgs} from "../../src/react-decor/common";
 import * as React from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
@@ -71,7 +71,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
 
         const result = <div data-automation-id="Root"/>;
 
-        function justAHook(_: React.Component, props:object, args: ElementArgs<any>) {
+        function justAHook(_: React.Component, props: object, args: ElementArgs<any>) {
             return args;
         }
 

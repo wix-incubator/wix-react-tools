@@ -1,9 +1,9 @@
 import {expect, sinon} from "test-drive-react";
-import {Class, after, before, chain, ClassDecorator, middleware, onInstance} from "../../src";
+import {after, before, chain, Class, ClassDecorator, middleware, onInstance} from "../../src";
 import {expectSpyChain, resetAll, spyAll} from "../test-drivers/test-tools";
+import {mix} from "../../src/class-decor/mixer";
 import _reduce = require('lodash/reduce');
 import _forEach = require('lodash/forEach');
-import {mix} from "../../src/class-decor/mixer";
 
 const ORIGIN_ARGUMENT = 111;
 const ORIGIN_RESULT = 222;
@@ -153,6 +153,7 @@ describe("class decor inheritance", () => {
                         return result + 1;
                     }, METHOD))(cls);
             }
+
             // first is outer, last is inner
             checkDecorationStyles(outer, inner);
         });
@@ -248,8 +249,10 @@ describe("class decor inheritance", () => {
             describe('when apply on both parent and child, 2 generations apart', () => {
                 beforeEach('define classes', () => {
                     const Parent = first(makeBaseClass(SPIES.superClassFunction));
-                    class P1 extends Parent {}
-                    class P2 extends P1 {}
+                    class P1 extends Parent {
+                    }
+                    class P2 extends P1 {
+                    }
                     @second
                     class _UserClass extends P2 {
                         myMethod(foo: number): number {
