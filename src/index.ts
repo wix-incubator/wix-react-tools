@@ -53,9 +53,9 @@ export const middleware = mergeFuncAndClass(FDMiddleware, CDMiddleware);
 
 
 // TODO: remove backward compatible support
-export const root = function DEPRECATED(componentProps: any, rootProps: any, blacklist?: any[]): any {
+export const root = function DEPRECATED(componentProps: any, propsArg: any, blacklist?: any[]): any {
     console.warn(`
     The 'root' namespace is deprecated. 
     please use @properties decorator`);
-    return rootProps(componentProps, rootProps, blacklist);
+    return rootProps(componentProps, propsArg, blacklist);
 } as typeof rootProps;
