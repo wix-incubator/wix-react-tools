@@ -26,8 +26,6 @@ export * from './old/bases/observable-component';
 //mixins
 export * from './old/mixins/global-id-decorator';
 
-//utils
-export * from './core/disposers';
 
 // customized exports:
 import {rootProps} from "./react-features/root-props";

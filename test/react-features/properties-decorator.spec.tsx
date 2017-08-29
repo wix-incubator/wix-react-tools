@@ -10,14 +10,27 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
 
-    it("works with empty", () => {
-        const Comp = properties(()=><div data-automation-id="Root"/>);
+    it("works with empty SFC", () => {
+        const Comp = properties(() => <div data-automation-id="Root"/>);
 
         const {select} = clientRenderer.render(<Comp />);
 
         expect(select('Root')).to.have.attribute(ROOT_ATTRIBUTE_NAME);
     });
 
+    it("works with empty class", () => {
+        @properties
+        class Comp extends React.Component<properties.Props> {
+            render() {
+                return <div data-automation-id="Root"/>;
+            }
+        }
+
+        const {select} = clientRenderer.render(<Comp />);
+
+        expect(select('Root')).to.have.attribute(ROOT_ATTRIBUTE_NAME);
+    })
+    ;
     it("use the rootProps function to process props (detect by behavior)", () => {
 
         type Props = {
@@ -27,7 +40,7 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
             'data-2'?: string;
         };
 
-        @properties(['data-1'])
+        @properties.without(['data-1'])
         class Comp extends React.Component<Props> {
             render() {
                 return <div data-automation-id="Root" data-x="overriden" data-2="2"/>
@@ -42,4 +55,5 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
         expect(select('Root')).to.have.attribute('data-2', '2');
     });
 
-});
+})
+;
