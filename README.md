@@ -5,42 +5,86 @@
 
 > This library provides helpful utilities for creating React components.
 
-## rootProps function
-Bridge between component's API and root element attributes.
-Use this bridge in order to create components that are easily extendable in their usage, merging specific attributes passed as props onto the component's root element.
+### Getting started
 
-```tsx
-function rootProps<T, S>(componentProps:T, rootProps:S = {className:"root"}): T & S;
+We begin by installing **wix-react-tools** as a dependency in our local project.
+
+This can be done using npm:
+```bash
+npm install wix-react-tools --save
 ```
 
-0. By default returns rootProps. An error will be thrown if rootProps does not contain a className attribute with string value.
-1. data-* - Copy any attribute beginning with 'data-' from the componentProps to the result, overriding existing values
-   1. data-automation-id - Merge (concat) the ids of componentProps and rootProps. Duplicate ids are not handled at the moment.
-2. inline style - Merge the style attribute of componentProps and rootProps, in case of conflicting values, componentProps takes precedence
-3. className - Merge (concat) the className attribute of componentProps and rootProps. Duplicate classes are not handled at the moment.
+or using yarn:
+```bash
+yarn add wix-react-tools
+```
+
+Once the package is installed, we import the various utilities from the main entry point.
+
+## **properties** decorator
+
+Provides a bridge between the component's API and its root element's attributes.
+
+Use this decorator in order to create components that are easily extendable in their usage, merging specific attributes passed as props onto the component's root element.
+
+It merges the following props, with component props getting precedence:
+- `className` - appended to existing className on the root
+- `style` - shallowly merged into the root's style
+- `data-automation-id` - appended to existing data-automation-id on the root
+- other `data-*` - override the matching attributes on the root
 
 ### Usage Example
-```tsx
-import { rootProps } from "wix-react-tools";
-...
 
-<div {...rootProps(props, {className:"foo bar"})} />
+```ts
+import * as React from 'react';
+
+// import the decorator
+import { properties } from 'wix-react-tools';
+
+// TypeScript-specific:
+// extend properties.Props so that the extendable props
+// are in the component's interface.
+// the decorator's type signature verifies these exists.
+interface CompProps extends properties.Props {
+    // ...
+}
+
+// apply the decorator on the component class
+@properties
+class Comp extends React.Component<CompProps> {
+    render() {
+        return (
+            <div
+                className="foo"
+                style={{color: 'white', display: 'inline'}}
+                data-automation-id="root"
+            />
+        );
+    }
+}
+```
+Users of `Comp` can now provide common props:
+```tsx
+<Comp className="bar" style={{color:'black'}} data-automation-id="comp" data-foo="bar" />
 ```
 
-parent code:
+And the rendered result will contain the merged values:
 ```tsx
-<Checkbox className="foo" data-foo="bar" style={{color:'black'}} />
+<div 
+    className="foo bar"
+    style="color: black; display: inline;"
+    data-automation-id="root comp"
+    data-foo="bar"
+>
+</div>
 ```
 
-Checkbox implementation :
+The `properties` decorator can also be applied on stateless functional components (SFCs):
 ```tsx
-<div data-foo="123" {...rootProps(props, {className:"root foo1" })} > ... </div>
-```
-
-rendered end result looks like this:
-```tsx
-<div data-foo="bar" className="foo root foo1"  style={{color:'black'}} > ... </div>
-```
+const Comp = properties<React.SFC<CompProps>>((props: CompProps) => {
+    return (<div />);
+});
+``` 
 
 ## merge Event Handlers
 merge two event handlers into one. 
