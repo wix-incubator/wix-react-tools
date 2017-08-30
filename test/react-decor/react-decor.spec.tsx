@@ -221,4 +221,19 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor2', () => {
         });
     });
 
+    it('elementProps is never empty (regression)', () => {
+        const Comp: React.SFC = () => <div><span /></div>;
+        const hook: StatelessElementHook<{}> = function (_i: null, _p: any, args: ElementArgs<any>): ElementArgs<any> {
+            expect(args.elementProps).to.containSubset({});
+            return args;
+        };
+
+        const wrap = decorateReactComponent<PropsWithName, Rendered<any>>({
+            onRootElement: [hook],
+            onEachElement: [hook]
+        });
+        const WrappedComp = wrap(Comp);
+
+        clientRenderer.render(<WrappedComp/>);
+    });
 });

@@ -1,9 +1,9 @@
 import React = require('react');
-import {Attributes, cloneElement, ReactElement, ReactNode, SFC} from "react";
+import {Attributes, cloneElement, ReactElement, ReactNode, ReactType, SFC} from "react";
 import {decorFunction} from "../function-decor";
 import {DecorReactHooks, ElementArgs, ElementHook, isNotEmptyArrayLike} from "./common";
 
-export type CreateElementArgsTuple<P extends {}> = [any, Attributes & Partial<P>, ReactNode];
+export type CreateElementArgsTuple<P extends {}> = [ReactType, undefined | (Attributes & Partial<P>), ReactNode];
 export type SFCDecorator<T extends object> = <T1 extends T>(comp: SFC<T1>) => SFC<T1>;
 export interface HookContext<T extends object> {
     hooks: DecorReactHooks<T>;
@@ -26,7 +26,7 @@ export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorato
     } as HookContext<T>; // componentProps will be overwritten before render
     const wrappedCreateElement = makeCustomCreateElement(context);
 
-    const replaceCreateElement = (args: CreateElementArgsTuple<any>): CreateElementArgsTuple<any> => {
+    const replaceCreateElement = (args: [T, any]): [T, any] => {
         context.componentProps = args[0]; // [0] for props in a functional react component
         React.createElement = wrappedCreateElement;
         return args;
@@ -38,7 +38,7 @@ export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorato
 
             if (rootElementArgs) {
                 rootElementArgs = hooks.onRootElement.reduce(getHooksReducer(context.componentProps), rootElementArgs);
-                renderResult = cloneElement(renderResult, (rootElementArgs as ElementArgs<any>).elementProps);
+                renderResult = cloneElement(renderResult, (rootElementArgs!).elementProps);
             } else {
                 console.warn('unable to find matching component for: ', renderResult);
             }
@@ -83,7 +83,7 @@ function makeCustomCreateElement<P extends {}>(context: HookContext<P>): typeof 
 function translateArgumentsToObject<P extends {}>(args: CreateElementArgsTuple<P>): ElementArgs<P> {
     return {
         type: args[0],
-        elementProps: args[1],
+        elementProps: args[1] || {},
         children: Array.prototype.slice.call(args, 2)
     };
 }
