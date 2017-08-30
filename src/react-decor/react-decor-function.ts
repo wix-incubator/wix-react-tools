@@ -3,6 +3,7 @@ import {Attributes, cloneElement, ReactElement, ReactNode, ReactType, SFC} from 
 import {decorFunction, middleware} from "../function-decor";
 import {DecorReactHooks, ElementArgs, ElementHook, isNotEmptyArrayLike} from "./common";
 import {getGlobalConfig} from "../core/config";
+import {GlobalConfig} from "../core/types";
 
 export type CreateElementArgsTuple<P extends {}> = [ReactType, undefined | (Attributes & Partial<P>), ReactNode];
 export type SFCDecorator<T extends object> = <T1 extends T>(comp: SFC<T1>) => SFC<T1>;
@@ -42,14 +43,14 @@ export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorato
     };
 
     const applyRootHooks = <P extends {}>(renderResult: ReactElement<P>): ReactElement<P> => {
-        if (isNotEmptyArrayLike(hooks.onRootElement)) {
+        if (renderResult && isNotEmptyArrayLike(hooks.onRootElement)) {
             let rootElementArgs = context.createArgsMap.get(renderResult);
 
             if (rootElementArgs) {
                 rootElementArgs = hooks.onRootElement.reduce(getHooksReducer(context.componentProps), rootElementArgs);
                 renderResult = cloneElement(renderResult, (rootElementArgs!).elementProps);
-            } else {
-                console.warn('unable to find matching component for: ', renderResult);
+            } else if (getGlobalConfig<GlobalConfig>().devMode) {
+                console.warn('unexpected root node : ', renderResult);
             }
         }
         context.createArgsMap.clear();

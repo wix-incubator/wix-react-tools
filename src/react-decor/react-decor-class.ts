@@ -67,23 +67,25 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
     }
 
     handleRoot(rootElement: ReactElement<any>) {
-        let rootArgs = this.originalArgs.get(rootElement);
-        this.originalArgs.clear();
-        if (rootArgs === undefined) {
-            if (getGlobalConfig<GlobalConfig>().devMode) {
-                console.warn('unexpected root node');
-            }
-            return rootElement;
-        } else {
-            this.onRootElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
-                rootArgs = hook(this.lastRendering, this.lastRendering.props, rootArgs as ElementArgs<any>);
-                if (rootArgs === undefined) {
-                    throw new Error('Error: onRootElement hook returned undefined');
+        if (rootElement) {
+            let rootArgs = this.originalArgs.get(rootElement);
+            this.originalArgs.clear();
+            if (rootArgs === undefined) {
+                if (getGlobalConfig<GlobalConfig>().devMode) {
+                    console.warn('unexpected root node :', rootElement);
                 }
-            });
-            // TODO see what's the deal with cloneElement https://facebook.github.io/react/docs/react-api.html#cloneelement
-            return original(rootArgs.type as any, rootArgs.elementProps, ...rootArgs.children);
+            } else {
+                this.onRootElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
+                    rootArgs = hook(this.lastRendering, this.lastRendering.props, rootArgs as ElementArgs<any>);
+                    if (rootArgs === undefined) {
+                        throw new Error('Error: onRootElement hook returned undefined');
+                    }
+                });
+                // TODO see what's the deal with cloneElement https://facebook.github.io/react/docs/react-api.html#cloneelement
+                return original(rootArgs.type as any, rootArgs.elementProps, ...rootArgs.children);
+            }
         }
+        return rootElement;
     }
 
     beforeCreateElementHook<E extends HTMLAttributes<HTMLElement>>(functionArgs: ElementArgsTuple<E>) {
