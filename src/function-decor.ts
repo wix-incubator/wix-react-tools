@@ -47,11 +47,15 @@ export type HookWrappers = {
 
 export function decorFunction<T extends Function>(wrappers: HookWrappers) {
     return function wrapper<T1 extends T>(originalMethod: T1): T1 {
-        return chain(
+        const result : T1 = chain(
             concat(
                 map(wrappers.middleware, (mw: any) => middleware(mw)),
                 map(wrappers.before, (b: any) => before(b)),
                 map(wrappers.after, (a: any) => after(a))
             )).reduce((prev: Function, wrapper: Function) => wrapper(prev), originalMethod).value();
+        for (let k in originalMethod){
+            result[k] = originalMethod[k];
+        }
+        return result;
     }
 }

@@ -1,7 +1,8 @@
 import React = require('react');
 import {Attributes, cloneElement, ReactElement, ReactNode, ReactType, SFC} from "react";
-import {decorFunction} from "../function-decor";
+import {decorFunction, middleware} from "../function-decor";
 import {DecorReactHooks, ElementArgs, ElementHook, isNotEmptyArrayLike} from "./common";
+import {getGlobalConfig} from "../core/config";
 
 export type CreateElementArgsTuple<P extends {}> = [ReactType, undefined | (Attributes & Partial<P>), ReactNode];
 export type SFCDecorator<T extends object> = <T1 extends T>(comp: SFC<T1>) => SFC<T1>;
@@ -17,6 +18,14 @@ const originalCreateElement = React.createElement;
 function getHooksReducer<T extends object>(componentProps: T) {
     return <P extends {}>(res: ElementArgs<P>, hook: ElementHook<T>) => hook(null, componentProps, res);
 }
+
+const translateName = middleware((next:(args:[React.SFC])=>React.SFC, args:[React.SFC]) => {
+    const result : React.SFC = next(args);
+    if (!result.displayName && args[0].name){
+        result.displayName = args[0].name;
+    }
+    return result;
+});
 
 export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
     const context = {
@@ -48,10 +57,12 @@ export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorato
         return renderResult;
     };
 
-    return decorFunction({
+    const decorator = decorFunction({
         before: [replaceCreateElement],
         after: [applyRootHooks]
     });
+
+    return getGlobalConfig().devMode ? translateName(decorator) : decorator;
 }
 
 // create a custom react create element function that applies the given hooks

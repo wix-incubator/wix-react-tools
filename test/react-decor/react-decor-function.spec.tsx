@@ -1,9 +1,11 @@
 import * as React from "react";
+import {SFC} from "react";
 import {ClientRenderer, expect} from "test-drive-react";
 import {resetAll, spyAll} from "../test-drivers/test-tools";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 import {decorReact} from "../../src/react-decor/react-decor-function";
 import {ElementArgs, ElementHook} from "../../src/react-decor/common";
+import {runInContext} from "../../src/core/config";
 
 describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => {
     const clientRenderer = new ClientRenderer();
@@ -42,6 +44,37 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
 
         expect(content).to.be.ok;
         expect((content as HTMLSpanElement).innerText).to.equal('Jon');
+    });
+
+    describe('react SFC fields', () => {
+        it('should copy react SFC fields', () => {
+            const Comp: SFC = () => <div />;
+            Comp.propTypes = {};
+            Comp.contextTypes = {};
+            Comp.defaultProps = {};
+            Comp.displayName = 'foo';
+
+            const wrap = decorReact<PropsWithName>({});
+            const WrappedComp = wrap(Comp);
+
+            expect(WrappedComp.propTypes).to.equal(Comp.propTypes);
+            expect(WrappedComp.contextTypes).to.equal(Comp.contextTypes);
+            expect(WrappedComp.defaultProps).to.equal(Comp.defaultProps);
+            expect(WrappedComp.displayName).to.equal(Comp.displayName);
+        });
+
+        it('should copy name to displayName if original comp has no displayName', () => {
+            const Comp: SFC = function foo() {
+                return <div />;
+            };
+
+            runInContext({devMode: true}, () => {
+                const wrap = decorReact<PropsWithName>({});
+                const WrappedComp = wrap(Comp);
+
+                expect(WrappedComp.displayName).to.equal(Comp.name);
+            });
+        });
     });
 
     describe('node hooks', () => {
