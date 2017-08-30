@@ -11,9 +11,9 @@ function eachElementHook(sheet: Stylesheet): StatelessElementHook<any> {
         if (typeof args.elementProps.className === 'string') {
             args.elementProps.className = args.elementProps.className.split(' ').map(classNameMapper).join(' ');
         }
-        const cssStates = args.elementProps['style-state'];
+        const {['style-state']: cssStates, ...rest} = args.elementProps;
         if (cssStates) {
-            args.elementProps = {...args.elementProps, ...sheet.cssStates(cssStates)};
+            args.elementProps = {...rest, ...sheet.cssStates(cssStates)};
         }
         return args;
     }
