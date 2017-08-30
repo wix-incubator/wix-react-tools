@@ -4,6 +4,7 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "jsx": "react",
+    "module": "commonjs",
     "experimentalDecorators": true,
     "target": "es6",
     "noEmit": true

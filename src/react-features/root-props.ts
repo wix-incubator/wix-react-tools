@@ -12,7 +12,11 @@ export interface ComponentProps {
 export interface JSComponentProps extends ComponentProps {
     [k: string]: any;
 }
-const copyAttributes = ['aria-label', 'aria-labelledby', 'aria-describedby'];
+const copyAttributes : {[k:string]:any}= {
+    'aria-label': true,
+    'aria-labelledby': true,
+    'aria-describedby': true
+};
 
 // Partial because there is no way more precise to express data-* and on* filtering
 // pending https://github.com/Microsoft/TypeScript/issues/6579
@@ -35,7 +39,7 @@ export function rootProps<T extends JSComponentProps, S extends JSComponentProps
                 } else {
                     result[key] = componentProps[key];
                 }
-            } else if (~copyAttributes.indexOf(key)) {
+            } else if (copyAttributes[key]) {
                 result[key] = componentProps[key];
             }
         }
@@ -43,7 +47,7 @@ export function rootProps<T extends JSComponentProps, S extends JSComponentProps
 
     if (typeof componentProps.style === "object") {
         if (typeof result.style === "object") {
-            for (let key in componentProps.style) {
+            for (const key in componentProps.style) {
                 result.style[key] = componentProps.style[key];
             }
         } else {

@@ -4079,10 +4079,6 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stylable-react-component@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/stylable-react-component/-/stylable-react-component-1.0.3.tgz#8dd58b352f3b57c0991487e6d00a9dde2109f317"
-
 stylable@^4.0.3:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/stylable/-/stylable-4.0.4.tgz#9bb3bef02c76ea4b06cf74f36878d231e8998186"
@@ -4280,17 +4276,13 @@ type-is@~1.6.15:
     media-typer "0.3.0"
     mime-types "~2.1.15"
 
-typelevel-ts@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/typelevel-ts/-/typelevel-ts-0.1.3.tgz#74369335683574fb70f81f8416a9b13eeea8cf79"
-
 typescript@~2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.4.2.tgz#f8395f85d459276067c988aa41837a8f82870844"
 
-typings-checker@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/typings-checker/-/typings-checker-1.2.1.tgz#26ff18483cd1f2cbd3c33d75de5062724bebbc0e"
+typings-checker@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/typings-checker/-/typings-checker-2.0.0.tgz#c6d5af0ff3fc7065da22a6933e1290d16af6cc56"
   dependencies:
     lodash "^4.17.4"
     yargs "^6.6.0"
