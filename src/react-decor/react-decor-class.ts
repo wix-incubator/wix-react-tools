@@ -1,12 +1,12 @@
 import {ClassDecorator} from "../class-decor/index";
 import {decorFunction} from "../function-decor";
 import * as React from "react";
-import {HTMLAttributes, ReactElement, ReactNode} from "react";
-import {DecorReactHooks, ElementArgs, ElementArgsTuple, ElementHook, ElementType, Rendered} from "./common";
+import {HTMLAttributes, ReactElement} from "react";
+import {DecorReactHooks, ElementArgs, ElementArgsTuple, ElementHook, Rendered} from "./common";
 import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
 import {Class, GlobalConfig, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
-import {getGlobalConfig} from "../core/config";
+import {getGlobalConfig, runInContext} from "../core/config";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
@@ -16,11 +16,6 @@ import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
 const original: typeof React.createElement = React.createElement;
 // for root replication use React.cloneElement()
-
-function cleanUpHook<P extends HTMLAttributes<HTMLElement>>(type: ElementType<P>, props: any, children: Array<ReactNode>) {
-    (React as any).createElement = original;
-    return original(type as any, props, ...children);
-}
 
 function preRenderHook<T extends Rendered<any>>(instance: Instance<T>, args: never[]) {
     // find the lowest ReactDecorData attached to the instance
@@ -38,6 +33,19 @@ function postRenderHook<T extends Rendered<any>>(instance: Instance<T>, methodRe
     return currentReactDecorData.handleRoot(methodResult);
 }
 
+
+type Config = {
+    /**
+     * flag to force render hooks even outside react lifecycle
+     */
+    simulateReactDecor?: boolean;
+}
+
+export function simulateRender(component: React.ComponentClass): JSX.Element | null | false {
+    return runInContext({simulateReactDecor: true}, () => {
+        return new component().render();
+    });
+}
 class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
     onEachElementHooks: List<ElementHook<P, T>>;
     onRootElementHooks: List<ElementHook<P, T>>;
@@ -59,28 +67,30 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
     }
 
     handleRoot(rootElement: ReactElement<any>) {
-        let rootArgs = this.originalArgs.get(rootElement);
-        this.originalArgs.clear();
-        if (rootArgs === undefined) {
-            if (getGlobalConfig<GlobalConfig>().devMode) {
-                console.warn('unexpected root node');
-            }
-            return rootElement;
-        } else {
-            this.onRootElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
-                rootArgs = hook(this.lastRendering, this.lastRendering.props, rootArgs as ElementArgs<any>);
-                if (rootArgs === undefined) {
-                    throw new Error('Error: onRootElement hook returned undefined');
+        if (rootElement) {
+            let rootArgs = this.originalArgs.get(rootElement);
+            this.originalArgs.clear();
+            if (rootArgs === undefined) {
+                if (getGlobalConfig<GlobalConfig>().devMode) {
+                    console.warn('unexpected root node :', rootElement);
                 }
-            });
-            // TODO see what's the deal with cloneElement https://facebook.github.io/react/docs/react-api.html#cloneelement
-            return original(rootArgs.type as any, rootArgs.elementProps, ...rootArgs.children);
+            } else {
+                this.onRootElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
+                    rootArgs = hook(this.lastRendering, this.lastRendering.props, rootArgs as ElementArgs<any>);
+                    if (rootArgs === undefined) {
+                        throw new Error('Error: onRootElement hook returned undefined');
+                    }
+                });
+                // TODO see what's the deal with cloneElement https://facebook.github.io/react/docs/react-api.html#cloneelement
+                return original(rootArgs.type as any, rootArgs.elementProps, ...rootArgs.children);
+            }
         }
+        return rootElement;
     }
 
     beforeCreateElementHook<E extends HTMLAttributes<HTMLElement>>(functionArgs: ElementArgsTuple<E>) {
         // check if original render is over, then clean up and call original
-        if (ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) {
+        if ((ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) || getGlobalConfig<Config>().simulateReactDecor) {
             let args: ElementArgs<E> = {
                 type: functionArgs[0],
                 elementProps: functionArgs[1] || {},
@@ -107,7 +117,6 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
         }
         return methodResult;
     };
-
 }
 
 const reactMixData: ClassStateProvider<ReactDecorData<object, Rendered<any>>, Class<Rendered<any>>> =
@@ -134,7 +143,7 @@ export function onRootElement<P extends object, T extends Rendered<any>>(hook: E
 }
 
 export function decorReactClass<P extends object, T extends Rendered<any>>(hooks: DecorReactHooks<P, T>): ClassDecorator<T> {
-    return function onRootElementDecorator<C extends Class<T>>(componentClazz: C): C {
+    return function reactClassDecorator<C extends Class<T>>(componentClazz: C): C {
         let mixed = mix(componentClazz);
         const mixData = reactMixData(mixed);
         hooks.onEachElement && hooks.onEachElement.forEach(h => mixData.onEachElementHooks.add(h));

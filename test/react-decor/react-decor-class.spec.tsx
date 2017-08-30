@@ -1,4 +1,4 @@
-import {onChildElement, onRootElement} from "../../src/react-decor/react-decor-class";
+import {onChildElement, onRootElement, simulateRender} from "../../src/react-decor/react-decor-class";
 import {ElementArgs} from "../../src/react-decor/common";
 import * as React from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
@@ -83,13 +83,30 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         }
         it('warns on unknown root in dev mode', () => {
             runInContext<GlobalConfig>({devMode: true}, () => {
-                //  clientRenderer.render(<MyComp/>);
-                new MyComp().render();
+                simulateRender(MyComp);
                 expect(console.warn).to.have.callCount(1);
                 expect(console.warn).to.have.been.calledWithMatch(/unexpected root/);
             });
         });
 
+        it('does not warn on unknown root out of dev mode', () => {
+            runInContext<GlobalConfig>({devMode: false}, () => {
+                simulateRender(MyComp);
+                expect(console.warn).to.have.callCount(0);
+            });
+        });
+        it('does not warn on unknown root if null', () => {
+            runInContext<GlobalConfig>({devMode: true}, () => {
+                @onRootElement(justAHook)
+                class MyComp2 extends React.Component {
+                    render() {
+                        return null;
+                    }
+                }
+                simulateRender(MyComp2);
+                expect(console.warn).to.have.callCount(0);
+            });
+        });
         it('ignores unknown root out of dev mode', () => {
             runInContext<GlobalConfig>({devMode: false}, () => {
                 new MyComp().render();

@@ -1,10 +1,14 @@
 import * as React from "react";
-import {ClientRenderer, expect} from "test-drive-react";
+import {SFC} from "react";
+import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {resetAll, spyAll} from "../test-drivers/test-tools";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 import {decorReact} from "../../src/react-decor/react-decor-function";
 import {ElementArgs, ElementHook} from "../../src/react-decor/common";
+import {runInContext} from "../../src/core/config";
+import {GlobalConfig} from "../../src/core/types";
 
+const _console = console;
 describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => {
     const clientRenderer = new ClientRenderer();
 
@@ -42,6 +46,37 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
 
         expect(content).to.be.ok;
         expect((content as HTMLSpanElement).innerText).to.equal('Jon');
+    });
+
+    describe('react SFC fields', () => {
+        it('should copy react SFC fields', () => {
+            const Comp: SFC = () => <div />;
+            Comp.propTypes = {};
+            Comp.contextTypes = {};
+            Comp.defaultProps = {};
+            Comp.displayName = 'foo';
+
+            const wrap = decorReact<PropsWithName>({});
+            const WrappedComp = wrap(Comp);
+
+            expect(WrappedComp.propTypes).to.equal(Comp.propTypes);
+            expect(WrappedComp.contextTypes).to.equal(Comp.contextTypes);
+            expect(WrappedComp.defaultProps).to.equal(Comp.defaultProps);
+            expect(WrappedComp.displayName).to.equal(Comp.displayName);
+        });
+
+        it('should copy name to displayName if original comp has no displayName', () => {
+            const Comp: SFC = function foo() {
+                return <div />;
+            };
+
+            runInContext({devMode: true}, () => {
+                const wrap = decorReact<PropsWithName>({});
+                const WrappedComp = wrap(Comp);
+
+                expect(WrappedComp.displayName).to.equal(Comp.name);
+            });
+        });
     });
 
     describe('node hooks', () => {
@@ -95,6 +130,16 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
     });
 
     describe('root hooks', () => {
+        let warn = _console.warn;
+        beforeEach("replace console.warn with spy", () => {
+            _console.warn = sinon.spy();
+        });
+
+        afterEach("reset console.warn", () => {
+            _console.warn = warn;
+        });
+
+
         function rootHook(instance: null, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
             args.elementProps['data-automation-id'] = 'root';
             args.elementProps['data-change-me'] = componentProps.name;
@@ -112,6 +157,37 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
             expect(select('root')).to.not.have.attribute('data-delete-me');
             expect(select('root')).to.have.attribute('data-change-me', 'Jon');
             expect(select('content')).to.be.ok;
+        });
+        it('warns on unknown root in dev mode', () => {
+            runInContext<GlobalConfig>({devMode: true}, () => {
+                const result = <div />;
+                const Comp: SFC = () => result;
+                const wrap = decorReact({onRootElement: [rootHook]});
+                const WrappedComp = wrap(Comp);
+                WrappedComp({name:''});
+                expect(_console.warn).to.have.callCount(1);
+                expect(_console.warn).to.have.been.calledWithMatch(/unexpected root/);
+            });
+        });
+
+        it('does not warn on unknown root out of dev mode', () => {
+            runInContext<GlobalConfig>({devMode: false}, () => {
+                const result = <div />;
+                const Comp: SFC = () => result;
+                const wrap = decorReact({onRootElement: [rootHook]});
+                const WrappedComp = wrap(Comp);
+                WrappedComp({name:''});
+                expect(_console.warn).to.have.callCount(0);
+            });
+        });
+        it('does not warn on unknown root if null', () => {
+            runInContext<GlobalConfig>({devMode: true}, () => {
+                const Comp: SFC = () => null;
+                const wrap = decorReact({onRootElement: [rootHook]});
+                const WrappedComp = wrap(Comp);
+                WrappedComp({name:''});
+                expect(_console.warn).to.have.callCount(0);
+            });
         });
     });
 });
