@@ -79,6 +79,7 @@
   "dependencies": {
     "fp-ts": "^0.4.3",
     "ifndef": "^0.0.31",
+    "karma-sauce-launcher": "^1.2.0",
     "lodash": "^4.17.4",
     "memoize-weak": "^1.0.1",
     "tslib": "^1.7.1"
