@@ -3,88 +3,36 @@
  [![Greenkeeper badge](https://badges.greenkeeper.io/wix/wix-react-tools.svg)](https://greenkeeper.io/)
  [![Build Status](https://travis-ci.org/wix/wix-react-tools.svg?branch=master)](https://travis-ci.org/wix/wix-react-tools)
 
-> This library provides helpful utilities for creating React components.
+> This library provides helpful utilities and features for React components.
 
-### Getting started
+### Installation
 
-We begin by installing **wix-react-tools** as a dependency in our local project.
+Install **wix-react-tools** as a dependency in your local project
 
-This can be done using npm:
+Using npm:
 ```bash
 npm install wix-react-tools --save
 ```
 
-or using yarn:
+Using yarn:
 ```bash
 yarn add wix-react-tools
 ```
 
-Once the package is installed, we import the various utilities from the main entry point.
+## React Component Features
+A React Component Feature is a function that takes a component and returns a component with all the properties of the original component, and one or more new features.
 
-## **properties** decorator
+More details in [React Component Features](./docs/react-component-features/README.md)
 
-Provides a bridge between the component's API and its root element's attributes.
+### properties feature 
+Connects some common component properties to the component's render output.
 
-Use this decorator in order to create components that are easily extendable in their usage, merging specific attributes passed as props onto the component's root element.
+More details in [properties feature](./docs/react-component-features/properties.md)
 
-It merges the following props, with component props getting precedence:
-- `className` - appended to existing className on the root
-- `style` - shallowly merged into the root's style
-- `data-automation-id` - appended to existing data-automation-id on the root
-- other `data-*` - override the matching attributes on the root
+### stylable feature 
+Connects some common component properties to the component's render output.
 
-### Usage Example
-
-```ts
-import * as React from 'react';
-
-// import the decorator
-import { properties } from 'wix-react-tools';
-
-// TypeScript-specific:
-// extend properties.Props so that the extendable props
-// are in the component's interface.
-// the decorator's type signature verifies these exists.
-interface CompProps extends properties.Props {
-    // ...
-}
-
-// apply the decorator on the component class
-@properties
-class Comp extends React.Component<CompProps> {
-    render() {
-        return (
-            <div
-                className="foo"
-                style={{color: 'white', display: 'inline'}}
-                data-automation-id="root"
-            />
-        );
-    }
-}
-```
-Users of `Comp` can now provide common props:
-```tsx
-<Comp className="bar" style={{color:'black'}} data-automation-id="comp" data-foo="bar" />
-```
-
-And the rendered result will contain the merged values:
-```tsx
-<div 
-    className="foo bar"
-    style="color: black; display: inline;"
-    data-automation-id="root comp"
-    data-foo="bar"
->
-</div>
-```
-
-The `properties` decorator can also be applied on stateless functional components (SFCs):
-```tsx
-const Comp = properties<React.SFC<CompProps>>((props: CompProps) => {
-    return (<div />);
-});
-``` 
+More details in [stylable feature](./docs/react-component-features/stylable.md)
 
 ## merge Event Handlers
 merge two event handlers into one. 
