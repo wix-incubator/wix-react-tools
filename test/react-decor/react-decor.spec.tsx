@@ -1,15 +1,16 @@
-import * as React from 'react';
-import { expect, ClientRenderer } from 'test-drive-react';
-import { spyAll, resetAll } from '../test-drivers/test-tools';
-import { inBrowser } from "mocha-plugin-env/dist/src";
-import { ElementArgs, Rendered, StatefulElementHook, StatelessElementHook } from '../../src/react-decor/common';
-import { decorateReactComponent } from '../../src/react-decor'; // todo: implement
+import * as React from "react";
+import {ClientRenderer, expect, sinon} from "test-drive-react";
+import {makeClassComponent, resetAll, spyAll, testWithBothComponentTypes} from "../test-drivers/test-tools";
+import {inBrowser} from "mocha-plugin-env/dist/src";
+import {ElementArgs, Rendered, StatefulElementHook, StatelessElementHook} from "../../src/react-decor/common";
+import {decorateReactComponent} from "../../src/react-decor"; // todo: implement
 
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
     const clientRenderer = new ClientRenderer();
 
     const console = spyAll({
-        log: () => { }
+        log: () => {
+        }
     });
 
     afterEach("cleanup and reset console.log", () => {
@@ -29,7 +30,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
     type PropsWithName = { name: string };
 
-    const SFComp: React.SFC<PropsWithName> = ({ name }) => (
+    const SFComp: React.SFC<PropsWithName> = ({name}) => (
         <div data-delete-me="TBDeleted" data-change-me="TBChanged">
             <span data-automation-id="content">
                 {name}
@@ -37,25 +38,13 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         </div>
     );
 
-    class ClassComp extends React.Component<PropsWithName> {
-        render() {
-            return (
-                <div data-delete-me="TBDeleted" data-change-me="TBChanged">
-                    <span data-automation-id="content">
-                        {this.props.name}
-                    </span>
-                </div>
-            )
-        }
-    }
-
-    function testReactClassAndFunctionDecoration(Comp: any, testLabel: 'SFC'|'Class') {
-        describe(`decorate react component with stateless hooks - ${testLabel}`, () => {
+    describe(`decorate react component with stateless hooks`, () => {
+        function testReactClassAndFunctionDecoration(Comp: any) {
             it('should wrap a react component, without any hooks', () => {
                 const wrap = decorateReactComponent<PropsWithName, Rendered<any>>({});
                 const WrappedComp = wrap(Comp);
 
-                const { select } = clientRenderer.render(<WrappedComp name="Jon" />); // todo: maybe fix currently client only
+                const {select} = clientRenderer.render(<WrappedComp name="Jon"/>); // todo: maybe fix currently client only
                 const content = select('content');
 
                 expect(content).to.be.ok;
@@ -64,10 +53,10 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
             describe('node hooks', () => {
                 it('should allow adding a single node hook (which prints every type of node rendered) to a react component', () => {
-                    const wrap = decorateReactComponent({ onEachElement: [statelessHook1] });
+                    const wrap = decorateReactComponent({onEachElement: [statelessHook1]});
                     const WrappedComp = wrap(Comp);
 
-                    clientRenderer.render(<WrappedComp name="Jon" />);
+                    clientRenderer.render(<WrappedComp name="Jon"/>);
 
                     expect(console.log).to.have.callCount(2);
                     expect(console.log).to.have.been.calledWith(undefined); // no data-automation-id for root
@@ -75,10 +64,10 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 });
 
                 it('should allow adding multiple nodes hooks to a react component', () => {
-                    const wrap = decorateReactComponent({ onEachElement: [statelessHook1, statelessHook2] });
+                    const wrap = decorateReactComponent({onEachElement: [statelessHook1, statelessHook2]});
                     const WrappedComp = wrap(Comp);
 
-                    clientRenderer.render(<WrappedComp name="Jon" />);
+                    clientRenderer.render(<WrappedComp name="Jon"/>);
 
                     expect(console.log).to.have.callCount(4);
                     expect(console.log.getCall(0)).to.have.been.calledWithMatch(/content/);
@@ -89,6 +78,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
                 it('should allow adding a node hook to a component that will add/remove/change the element props', () => {
                     let index = 0;
+
                     function multiActionElementHook(instance: null, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
                         args.elementProps['data-automation-id'] = index;
                         args.elementProps['data-change-me'] = componentProps.name + index;
@@ -97,10 +87,10 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                         return args;
                     }
 
-                    const wrap = decorateReactComponent({ onEachElement: [multiActionElementHook] });
+                    const wrap = decorateReactComponent({onEachElement: [multiActionElementHook]});
                     const WrappedComp = wrap(Comp);
 
-                    const { select } = clientRenderer.render(<WrappedComp name="Jon" />);
+                    const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
 
                     expect(select('0')).to.be.ok; // add attribute
                     expect(select('1')).to.be.ok;
@@ -120,10 +110,10 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 }
 
                 it('should allow adding a single root hook to a component that will add/remove/change the root elements props', () => {
-                    const wrap = decorateReactComponent({ onRootElement: [rootHook] });
+                    const wrap = decorateReactComponent({onRootElement: [rootHook]});
                     const WrappedComp = wrap(Comp);
 
-                    const { select } = clientRenderer.render(<WrappedComp name="Jon" />);
+                    const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
 
                     expect(select('root')).to.be.ok;
                     expect(select('root')).to.not.have.attribute('data-delete-me');
@@ -131,41 +121,49 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                     expect(select('content')).to.be.ok;
                 });
             });
-        });
-    }
+        }
 
-    testReactClassAndFunctionDecoration(SFComp, 'SFC');
-    testReactClassAndFunctionDecoration(ClassComp, 'Class');
+        testWithBothComponentTypes(SFComp, testReactClassAndFunctionDecoration);
+    });
 
     describe('decorate react class component with stateful hooks', () => {
+        const ClassComp = makeClassComponent(SFComp);
+
         const statefulHook: StatefulElementHook<PropsWithName> = function (instance: Rendered<PropsWithName>, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
             expect(instance.props).to.equal(componentProps);
             return args;
         };
 
         it('should allow adding a stateful hook to a class component', () => {
-            const wrap = decorateReactComponent({}, { onRootElement: [statefulHook] });
+            const wrap = decorateReactComponent({}, {onRootElement: [statefulHook]});
             const WrappedComp = wrap(ClassComp);
 
-            const { select } = clientRenderer.render(<WrappedComp name="Jon" />);
+            const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
 
             expect(select('content')).to.be.ok;
         });
     });
 
-    it('elementProps is never empty (regression)', () => {
-        const Comp: React.SFC = () => <div><span /></div>;
-        const hook: StatelessElementHook<{}> = function (_i: null, _p: any, args: ElementArgs<any>): ElementArgs<any> {
-            expect(args.elementProps).to.containSubset({});
-            return args;
-        };
+    describe(`regression`, () => {
+        const SFComp: React.SFC = () => <div><span /></div>;
 
-        const wrap = decorateReactComponent<PropsWithName, Rendered<any>>({
-            onRootElement: [hook],
-            onEachElement: [hook]
-        });
-        const WrappedComp = wrap(Comp);
+        function testReactClassAndFunctionDecoration(Comp: any) {
+            it('elementProps is never empty', () => {
+                const hook: StatelessElementHook<{}> = sinon.spy(function (_i: null, _p: any, args: ElementArgs<any>): ElementArgs<any> {
+                    expect(args.elementProps).to.containSubset({});
+                    return args;
+                });
 
-        clientRenderer.render(<WrappedComp/>);
+                const wrap = decorateReactComponent<PropsWithName, Rendered<any>>({
+                    onRootElement: [hook],
+                    onEachElement: [hook]
+                });
+                const WrappedComp = wrap(Comp);
+
+                clientRenderer.render(<WrappedComp/>);
+                expect(hook).to.have.been.called;
+            });
+        }
+        testWithBothComponentTypes(SFComp, testReactClassAndFunctionDecoration);
     });
 });
