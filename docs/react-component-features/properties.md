@@ -3,7 +3,7 @@
 
 Connects some common component properties to the component's render output.
 
-It merges the following fields from the component's properties into the root of the render result, 
+Merge the following fields from the component's properties into the root of the render result, 
 with the component's properties getting precedence:
 - `className` - appended to existing className
 - `style` - shallowly merged into the root's style
@@ -24,6 +24,8 @@ note : `className` and `style` are never ignored.
 
 
 ## Usage Example
+
+Consider this component:
 
 ```ts
 import * as React from 'react';

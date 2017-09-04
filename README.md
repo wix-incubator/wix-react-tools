@@ -20,7 +20,7 @@ yarn add wix-react-tools
 ```
 
 ## React Component Features
-A React Component Feature is a function that takes a component and returns a component with all the properties of the original component, and one or more new features.
+A React Component Feature is a function that takes a component and returns a component with all the characteristics of the original component, and one or more new features.
 
 More details in [React Component Features](./docs/react-component-features/README.md)
 
@@ -30,7 +30,7 @@ Connects some common component properties to the component's render output.
 More details in [properties feature](./docs/react-component-features/properties.md)
 
 ### stylable feature 
-Connects some common component properties to the component's render output.
+Applies a stylable stylesheet to a component, Allowing it to use the stylesheet's class and state names natively.
 
 More details in [stylable feature](./docs/react-component-features/stylable.md)
 
