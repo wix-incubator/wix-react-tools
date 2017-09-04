@@ -24,7 +24,7 @@ describe(`with porperties type that includes properties.Props`, () => {
 
 describe(`with porperties type that does not include properties.Props`, () => {
     it(`error decorating class components`, () => {
-// $ExpectError 'typeof Comp' is not assignable to
+// $ExpectError 'typeof Comp2' is not assignable to
         @properties
         class Comp2 extends React.Component<Props> {
             render() {
