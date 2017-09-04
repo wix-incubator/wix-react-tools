@@ -28,7 +28,7 @@ const translateName = middleware((next:(args:[React.SFC])=>React.SFC, args:[Reac
     return result;
 });
 
-export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
+export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
     const context = {
         hooks,
         componentProps: {} as T,

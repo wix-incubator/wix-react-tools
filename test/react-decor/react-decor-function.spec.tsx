@@ -3,7 +3,7 @@ import {SFC} from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {resetAll, spyAll} from "../test-drivers/test-tools";
 import {inBrowser} from "mocha-plugin-env/dist/src";
-import {decorReact} from "../../src/react-decor/react-decor-function";
+import {decorReactFunc} from "../../src/react-decor/react-decor-function";
 import {ElementArgs, ElementHook} from "../../src/react-decor/common";
 import {runInContext} from "../../src/core/config";
 import {GlobalConfig} from "../../src/core/types";
@@ -38,7 +38,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
     };
 
     it('should wrap a react component, without any hooks', () => {
-        const wrap = decorReact<PropsWithName>({});
+        const wrap = decorReactFunc<PropsWithName>({});
         const WrappedComp = wrap(Comp);
 
         const {select} = clientRenderer.render(<WrappedComp name="Jon"/>); // todo: maybe fix currently client only
@@ -56,7 +56,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
             Comp.defaultProps = {};
             Comp.displayName = 'foo';
 
-            const wrap = decorReact<PropsWithName>({});
+            const wrap = decorReactFunc<PropsWithName>({});
             const WrappedComp = wrap(Comp);
 
             expect(WrappedComp.propTypes).to.equal(Comp.propTypes);
@@ -71,7 +71,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
             };
 
             runInContext({devMode: true}, () => {
-                const wrap = decorReact<PropsWithName>({});
+                const wrap = decorReactFunc<PropsWithName>({});
                 const WrappedComp = wrap(Comp);
 
                 expect(WrappedComp.displayName).to.equal(Comp.name);
@@ -81,7 +81,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
 
     describe('node hooks', () => {
         it('should allow adding a single node hook (which prints every type of node rendered) to a stateless react component', () => {
-            const wrap = decorReact({onEachElement: [elementHook]});
+            const wrap = decorReactFunc({onEachElement: [elementHook]});
             const WrappedComp = wrap(Comp);
 
             clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -92,7 +92,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
         });
 
         it('should allow adding multiple nodes hooks to a stateless react component', () => {
-            const wrap = decorReact({onEachElement: [elementHook, elementHook]});
+            const wrap = decorReactFunc({onEachElement: [elementHook, elementHook]});
             const WrappedComp = wrap(Comp);
 
             clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -115,7 +115,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
                 return args;
             }
 
-            const wrap = decorReact({onEachElement: [multiActionNodeHook]});
+            const wrap = decorReactFunc({onEachElement: [multiActionNodeHook]});
             const WrappedComp = wrap(Comp);
 
             const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -148,7 +148,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
         }
 
         it('should allow adding a single root hook to a stateless component that will add/remove/change the root elements props', () => {
-            const wrap = decorReact({onRootElement: [rootHook]});
+            const wrap = decorReactFunc({onRootElement: [rootHook]});
             const WrappedComp = wrap(Comp);
 
             const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -162,7 +162,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
             runInContext<GlobalConfig>({devMode: true}, () => {
                 const result = <div />;
                 const Comp: SFC = () => result;
-                const wrap = decorReact({onRootElement: [rootHook]});
+                const wrap = decorReactFunc({onRootElement: [rootHook]});
                 const WrappedComp = wrap(Comp);
                 WrappedComp({name:''});
                 expect(_console.warn).to.have.callCount(1);
@@ -174,7 +174,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
             runInContext<GlobalConfig>({devMode: false}, () => {
                 const result = <div />;
                 const Comp: SFC = () => result;
-                const wrap = decorReact({onRootElement: [rootHook]});
+                const wrap = decorReactFunc({onRootElement: [rootHook]});
                 const WrappedComp = wrap(Comp);
                 WrappedComp({name:''});
                 expect(_console.warn).to.have.callCount(0);
@@ -183,7 +183,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-function', () => 
         it('does not warn on unknown root if null', () => {
             runInContext<GlobalConfig>({devMode: true}, () => {
                 const Comp: SFC = () => null;
-                const wrap = decorReact({onRootElement: [rootHook]});
+                const wrap = decorReactFunc({onRootElement: [rootHook]});
                 const WrappedComp = wrap(Comp);
                 WrappedComp({name:''});
                 expect(_console.warn).to.have.callCount(0);
