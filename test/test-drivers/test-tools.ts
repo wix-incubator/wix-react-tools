@@ -1,4 +1,5 @@
 import {sinon} from "test-drive-react";
+import * as React from "react";
 import {Class} from "../../src/";
 import {flatten, isArray, map} from "lodash";
 
@@ -55,5 +56,23 @@ export function expectSpyChain(...spycallSets: Array<SpyCallNode | Array<SpyCall
             }
         ));
         return nextSet;
+    });
+}
+
+export function makeClassComponent<P>(sfc: React.SFC<P>) {
+    return class Component extends React.Component<P> {
+        render() {
+            return sfc(this.props);
+        }
+    }
+}
+
+export type StateAgnosticTestSuite = (Comp: React.ComponentType) => void;
+export function testWithBothComponentTypes(sfc: React.SFC, suite: StateAgnosticTestSuite) {
+    describe('SFC', () => {
+        suite(sfc);
+    });
+    describe('Class Component', () => {
+        suite(makeClassComponent(sfc));
     });
 }
