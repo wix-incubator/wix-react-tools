@@ -16,9 +16,9 @@ export * from "./function-decor";
 export * from './react-decor/index';
 
 // react features
-export * from './react-features/disposable-decorator';
-export * from './react-features/properties-feature';
-export * from './react-features/stylable-feature';
+export * from './react-component-features/disposable-decorator';
+export * from './react-component-features/properties-feature';
+export * from './react-component-features/stylable-feature';
 
 // legacy :
 //bases
@@ -28,7 +28,7 @@ export * from './old/mixins/global-id-decorator';
 
 
 // customized exports:
-import {rootProps} from "./react-features/root-props";
+import {rootProps} from "./react-component-features/root-props";
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
 import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./class-decor/index";
 

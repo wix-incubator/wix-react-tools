@@ -1,5 +1,5 @@
 import {expect} from "test-drive-react";
-import {rootProps} from "../../src/react-features/root-props";
+import {rootProps} from "../../src/react-component-features/root-props";
 
 describe('rootProps', () => {
     it("does not copy everything", () => {

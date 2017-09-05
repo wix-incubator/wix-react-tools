@@ -36,11 +36,11 @@ The `privateState` function creates a custom `StateProvider`, given a state init
 ## StateProvider
 a function that provides a private, initialized state per given argument. 
 
-###`.unsafe`
+### `.unsafe`
 a sub-function, that only provides a state if one is already affiliated with the argument
 If no such state is affiliated with the argument, it throws an error.
 
-###`.hasState`
+### `.hasState`
 a sub-function, that returns true if and only if a state is already affiliated with the argument.
 If no such state is affiliated with the argument, it returns false.
 
