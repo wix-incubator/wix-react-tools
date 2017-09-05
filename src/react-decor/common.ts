@@ -43,7 +43,7 @@ export type ElementArgsTuple<E extends HTMLAttributes<HTMLElement>> = [ElementTy
 export type Rendered<P = {}> = Component<P>;
 
 export interface ElementHook<P extends object, T extends Rendered<P> = Rendered<P>> {
-    <E = object>(props: P, args: ElementArgs<E>): ElementArgs<E>
+    <E = object>(this: Instance<T>|undefined, props: P, args: ElementArgs<E>): ElementArgs<E>
 }
 
 export interface StatefulElementHook<P extends object, T extends Rendered<P> = Rendered<P>> {

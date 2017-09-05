@@ -2,7 +2,7 @@ import {ClassDecorator} from "../class-decor/index";
 import {decorFunction} from "../function-decor";
 import * as React from "react";
 import {HTMLAttributes, ReactElement} from "react";
-import {DecorReactHooks, ElementArgs, ElementArgsTuple, ElementHook, Rendered} from "./common";
+import {DecorReactHooks, ElementArgs, ElementArgsTuple, StatefulElementHook, Rendered} from "./common";
 import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
 import {Class, GlobalConfig, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
@@ -47,8 +47,8 @@ export function simulateRender(component: React.ComponentClass): JSX.Element | n
     });
 }
 class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
-    onEachElementHooks: List<ElementHook<P, T>>;
-    onRootElementHooks: List<ElementHook<P, T>>;
+    onEachElementHooks: List<StatefulElementHook<P, T>>;
+    onRootElementHooks: List<StatefulElementHook<P, T>>;
     createElementProxy = decorFunction({
         before: [this.beforeCreateElementHook.bind(this)],
         after: [this.afterCreateElementHook.bind(this)]
@@ -75,7 +75,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
                     console.warn('unexpected root node :', rootElement);
                 }
             } else {
-                this.onRootElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
+                this.onRootElementHooks.collect().forEach((hook: StatefulElementHook<P, T>) => {
                     rootArgs = hook.call(instance, this.lastRendering.props, rootArgs as ElementArgs<any>);
                     if (rootArgs === undefined) {
                         throw new Error('Error: onRootElement hook returned undefined');
@@ -96,7 +96,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
                 elementProps: functionArgs[1] || {},
                 children: functionArgs.length > 2 ? functionArgs.slice(2) : []
             };
-            this.onEachElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
+            this.onEachElementHooks.collect().forEach((hook: StatefulElementHook<P, T>) => {
                 args = hook.call(this.lastRendering, this.lastRendering.props, args);
                 if (args === undefined) {
                     throw new Error('Error: onChildElement hook returned undefined');
@@ -126,7 +126,7 @@ const reactMixData: ClassStateProvider<ReactDecorData<object, Rendered<any>>, Cl
         return new ReactDecorData<T>(mixerData, inherited); // create react-decor data
     });
 
-export function onChildElement<P extends object, T extends Rendered<any>>(hook: ElementHook<P, T>): ClassDecorator<T> {
+export function onChildElement<P extends object, T extends Rendered<any>>(hook: StatefulElementHook<P, T>): ClassDecorator<T> {
     return function onChildElementDecorator<C extends Class<T>>(componentClazz: C): C {
         let mixed = mix(componentClazz);
         reactMixData(mixed).onEachElementHooks.add(hook);
@@ -134,7 +134,7 @@ export function onChildElement<P extends object, T extends Rendered<any>>(hook: 
     };
 }
 
-export function onRootElement<P extends object, T extends Rendered<any>>(hook: ElementHook<P, T>): ClassDecorator<T> {
+export function onRootElement<P extends object, T extends Rendered<any>>(hook: StatefulElementHook<P, T>): ClassDecorator<T> {
     return function onRootElementDecorator<C extends Class<T>>(componentClazz: C): C {
         let mixed = mix(componentClazz);
         reactMixData(mixed).onRootElementHooks.add(hook);

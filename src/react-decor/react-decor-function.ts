@@ -1,7 +1,7 @@
 import React = require('react');
 import {Attributes, cloneElement, ReactElement, ReactNode, ReactType, SFC} from "react";
 import {decorFunction, middleware} from "../function-decor";
-import {DecorReactHooks, ElementArgs, ElementHook, isNotEmptyArrayLike} from "./common";
+import {DecorReactHooks, ElementArgs, StatelessElementHook, isNotEmptyArrayLike} from "./common";
 import {getGlobalConfig} from "../core/config";
 import {GlobalConfig} from "../core/types";
 
@@ -17,7 +17,7 @@ type ReactCreateElement = typeof React.createElement;
 const originalCreateElement = React.createElement;
 
 function getHooksReducer<T extends object>(componentProps: T) {
-    return <P extends {}>(res: ElementArgs<P>, hook: ElementHook<T>) => hook(componentProps, res);
+    return <P extends {}>(res: ElementArgs<P>, hook: StatelessElementHook<T>) => hook(componentProps, res);
 }
 
 const translateName = middleware((next:(args:[React.SFC])=>React.SFC, args:[React.SFC]) => {
