@@ -19,7 +19,7 @@ Given `style.css`:
 
 This component:
 ```tsx
-require stylesheet from './style.css'
+import stylesheet from './style.css'
 
 @stylable(stylesheet)
 class Comp extends React.Component {
