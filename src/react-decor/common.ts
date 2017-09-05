@@ -31,12 +31,24 @@ export type ElementType<P> =
     | ComponentClass<P>
     | ClassType<P, ClassicComponent<P, ComponentState>, ClassicComponentClass<P>>;
 
-export type ElementArgs<P extends {}> = {
-    type: ReactType,
+export type ElementArgs<P extends HTMLAttributes<HTMLElement>> = {
+    type: ElementType<P>,
     elementProps: Attributes & Partial<P>,
     children: Array<ReactNode>
 }
-export type ElementArgsTuple<E extends HTMLAttributes<HTMLElement>> = [ElementType<E>, Attributes & Partial<E>, ReactNode]
+export type ElementArgsTuple<P extends HTMLAttributes<HTMLElement>> = [ElementType<P>, undefined | (Attributes & Partial<P>), ReactNode]
+
+export function translateArgumentsToObject<P extends {}>(args: ElementArgsTuple<P>): ElementArgs<P> {
+    return {
+        type: args[0],
+        elementProps: args[1] || {},
+        children: args.length > 2 ? Array.prototype.slice.call(args, 2) : []
+    };
+}
+
+export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): ElementArgsTuple<P> {
+    return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
+}
 
 export type Rendered<P = {}> = Component<P>;
 
