@@ -25,9 +25,9 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
     afterEach(() => clientRenderer.cleanup());
 
     describe('example', () => {
-        function overrideClassesHook<P extends { className?: string }>(instance: React.Component<{ classOverride?: string }, any>, props: { classOverride?: string }, args: ElementArgs<P>) {
-            if (instance.props.classOverride) {
-                args.elementProps.className = instance.props.classOverride;
+        function overrideClassesHook<P extends { className?: string }>(this: React.Component<{ classOverride?: string }, any>, props: { classOverride?: string }, args: ElementArgs<P>) {
+            if (this.props.classOverride) {
+                args.elementProps.className = this.props.classOverride;
             }
             return args;
         }
@@ -71,7 +71,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
 
         const result = <div data-automation-id="Root"/>;
 
-        function justAHook(_: React.Component, props: object, args: ElementArgs<any>) {
+        function justAHook(this: React.Component, props: object, args: ElementArgs<any>) {
             return args;
         }
 
@@ -145,12 +145,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
 
         it('multiple hooks work together', () => {
-            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, props: object, args: ElementArgs<P>) {
+            function FooHook<P extends { ['data-foo']?: string }>(this: React.Component, props: object, args: ElementArgs<P>) {
                 args.elementProps['data-foo'] = 'foo';
                 return args;
             }
 
-            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, props: object, args: ElementArgs<P>) {
+            function BarHook<P extends { ['data-bar']?: string }>(this: React.Component, props: object, args: ElementArgs<P>) {
                 args.elementProps['data-bar'] = 'bar';
                 return args;
             }
@@ -168,12 +168,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
 
         it('multiple hooks work together on multiple levels', () => {
-            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, props: object, args: ElementArgs<P>) {
+            function FooHook<P extends { ['data-foo']?: string }>(this: React.Component, props: object, args: ElementArgs<P>) {
                 args.elementProps['data-foo'] = 'foo';
                 return args;
             }
 
-            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, props: object, args: ElementArgs<P>) {
+            function BarHook<P extends { ['data-bar']?: string }>(this: React.Component, props: object, args: ElementArgs<P>) {
                 args.elementProps['data-bar'] = 'bar';
                 return args;
             }

@@ -17,7 +17,7 @@ type ReactCreateElement = typeof React.createElement;
 const originalCreateElement = React.createElement;
 
 function getHooksReducer<T extends object>(componentProps: T) {
-    return <P extends {}>(res: ElementArgs<P>, hook: ElementHook<T>) => hook(null, componentProps, res);
+    return <P extends {}>(res: ElementArgs<P>, hook: ElementHook<T>) => hook(componentProps, res);
 }
 
 const translateName = middleware((next:(args:[React.SFC])=>React.SFC, args:[React.SFC]) => {

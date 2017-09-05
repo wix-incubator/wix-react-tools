@@ -30,7 +30,7 @@ function postRenderHook<T extends Rendered<any>>(instance: Instance<T>, methodRe
     (React as any).createElement = original;
     // find the lowest ReactDecorData attached to the instance
     let currentReactDecorData = reactMixData.unsafe.inherited(instance.constructor);
-    return currentReactDecorData.handleRoot(methodResult);
+    return currentReactDecorData.handleRoot(methodResult, instance);
 }
 
 
@@ -66,7 +66,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
         }
     }
 
-    handleRoot(rootElement: ReactElement<any>) {
+    handleRoot<C extends Rendered<any>>(rootElement: ReactElement<any>, instance:Instance<C>) {
         if (rootElement) {
             let rootArgs = this.originalArgs.get(rootElement);
             this.originalArgs.clear();
@@ -76,7 +76,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
                 }
             } else {
                 this.onRootElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
-                    rootArgs = hook(this.lastRendering, this.lastRendering.props, rootArgs as ElementArgs<any>);
+                    rootArgs = hook.call(instance, this.lastRendering.props, rootArgs as ElementArgs<any>);
                     if (rootArgs === undefined) {
                         throw new Error('Error: onRootElement hook returned undefined');
                     }
@@ -97,7 +97,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
                 children: functionArgs.length > 2 ? functionArgs.slice(2) : []
             };
             this.onEachElementHooks.collect().forEach((hook: ElementHook<P, T>) => {
-                args = hook(this.lastRendering, this.lastRendering.props, args);
+                args = hook.call(this.lastRendering, this.lastRendering.props, args);
                 if (args === undefined) {
                     throw new Error('Error: onChildElement hook returned undefined');
                 }

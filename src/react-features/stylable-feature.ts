@@ -7,7 +7,7 @@ function eachElementHook(sheet: Stylesheet): StatelessElementHook<any> {
         return sheet.get(name) || name;
     }
 
-    return function stylableEachElementHook(_instance: never, _props: any, args: ElementArgs<any>): ElementArgs<any> {
+    return function stylableEachElementHook(_props: any, args: ElementArgs<any>): ElementArgs<any> {
         if (typeof args.elementProps.className === 'string') {
             args.elementProps.className = args.elementProps.className.split(' ').map(classNameMapper).join(' ');
         }
@@ -20,7 +20,7 @@ function eachElementHook(sheet: Stylesheet): StatelessElementHook<any> {
 }
 
 function rootElementHook(sheet: Stylesheet) {
-    return function stylableRootElementHook(_instance: never, _props: any, args: ElementArgs<any>): ElementArgs<any> {
+    return function stylableRootElementHook(_props: any, args: ElementArgs<any>): ElementArgs<any> {
         if (args.elementProps.className) {
             args.elementProps.className = sheet.get(sheet.root) + ' ' + args.elementProps.className;
         } else {
