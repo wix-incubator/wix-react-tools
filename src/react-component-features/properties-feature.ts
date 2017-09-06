@@ -5,7 +5,7 @@ import {decorateReactComponent, Wrapper} from "../react-decor/index";
 
 function makeDecorator(blacklist?: Array<string>): Wrapper<ComponentProps> {
     return decorateReactComponent({
-        onRootElement: [(_instance: never, props: any, args: ElementArgs<any>) => {
+        onRootElement: [(props: any, args: ElementArgs<any>) => {
             args.elementProps = rootProps(props, args.elementProps, blacklist);
             return args;
         }]
@@ -15,7 +15,6 @@ function makeDecorator(blacklist?: Array<string>): Wrapper<ComponentProps> {
 function without(blacklist: Array<string>) {
     return makeDecorator(blacklist);
 }
-
 
 export type Properties =  Wrapper<ComponentProps> & {
     /**
