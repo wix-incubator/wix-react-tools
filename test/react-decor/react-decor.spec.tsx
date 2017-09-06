@@ -31,7 +31,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
     type PropsWithName = { name: string };
 
     const SFComp: React.SFC<PropsWithName> = ({name}) => (
-        <div data-delete-me="TBDeleted" data-change-me="TBChanged">
+        <div data-automation-id="root" data-delete-me="TBDeleted" data-change-me="TBChanged">
             <span data-automation-id="content">
                 {name}
             </span>
@@ -57,10 +57,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                     const WrappedComp = wrap(Comp);
 
                     clientRenderer.render(<WrappedComp name="Jon"/>);
-
-                    expect(console.log).to.have.callCount(2);
-                    expect(console.log).to.have.been.calledWith(undefined); // no data-automation-id for root
-                    expect(console.log).to.have.been.calledWithMatch(/content/);
+                    expect(console.log.getCall(0)).to.have.been.calledWithMatch(/content/);
+                    expect(console.log.getCall(1)).to.have.been.calledWithMatch(/root/);
                 });
 
                 it('should allow adding multiple nodes hooks to a react component', () => {
@@ -69,19 +67,18 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
                     clientRenderer.render(<WrappedComp name="Jon"/>);
 
-                    expect(console.log).to.have.callCount(4);
                     expect(console.log.getCall(0)).to.have.been.calledWithMatch(/content/);
                     expect(console.log.getCall(1)).to.have.been.calledWithMatch(/content/);
-                    expect(console.log.getCall(2)).to.have.been.calledWith(undefined); // second hook, no root id
-                    expect(console.log.getCall(3)).to.have.been.calledWith(undefined); // first hook, no root id
+                    expect(console.log.getCall(2)).to.have.been.calledWithMatch(/root/);
+                    expect(console.log.getCall(3)).to.have.been.calledWithMatch(/root/);
                 });
 
                 it('should allow adding a node hook to a component that will add/remove/change the element props', () => {
                     let index = 0;
 
                     function multiActionElementHook(instance: null, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
-                        args.elementProps['data-automation-id'] = index;
-                        args.elementProps['data-change-me'] = componentProps.name + index;
+                        args.elementProps['data-add-me'] = componentProps.name;
+                        args.elementProps['data-change-me'] = componentProps.name;
                         args.elementProps['data-delete-me'] = undefined;
                         index++;
                         return args;
@@ -92,18 +89,18 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
                     const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
 
-                    expect(select('0')).to.be.ok; // add attribute
-                    expect(select('1')).to.be.ok;
-                    expect(select('0')).to.not.have.attribute('data-delete-me'); // remove attribute
-                    expect(select('1')).to.not.have.attribute('data-delete-me');
-                    expect(select('0')).to.have.attribute('data-change-me', 'Jon0'); // change/add attribute
-                    expect(select('1')).to.have.attribute('data-change-me', 'Jon1');
+                    expect(select('root')).to.have.attribute('data-add-me', 'Jon'); // add attribute
+                    expect(select('content')).to.have.attribute('data-add-me', 'Jon');
+                    expect(select('root')).to.not.have.attribute('data-delete-me'); // remove attribute
+                    expect(select('content')).to.not.have.attribute('data-delete-me');
+                    expect(select('root')).to.have.attribute('data-change-me', 'Jon'); // change/add attribute
+                    expect(select('content')).to.have.attribute('data-change-me', 'Jon');
                 });
             });
 
             describe('root hooks', () => {
                 function rootHook(instance: null, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
-                    args.elementProps['data-automation-id'] = 'root';
+                    args.elementProps['data-add-me'] = 'root';
                     args.elementProps['data-change-me'] = componentProps.name;
                     args.elementProps['data-delete-me'] = undefined;
                     return args;
@@ -115,8 +112,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
                     const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
 
-                    expect(select('root')).to.be.ok;
                     expect(select('root')).to.not.have.attribute('data-delete-me');
+                    expect(select('root')).to.have.attribute('data-add-me', 'root');
                     expect(select('root')).to.have.attribute('data-change-me', 'Jon');
                     expect(select('content')).to.be.ok;
                 });

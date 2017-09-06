@@ -50,12 +50,6 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C {
                 .visitConstructorHooks((cb: ConstructorHook<T>) => cb(this as any as T, args));
         }
     }
-    // TODO remove this ineffective dirty fix, see https://github.com/wix/react-bases/issues/50
-    Object.defineProperty(Extended, 'name', {
-        enumerable: false,
-        writable: false,
-        value: clazz.name
-    });
     // initialize mixer data on Extended
     getMixerData(Extended);
     return Extended as any;
@@ -95,6 +89,9 @@ type MethodMeta = {
     after?: List<AfterMethodHook>;
 }
 
+/**
+ * type dictionary - maps name of hook to its type
+ */
 type Hooks = {
     middleware: MiddlewareMethodHook;
     before: BeforeMethodHook;

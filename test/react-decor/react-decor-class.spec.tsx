@@ -5,6 +5,7 @@ import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 import {runInContext} from "../../src/core/config";
 import {GlobalConfig} from "../../src/core/types";
+import {HTMLAttributes} from "react";
 
 declare const process: any;
 function inProduction() {
@@ -145,12 +146,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
 
         it('multiple hooks work together', () => {
-            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, props: object, args: ElementArgs<P>) {
+            function FooHook<P extends { ['data-foo']?: string } & HTMLAttributes<HTMLElement>>(instance: React.Component, props: object, args: ElementArgs<P>) {
                 args.elementProps['data-foo'] = 'foo';
                 return args;
             }
 
-            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, props: object, args: ElementArgs<P>) {
+            function BarHook<P extends { ['data-bar']?: string } & HTMLAttributes<HTMLElement>>(instance: React.Component, props: object, args: ElementArgs<P>) {
                 args.elementProps['data-bar'] = 'bar';
                 return args;
             }
@@ -168,12 +169,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
 
         it('multiple hooks work together on multiple levels', () => {
-            function FooHook<P extends { ['data-foo']?: string }>(instance: React.Component, props: object, args: ElementArgs<P>) {
+            function FooHook<P extends { ['data-foo']?: string } & HTMLAttributes<HTMLElement>>(instance: React.Component, props: object, args: ElementArgs<P>) {
                 args.elementProps['data-foo'] = 'foo';
                 return args;
             }
 
-            function BarHook<P extends { ['data-bar']?: string }>(instance: React.Component, props: object, args: ElementArgs<P>) {
+            function BarHook<P extends { ['data-bar']?: string } & HTMLAttributes<HTMLElement>>(instance: React.Component, props: object, args: ElementArgs<P>) {
                 args.elementProps['data-bar'] = 'bar';
                 return args;
             }
