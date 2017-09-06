@@ -2,7 +2,10 @@ import {ClassDecorator} from "../class-decor/index";
 import {decorFunction} from "../function-decor";
 import * as React from "react";
 import {HTMLAttributes, ReactElement} from "react";
-import {DecorReactHooks, ElementArgs, ElementArgsTuple, StatefulElementHook, Rendered} from "./common";
+import {
+    DecorReactHooks, ElementArgs, ElementArgsTuple, StatefulElementHook, Rendered,
+    translateArgumentsToObject
+} from "./common";
 import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
 import {Class, GlobalConfig, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
@@ -54,8 +57,8 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
         after: [this.afterCreateElementHook.bind(this)]
     })(original);
     lastRendering: T;
-    originalArgs = new Map<ReactElement<any>, ElementArgs<any>>();
-    currentArgs: ElementArgs<any> | null = null;
+    originalArgs = new Map<ReactElement<any>, ElementArgsTuple<any>>();
+    currentArgs: ElementArgsTuple<any> | null = null;
 
     constructor(mixData: MixerData<T>, superData: ReactDecorData<any> | null) {
         this.onEachElementHooks = new List(superData && superData.onEachElementHooks);
@@ -75,14 +78,15 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
                     console.warn('unexpected root node :', rootElement);
                 }
             } else {
+                let rootArgsObj = translateArgumentsToObject(rootArgs);
                 this.onRootElementHooks.collect().forEach((hook: StatefulElementHook<P, T>) => {
-                    rootArgs = hook.call(this.lastRendering, this.lastRendering.props, rootArgs as ElementArgs<any>);
+                    rootArgsObj = hook.call(this.lastRendering, this.lastRendering.props, rootArgsObj);
                     if (rootArgs === undefined) {
                         throw new Error('Error: onRootElement hook returned undefined');
                     }
                 });
                 // TODO see what's the deal with cloneElement https://facebook.github.io/react/docs/react-api.html#cloneelement
-                return original(rootArgs.type as any, rootArgs.elementProps, ...rootArgs.children);
+                return original(rootArgsObj.type as any, rootArgsObj.elementProps, ...rootArgsObj.children);
             }
         }
         return rootElement;
@@ -91,18 +95,14 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
     beforeCreateElementHook<E extends HTMLAttributes<HTMLElement>>(functionArgs: ElementArgsTuple<E>) {
         // check if original render is over, then clean up and call original
         if ((ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) || getGlobalConfig<Config>().simulateReactDecor) {
-            let args: ElementArgs<E> = {
-                type: functionArgs[0],
-                elementProps: functionArgs[1] || {},
-                children: functionArgs.length > 2 ? functionArgs.slice(2) : []
-            };
+            let args: ElementArgs<E> = translateArgumentsToObject(functionArgs);
             this.onEachElementHooks.collect().forEach((hook: StatefulElementHook<P, T>) => {
                 args = hook.call(this.lastRendering, this.lastRendering.props, args);
                 if (args === undefined) {
                     throw new Error('Error: onChildElement hook returned undefined');
                 }
             });
-            this.currentArgs = args;
+            this.currentArgs = functionArgs;
             return [args.type, args.elementProps, ...args.children];
         } else {
             (React as any).createElement = original;
@@ -146,12 +146,17 @@ export function decorReactClass<P extends object, T extends Rendered<any>>(hooks
     return function reactClassDecorator<C extends Class<T> & React.ComponentClass>(componentClazz: C): C {
         let mixed = mix(componentClazz);
         const mixData = reactMixData(mixed);
-        hooks.onEachElement && hooks.onEachElement.forEach(h => mixData.onEachElementHooks.add(h));
-        hooks.onRootElement && hooks.onRootElement.forEach(h => mixData.onRootElementHooks.add(h));
+        hooks.onEachElement && hooks.onEachElement.forEach(h => {
+            mixData.onRootElementHooks.add(h);
+            mixData.onEachElementHooks.add(h);
+        });
+        hooks.onRootElement && hooks.onRootElement.forEach(h => {
+            mixData.onRootElementHooks.add(h);
+        });
+
         if (getGlobalConfig<GlobalConfig>().devMode && !mixed.displayName && componentClazz.name) {
             mixed.displayName = componentClazz.name;
         }
-
         return mixed;
     };
 }

@@ -89,6 +89,9 @@ type MethodMeta = {
     after?: List<AfterMethodHook>;
 }
 
+/**
+ * type dictionary - maps name of hook to its type
+ */
 type Hooks = {
     middleware: MiddlewareMethodHook;
     before: BeforeMethodHook;

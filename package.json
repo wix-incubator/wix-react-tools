@@ -70,14 +70,13 @@
     "sinon-chai": "^2.13.0",
     "source-map-support": "^0.4.16",
     "stylable": "^4.0.3",
-    "test-drive-react": "^0.5.0",
+    "test-drive-react": "^0.6.0",
     "typescript": "~2.4.2",
     "typings-checker": "^2.0.0",
     "webpack": "^3.5.5",
     "webpack-dev-server": "^2.5.1"
   },
   "dependencies": {
-    "fp-ts": "^0.4.3",
     "ifndef": "^0.0.31",
     "lodash": "^4.17.4",
     "memoize-weak": "^1.0.1",

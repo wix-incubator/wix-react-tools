@@ -57,7 +57,7 @@ describe("class-decor dev mode warnings", () => {
                 expect(console.warn).to.have.callCount(1);
                 expect(console.warn).to.have.been.calledWithMatch(/\@middleware/);
                 expect(console.warn).to.have.been.calledWithMatch(/badLeeroyBrown/);
-                expect(console.warn).to.have.been.calledWithMatch(/Duck.duckWillQuack/);
+                expect(console.warn).to.have.been.calledWithMatch(/duckWillQuack/);
             });
         });
 

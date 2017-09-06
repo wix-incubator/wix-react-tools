@@ -1,7 +1,10 @@
 import React = require('react');
 import {Attributes, cloneElement, ReactElement, ReactNode, ReactType, SFC} from "react";
 import {decorFunction, middleware} from "../function-decor";
-import {DecorReactHooks, ElementArgs, StatelessElementHook, isNotEmptyArrayLike} from "./common";
+import {
+    DecorReactHooks, ElementArgs, StatelessElementHook, isNotEmptyArrayLike, translateArgumentsToObject,
+    translateObjectToArguments
+} from "./common";
 import {getGlobalConfig} from "../core/config";
 import {GlobalConfig} from "../core/types";
 
@@ -90,16 +93,4 @@ function makeCustomCreateElement<P extends {}>(context: HookContext<P>): typeof 
         before: [applyHooksOnArguments],
         after: [saveCreateElementArguments]
     })(originalCreateElement);
-}
-
-function translateArgumentsToObject<P extends {}>(args: CreateElementArgsTuple<P>): ElementArgs<P> {
-    return {
-        type: args[0],
-        elementProps: args[1] || {},
-        children: Array.prototype.slice.call(args, 2)
-    };
-}
-
-function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): CreateElementArgsTuple<P> {
-    return [args.type, args.elementProps, ...args.children] as CreateElementArgsTuple<P>;
 }
