@@ -3,44 +3,36 @@
  [![Greenkeeper badge](https://badges.greenkeeper.io/wix/wix-react-tools.svg)](https://greenkeeper.io/)
  [![Build Status](https://travis-ci.org/wix/wix-react-tools.svg?branch=master)](https://travis-ci.org/wix/wix-react-tools)
 
-> This library provides helpful utilities for creating React components.
+> This library provides helpful utilities and features for React components.
 
-## rootProps function
-Bridge between component's API and root element attributes.
-Use this bridge in order to create components that are easily extendable in their usage, merging specific attributes passed as props onto the component's root element.
+### Installation
 
-```tsx
-function rootProps<T, S>(componentProps:T, rootProps:S = {className:"root"}): T & S;
+Install **wix-react-tools** as a dependency in your local project
+
+Using npm:
+```bash
+npm install wix-react-tools --save
 ```
 
-0. By default returns rootProps. An error will be thrown if rootProps does not contain a className attribute with string value.
-1. data-* - Copy any attribute beginning with 'data-' from the componentProps to the result, overriding existing values
-   1. data-automation-id - Merge (concat) the ids of componentProps and rootProps. Duplicate ids are not handled at the moment.
-2. inline style - Merge the style attribute of componentProps and rootProps, in case of conflicting values, componentProps takes precedence
-3. className - Merge (concat) the className attribute of componentProps and rootProps. Duplicate classes are not handled at the moment.
-
-### Usage Example
-```tsx
-import { rootProps } from "wix-react-tools";
-...
-
-<div {...rootProps(props, {className:"foo bar"})} />
+Using yarn:
+```bash
+yarn add wix-react-tools
 ```
 
-parent code:
-```tsx
-<Checkbox className="foo" data-foo="bar" style={{color:'black'}} />
-```
+## React Component Features
+A React Component Feature is a function that takes a component and returns a component with all the characteristics of the original component, and one or more new features.
 
-Checkbox implementation :
-```tsx
-<div data-foo="123" {...rootProps(props, {className:"root foo1" })} > ... </div>
-```
+More details in [React Component Features](./docs/react-component-features/README.md)
 
-rendered end result looks like this:
-```tsx
-<div data-foo="bar" className="foo root foo1"  style={{color:'black'}} > ... </div>
-```
+### properties feature 
+Connects some common component properties to the component's render output.
+
+More details in [properties feature](./docs/react-component-features/properties.md)
+
+### stylable feature 
+Applies a stylable stylesheet to a component, Allowing it to use the stylesheet's class and state names natively.
+
+More details in [stylable feature](./docs/react-component-features/stylable.md)
 
 ## merge Event Handlers
 merge two event handlers into one. 
