@@ -143,11 +143,15 @@ export function onRootElement<P extends object, T extends Rendered<any>>(hook: S
 }
 
 export function decorReactClass<P extends object, T extends Rendered<any>>(hooks: DecorReactHooks<P, T>): ClassDecorator<T> {
-    return function reactClassDecorator<C extends Class<T>>(componentClazz: C): C {
+    return function reactClassDecorator<C extends Class<T> & React.ComponentClass>(componentClazz: C): C {
         let mixed = mix(componentClazz);
         const mixData = reactMixData(mixed);
         hooks.onEachElement && hooks.onEachElement.forEach(h => mixData.onEachElementHooks.add(h));
         hooks.onRootElement && hooks.onRootElement.forEach(h => mixData.onRootElementHooks.add(h));
+        if (getGlobalConfig<GlobalConfig>().devMode && !mixed.displayName && componentClazz.name) {
+            mixed.displayName = componentClazz.name;
+        }
+
         return mixed;
     };
 }

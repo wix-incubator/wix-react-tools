@@ -71,7 +71,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
 
         const result = <div data-automation-id="Root"/>;
 
-        function justAHook(this: React.Component, props: object, args: ElementArgs<any>) {
+        function justAHook(_props: object, args: ElementArgs<any>) {
             return args;
         }
 

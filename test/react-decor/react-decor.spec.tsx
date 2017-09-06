@@ -22,12 +22,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         clientRenderer.cleanup();
     });
 
-    const statelessHook1: StatelessElementHook<PropsWithName> = function (componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+    const statelessHook1: StatelessElementHook<PropsWithName> = function (_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
         console.log(args.elementProps['data-automation-id']);
         return args;
     };
 
-    const statelessHook2: StatelessElementHook<PropsWithName> = function (componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+    const statelessHook2: StatelessElementHook<PropsWithName> = function (_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
         console.log(args.elementProps['data-automation-id']);
         return args;
     };
@@ -130,41 +130,58 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         testWithBothComponentTypes(SFComp, testReactClassAndFunctionDecoration);
     });
 
-    describe('react SFC fields', () => {
-        it('should copy react SFC fields', () => {
-            const Comp: SFC = () => <div />;
-            Comp.propTypes = {};
-            Comp.contextTypes = {};
-            Comp.defaultProps = {};
-            Comp.displayName = 'foo';
+    describe('maintain component fields', () => {
+        const Comp1: SFC = () => <div />;
+        Comp1.propTypes = {};
+        Comp1.contextTypes = {};
+        Comp1.defaultProps = {};
+        Comp1.displayName = 'foo';
+        class ClassComp1 extends React.Component {
+            static propTypes = {};
+            static contextTypes = {};
+            static defaultProps = {};
+            static displayName = 'ClassComp1';
+            render() { return <div /> }
+        }
 
-            const wrap = decorateReactComponent<PropsWithName>({});
-            const WrappedComp = wrap(Comp);
-
-            expect(WrappedComp.propTypes).to.equal(Comp.propTypes);
-            expect(WrappedComp.contextTypes).to.equal(Comp.contextTypes);
-            expect(WrappedComp.defaultProps).to.equal(Comp.defaultProps);
-            expect(WrappedComp.displayName).to.equal(Comp.displayName);
-        });
-
-        it('should copy name to displayName if original comp has no displayName', () => {
-            const Comp: SFC = function foo() {
-                return <div />;
-            };
-
-            runInContext({ devMode: true }, () => {
+        function testReactFields(Comp: any, type:'SFC'|'Class Component') {
+            it(`should copy react fields - ${type}`, () => {
                 const wrap = decorateReactComponent<PropsWithName>({});
                 const WrappedComp = wrap(Comp);
 
-                expect(WrappedComp.displayName).to.equal(Comp.name);
+                expect(WrappedComp.propTypes).to.equal(Comp.propTypes);
+                expect(WrappedComp.contextTypes).to.equal(Comp.contextTypes);
+                expect(WrappedComp.defaultProps).to.equal(Comp.defaultProps);
+                expect(WrappedComp.displayName).to.equal(Comp.displayName);
             });
-        });
+        }
+        testReactFields(Comp1, 'SFC');
+        testReactFields(ClassComp1, 'Class Component');
+
+        const Comp2: SFC = function foo() {
+            return <div />;
+        };
+        class Foo extends React.Component {
+            render() { return <div /> }
+        }
+        function testDefaultDisplayName(Comp: any, type:'SFC'|'Class Component') {
+            it(`should copy name to displayName if original comp has no displayName - ${type}`, () => {
+                runInContext({ devMode: true }, () => {
+                    const wrap = decorateReactComponent<PropsWithName>({});
+                    const WrappedComp = wrap(Comp);
+
+                    expect(WrappedComp.displayName).to.equal(Comp.name);
+                });
+            });
+        }
+        testDefaultDisplayName(Comp2, 'SFC');
+        testDefaultDisplayName(Foo, 'Class Component');
     });
 
     describe('decorate react class component with stateful hooks', () => {
         const ClassComp = makeClassComponent(SFComp);
 
-        const statefulHook: StatefulElementHook<PropsWithName> = function <T extends Rendered<PropsWithName>>(this: Instance<T>, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+        const statefulHook: StatefulElementHook<PropsWithName> = function (this: Instance<Rendered<PropsWithName>>, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
             expect(this.props).to.equal(componentProps);
             return args;
         };
