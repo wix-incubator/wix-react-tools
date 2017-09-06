@@ -51,13 +51,11 @@ export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): 
     return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
 }
 
-export type Rendered<P = {}> = Component<P>;
-
-export interface ElementHook<P extends object, T extends Rendered<P> = Rendered<P>> {
+export interface ElementHook<P extends object, T extends Component<P> = Component<P>> {
     <E = object>(this: Instance<T>|undefined, props: P, args: ElementArgs<E>): ElementArgs<E>
 }
 
-export interface StatefulElementHook<P extends object, T extends Rendered<P> = Rendered<P>> {
+export interface StatefulElementHook<P extends object, T extends Component<P> = Component<P>> {
     <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>): ElementArgs<E>
 }
 
@@ -70,7 +68,7 @@ export interface StatelessDecorReactHooks<P extends object> {
     onEachElement?: Array<StatelessElementHook<P>>;
 }
 
-export interface DecorReactHooks<P extends object, T extends Rendered<P> = Rendered<P>> {
+export interface DecorReactHooks<P extends object, T extends Component<P> = Component<P>> {
     onRootElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
     onEachElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
 }

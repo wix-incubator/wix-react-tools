@@ -1,10 +1,9 @@
 import {ClassDecorator} from "../class-decor/index";
 import {decorFunction} from "../function-decor";
 import * as React from "react";
-import {HTMLAttributes, ReactElement} from "react";
+import {HTMLAttributes, ReactElement, Component} from "react";
 import {
-    DecorReactHooks, ElementArgs, ElementArgsTuple, StatefulElementHook, Rendered,
-    translateArgumentsToObject
+    DecorReactHooks, ElementArgs, ElementArgsTuple, StatefulElementHook, translateArgumentsToObject
 } from "./common";
 import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
 import {Class, GlobalConfig, Instance} from "../core/types";
@@ -15,12 +14,12 @@ import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
 // TODO: make union based of all different overloaded signatures of createElement
 // also consider <P extends HTMLAttributes<HTMLElement>>
-// export type ElementHook<T extends Rendered<any>> = <P = object>(instance: T, args: ElementArgs<P>) => ElementArgs<P>;
+// export type ElementHook<T extends Component<any>> = <P = object>(instance: T, args: ElementArgs<P>) => ElementArgs<P>;
 
 const original: typeof React.createElement = React.createElement;
 // for root replication use React.cloneElement()
 
-function preRenderHook<T extends Rendered<any>>(instance: Instance<T>, args: never[]) {
+function preRenderHook<T extends Component<any>>(instance: Instance<T>, args: never[]) {
     // find the lowest ReactDecorData attached to the instance
     let currentReactDecorData = reactMixData.unsafe.inherited(instance.constructor);
     currentReactDecorData.lastRendering = instance;
@@ -28,7 +27,7 @@ function preRenderHook<T extends Rendered<any>>(instance: Instance<T>, args: nev
     return args;
 }
 
-function postRenderHook<T extends Rendered<any>>(instance: Instance<T>, methodResult: ReactElement<any>) {
+function postRenderHook<T extends Component<any>>(instance: Instance<T>, methodResult: ReactElement<any>) {
     // clean up createElement function
     (React as any).createElement = original;
     // find the lowest ReactDecorData attached to the instance
@@ -49,7 +48,7 @@ export function simulateRender(component: React.ComponentClass): JSX.Element | n
         return new component().render();
     });
 }
-class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
+class ReactDecorData<P extends object, T extends Component<P> = Component<P>> {
     onEachElementHooks: List<StatefulElementHook<P, T>>;
     onRootElementHooks: List<StatefulElementHook<P, T>>;
     createElementProxy = decorFunction({
@@ -69,7 +68,7 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
         }
     }
 
-    handleRoot<C extends Rendered<any>>(rootElement: ReactElement<any>) {
+    handleRoot<C extends Component<any>>(rootElement: ReactElement<any>) {
         if (rootElement) {
             let rootArgs = this.originalArgs.get(rootElement);
             this.originalArgs.clear();
@@ -119,14 +118,14 @@ class ReactDecorData<P extends object, T extends Rendered<P> = Rendered<P>> {
     };
 }
 
-const reactMixData: ClassStateProvider<ReactDecorData<object, Rendered<any>>, Class<Rendered<any>>> =
-    classPrivateState('react-decor data', <T extends Rendered<any>>(clazz: Class<T>) => {
+const reactMixData: ClassStateProvider<ReactDecorData<object, Component<any>>, Class<Component<any>>> =
+    classPrivateState('react-decor data', <T extends Component<any>>(clazz: Class<T>) => {
         let mixerData = unsafeMixerData<T>(clazz); // get data of mixer
         const inherited = reactMixData.inherited(clazz);
         return new ReactDecorData<T>(mixerData, inherited); // create react-decor data
     });
 
-export function onChildElement<P extends object, T extends Rendered<any>>(hook: StatefulElementHook<P, T>): ClassDecorator<T> {
+export function onChildElement<P extends object, T extends Component<any>>(hook: StatefulElementHook<P, T>): ClassDecorator<T> {
     return function onChildElementDecorator<C extends Class<T>>(componentClazz: C): C {
         let mixed = mix(componentClazz);
         reactMixData(mixed).onEachElementHooks.add(hook);
@@ -134,7 +133,7 @@ export function onChildElement<P extends object, T extends Rendered<any>>(hook: 
     };
 }
 
-export function onRootElement<P extends object, T extends Rendered<any>>(hook: StatefulElementHook<P, T>): ClassDecorator<T> {
+export function onRootElement<P extends object, T extends Component<any>>(hook: StatefulElementHook<P, T>): ClassDecorator<T> {
     return function onRootElementDecorator<C extends Class<T>>(componentClazz: C): C {
         let mixed = mix(componentClazz);
         reactMixData(mixed).onRootElementHooks.add(hook);
@@ -142,7 +141,7 @@ export function onRootElement<P extends object, T extends Rendered<any>>(hook: S
     };
 }
 
-export function decorReactClass<P extends object, T extends Rendered<any>>(hooks: DecorReactHooks<P, T>): ClassDecorator<T> {
+export function decorReactClass<P extends object, T extends Component<any>>(hooks: DecorReactHooks<P, T>): ClassDecorator<T> {
     return function reactClassDecorator<C extends Class<T> & React.ComponentClass>(componentClazz: C): C {
         let mixed = mix(componentClazz);
         const mixData = reactMixData(mixed);
