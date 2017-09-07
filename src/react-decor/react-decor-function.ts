@@ -1,7 +1,10 @@
 import React = require('react');
 import {Attributes, cloneElement, ReactElement, ReactNode, ReactType, SFC} from "react";
 import {decorFunction, middleware} from "../function-decor";
-import {DecorReactHooks, ElementArgs, ElementHook, isNotEmptyArrayLike} from "./common";
+import {
+    DecorReactHooks, ElementArgs, StatelessElementHook, isNotEmptyArrayLike, translateArgumentsToObject,
+    translateObjectToArguments
+} from "./common";
 import {getGlobalConfig} from "../core/config";
 import {GlobalConfig} from "../core/types";
 
@@ -17,7 +20,7 @@ type ReactCreateElement = typeof React.createElement;
 const originalCreateElement = React.createElement;
 
 function getHooksReducer<T extends object>(componentProps: T) {
-    return <P extends {}>(res: ElementArgs<P>, hook: ElementHook<T>) => hook(null, componentProps, res);
+    return <P extends {}>(res: ElementArgs<P>, hook: StatelessElementHook<T>) => hook(componentProps, res);
 }
 
 const translateName = middleware((next:(args:[React.SFC])=>React.SFC, args:[React.SFC]) => {
@@ -28,7 +31,7 @@ const translateName = middleware((next:(args:[React.SFC])=>React.SFC, args:[Reac
     return result;
 });
 
-export function decorReact<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
+export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
     const context = {
         hooks,
         componentProps: {} as T,
@@ -90,16 +93,4 @@ function makeCustomCreateElement<P extends {}>(context: HookContext<P>): typeof 
         before: [applyHooksOnArguments],
         after: [saveCreateElementArguments]
     })(originalCreateElement);
-}
-
-function translateArgumentsToObject<P extends {}>(args: CreateElementArgsTuple<P>): ElementArgs<P> {
-    return {
-        type: args[0],
-        elementProps: args[1] || {},
-        children: Array.prototype.slice.call(args, 2)
-    };
-}
-
-function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): CreateElementArgsTuple<P> {
-    return [args.type, args.elementProps, ...args.children] as CreateElementArgsTuple<P>;
 }

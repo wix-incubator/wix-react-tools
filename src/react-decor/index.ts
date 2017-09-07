@@ -4,7 +4,7 @@ export {DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook, Stateles
 import {Component, ComponentType} from "react";
 import {decorReactClass} from "./react-decor-class";
 import {DecorReactHooks, isReactClassComponent, StatelessDecorReactHooks} from "./common";
-import {decorReact as decorReactFunc} from "./react-decor-function"; // todo: fix exports in index
+import {decorReactFunc} from "./react-decor-function"; // todo: fix exports in index
 
 export type Wrapper<P extends object, T extends Component<P> = Component<P>> = <T1 extends ComponentType<P>>(comp: T1) => T1
 
@@ -17,9 +17,9 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
     // return wrapper with router built in
     function wrapper<T1 extends ComponentType<P>>(comp: T1): T1 {
         if (isReactClassComponent(comp)) {
-            return classDecorator(comp as any) as any;
+            return classDecorator(comp as any) as T1;
         } else if (typeof comp === 'function') {
-            return functionalDecorator(comp as any) as any;
+            return functionalDecorator(comp as any) as T1;
         }
         return comp;
     }

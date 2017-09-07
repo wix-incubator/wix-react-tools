@@ -1,17 +1,14 @@
-import {AnyArgs, Class} from "../core/types";
+import {Class} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 import {initEdgeClass} from "./apply-method-decorations";
-// import {THList, THListToTuple} from "typelevel-ts";
-export type THList = any;
-export type THListToTuple<T> = any;
 import _union = require('lodash/union');
 
 type DumbClass = new(...args: any[]) => object;
 
 export type ConstructorHook<T extends object> = (instance: T, constructorArguments: any[]) => void;
-export type BeforeMethodHook<A extends THList = AnyArgs, T = any> = (instance: T, methodArguments: THListToTuple<A>) => THListToTuple<A>;
+export type BeforeMethodHook<A = any, T = any> = (instance: T, methodArguments: any) => any;
 export type AfterMethodHook<R = void, T = any> = (instance: T, methodResult: R) => R;
-export type MiddlewareMethodHook<A extends THList = AnyArgs, R = void, T = any> = (instance: T, next: (methodArguments: THListToTuple<A>) => R, methodArguments: THListToTuple<A>) => R;
+export type MiddlewareMethodHook<A = any, R = void, T = any> = (instance: T, next: (methodArguments: any) => R, methodArguments: any) => R;
 
 export type MixerDataProvider = {
     <T extends object>(targetObj: Class<T>): MixerData<T>;
@@ -50,12 +47,6 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C {
                 .visitConstructorHooks((cb: ConstructorHook<T>) => cb(this as any as T, args));
         }
     }
-    // TODO remove this ineffective dirty fix, see https://github.com/wix/react-bases/issues/50
-    Object.defineProperty(Extended, 'name', {
-        enumerable: false,
-        writable: false,
-        value: clazz.name
-    });
     // initialize mixer data on Extended
     getMixerData(Extended);
     return Extended as any;
@@ -95,6 +86,9 @@ type MethodMeta = {
     after?: List<AfterMethodHook>;
 }
 
+/**
+ * type dictionary - maps name of hook to its type
+ */
 type Hooks = {
     middleware: MiddlewareMethodHook;
     before: BeforeMethodHook;

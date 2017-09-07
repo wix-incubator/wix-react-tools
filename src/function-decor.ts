@@ -1,14 +1,11 @@
-import {ApiFunc, THList} from "./core/types";
-// import { THList, THListToTuple} from "typelevel-ts";
 import {chain, concat, map} from "lodash";
-import {THListToTuple} from "./class-decor/mixer";
 
-export type FunctionWrapper<A extends THList, R = void, T = any> = <F extends ApiFunc<A, R, T>>(func: F) => F
+export type FunctionWrapper<A, R = void, T = any> = <F extends Function>(func: F) => F
 
-export type BeforeHook<A extends THList, T = any> = (this: T, methodArguments: THListToTuple<A>) => THListToTuple<A>;
+export type BeforeHook<A, T = any> = (this: T, methodArguments: any) => any;
 
-export function before<A extends THList, T=any>(preMethod: BeforeHook<A, T>): FunctionWrapper<A, any, T> {
-    return function beforeWrapper<F extends ApiFunc<A, any, T>>(originalFunction: F): F {
+export function before<A, T = any>(preMethod: BeforeHook<A, T>): FunctionWrapper<A, any, T> {
+    return function beforeWrapper<F extends Function>(originalFunction: F): F {
         return function wrapped(this: T, ...methodArguments: any[]): any {
             return originalFunction.apply(this, preMethod.call(this, methodArguments));
         } as any as F;
@@ -18,19 +15,19 @@ export function before<A extends THList, T=any>(preMethod: BeforeHook<A, T>): Fu
 export type AfterHook<R = void, T = any> = (this: T, methodResult: R) => R;
 
 export function after<R=void, T=any>(postMethod: AfterHook<R, T>): FunctionWrapper<any, R, T> {
-    return function afterWrapper<F extends ApiFunc<any, R, T>>(originalFunction: F): F {
+    return function afterWrapper<F extends Function>(originalFunction: F): F {
         return function wrapped(this: T, ...methodArguments: any[]): R {
             return postMethod.call(this, originalFunction.apply(this, methodArguments));
         } as any as F;
     }
 }
 
-export type MiddlewareHook<A extends THList, R = void, T = any> = (this: T, next: (methodArguments: THListToTuple<A>) => R, methodArguments: THListToTuple<A>) => R;
+export type MiddlewareHook<A, R = void, T = any> = (this: T, next: (methodArguments: any) => R, methodArguments: any) => R;
 
-export function middleware<A extends THList, R=void, T=any>(hook: MiddlewareHook<A, R, T>): FunctionWrapper<A, R, T> {
-    return function middlewareWrapper<F extends ApiFunc<A, R, T>>(originalFunction: F): F {
+export function middleware<A, R=void, T=any>(hook: MiddlewareHook<A, R, T>): FunctionWrapper<A, R, T> {
+    return function middlewareWrapper<F extends Function>(originalFunction: F): F {
         return function wrapped(this: T, ...methodArguments: any[]): R {
-            function next(this: T, args: THListToTuple<A>) {
+            function next(this: T, args: any) {
                 return originalFunction.apply(this, args);
             }
 

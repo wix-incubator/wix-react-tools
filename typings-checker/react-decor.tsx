@@ -1,4 +1,4 @@
-import { decorReact as decorReactFunc } from "../dist/src/react-decor/react-decor-function";
+import { decorReactFunc } from "../dist/src/react-decor/react-decor-function";
 import { ElementHook } from "../dist/src/react-decor/common";
 import { decorateReactComponent } from "../dist/src/index";
 
@@ -6,7 +6,7 @@ import { decorateReactComponent } from "../dist/src/index";
 declare const SFComp: React.SFC<PropsWithName>;
 declare const SFComp2: React.SFC<PropsWithName2>;
 declare const ClassComp: React.ComponentClass<PropsWithName>;
-declare const hook: ElementHook<PropsWithName>
+declare const hook: ElementHook<PropsWithName>;
 type PropsWithName = { name: string };
 type PropsWithName2 = { name: Function };
 

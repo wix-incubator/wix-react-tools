@@ -1,4 +1,4 @@
-import {Args, before, middleware, after, decorFunction} from "../dist/src/index";
+import {before, middleware, after, decorFunction} from "../dist/src/index";
 
 declare function original(text: string): string;
 declare function subset(text: 'foo'): 'bar';
@@ -12,7 +12,7 @@ describe(`middleware`, () => {
     describe(`Test original type`, () => {
 
         // $ExpectType (text: string) => string
-        middleware<Args<[string]>, string>(mwHook)(original);
+        middleware<[string], string>(mwHook)(original);
 
         // $ExpectType (text: string) => string
         middleware(mwHook)(original);
@@ -39,15 +39,15 @@ describe(`middleware`, () => {
         middleware(mwHook)(subset);
 
         // $ExpectType (text: "foo") => "bar"
-        middleware<Args<[string]>, string>(mwHook)(subset);
+        middleware<[string], string>(mwHook)(subset);
 
         // $ExpectError Type 'string' is not assignable
-        middleware<Args<['foo']>, 'bar'>(mwHook);
+        middleware<['foo'], 'bar'>(mwHook);
 
         describe(`documentation only (TODO: make it break)`, () => {
 
             // $ExpectType (text: string) => string
-            middleware<Args<[string]>, string>(subsetMwHook)(original)
+            middleware<[string], string>(subsetMwHook)(original)
         })
     })
 })
@@ -60,7 +60,7 @@ describe(`before`, () => {
     describe(`Test original type`, () => {
 
         // $ExpectType (text: string) => string
-        before<Args<[string]>>(bHook)(original);
+        before<[string]>(bHook)(original);
 
         // $ExpectType (text: string) => string
         before(bHook)(original);
@@ -87,7 +87,7 @@ describe(`before`, () => {
         before(bHook)(subset);
 
         // $ExpectType (text: "foo") => "bar"
-        before<Args<[string]>>(bHook)(subset);
+        before<[string]>(bHook)(subset);
 
         // $DISABLED ExpectError Type '[string]' is not assignable
         // before<Args<['foo']>>(bHook);
@@ -95,7 +95,7 @@ describe(`before`, () => {
         describe(`documentation only (TODO: make it break)`, () => {
 
             // $ExpectType (text: string) => string
-            before<Args<[string]>>(subsetBHook)(original)
+            before<[string]>(subsetBHook)(original)
         })
     })
 })
@@ -135,8 +135,8 @@ describe(`after`, () => {
         // $ExpectType (text: "foo") => "bar"
         after<string>(aHook)(subset);
 
-        // $DISABLED ExpectError is not assignable to type 'string'
-        after<Args<['foo']>, 'bar'>(aHook);
+        // $ExpectError 'string' is not assignable to type '"bar"'
+        after<'bar'>(aHook);
 
         describe(`documentation only (TODO: make it break)`, () => {
 
