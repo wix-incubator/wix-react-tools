@@ -71,3 +71,16 @@ export type Args<A, I = 0, L = THNil> = any;
 
 export type AnyArgs = THNil | THCons<any, THNil>;
 export type NoArgs = THNil;
+
+export interface TypedPropertyDescriptor<T> {
+    configurable?: boolean;
+    enumerable?: boolean;
+    value?: T;
+    writable?: boolean;
+    get? (): T;
+    set? (v: T): void;
+}
+
+export type TypedPropertyDescriptorMap<T extends object> = {
+    [P in keyof T]: TypedPropertyDescriptor<T[P]>;
+    } & PropertyDescriptorMap;

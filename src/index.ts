@@ -16,7 +16,7 @@ export * from "./function-decor";
 export * from './react-decor/index';
 
 // react features
-export * from './react-component-features/disposable-decorator';
+export {disposable} from './react-component-features/disposable-feature';
 export * from './react-component-features/properties-feature';
 export * from './react-component-features/stylable-feature';
 
