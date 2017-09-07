@@ -19,7 +19,7 @@ export const initEdgeClass = (clazz: Class<object>) => {
         edgeClassData(clazz).init();
     }
 };
-function notIfExists(hook: { ifExists?: boolean }) {
+function notIfExists(hook: Function & { ifExists?: boolean }) {
     return !hook.ifExists;
 }
 function shouldCreateMethod(methodData: MethodData): boolean {

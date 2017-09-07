@@ -18,8 +18,8 @@ describe('react decor function', () => {
         // $ExpectType SFCDecorator<PropsWithName>
         decorReactFunc<PropsWithName>(hook);
 
-        // $ExpectType StatelessComponent<PropsWithName2>
-        decorReactFunc(hook)(SFComp2); // todo: This should fail, but doesn't. check again with TS 2.5
+// todo: This should fail
+        decorReactFunc(hook)(SFComp2);
     });
 
     describe('React Decorator', () => {
