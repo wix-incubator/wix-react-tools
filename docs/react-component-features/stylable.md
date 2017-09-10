@@ -1,4 +1,5 @@
-# stylable feature 
+# stylable feature
+
 *stateless*
 
 This is a [Feature Factory](./README.md#Configurable-Features) which accepts a Stylable stylesheet.
@@ -7,7 +8,8 @@ The result feature applies the stylesheet to a component, Allowing it to use the
 
 ### example
 
-Given `style.css`:
+Given `style.st.css`:
+
 ```css
 .root {
     -st-state:a,b;
@@ -18,8 +20,9 @@ Given `style.css`:
 ```
 
 This component:
+
 ```tsx
-import stylesheet from './style.css'
+import stylesheet from './style.st.css'
 
 @stylable(stylesheet)
 class Comp extends React.Component {
