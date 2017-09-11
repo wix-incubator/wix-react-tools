@@ -1,11 +1,14 @@
 # React Hooks API
-This library offers a way of applying hooks to React components in order to implement various features. These hooks wrap React's createElement and cloneElement (clone to be added soon) in order to allow you to intervene with the creation every element in your component. When wrapping a component, there are two types of hooks to choose from:
-* `onEachElement` - Hook will be applied to each element created during your component's render and its result returned in its place
-* `onRootElement` - Hook will be applied only to the resulting root node from your component's render and its result returned in its place
+This library offers a way of applying hooks to React components in order to implement various features. These hooks temporarily [monkey-patch](https://en.wikipedia.org/wiki/Monkey_patch) `React.createElement` and `React.cloneElement` (`cloneElement` to be added soon) in order to customize every element created by your component. 
 
-> The interface for `onEachElement` and `onRootElement` is identical.
 
-Furthermore, Hooks can be created for both stateless (`Stateless Functional Component`) and stateful components (`Class` based component). The inherit difference between the two is reflected in their API below.
+The API offers two types of hooks to choose from:
+* `onEachElement` - Hook will be applied to each element created or cloned during your component's render and its result returned in its place
+* `onRootElement` - Hook will be applied only to the resulting root node from your component's render and its result returned in its place, given that the root element was indeed created or cloned during your component's render
+
+The type signatures for both `onEachElement` and `onRootElement` are identical.
+
+The Hooks API can be applied to both stateless ([Stateless Functional Component](https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components)) and stateful ([ES6 class component](https://facebook.github.io/react/docs/state-and-lifecycle.html)) components. The inherent difference between the two (stateful and stateless) is reflected in their API below.
 
 In order to implement a feature on top of react, you'll have to consider how it would be affected by the nature of the component it will be running on.
 
