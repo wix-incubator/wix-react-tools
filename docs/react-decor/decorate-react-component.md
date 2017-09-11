@@ -13,7 +13,7 @@ In order to implement a feature on top of react, you'll have to consider how it 
 * Can it run on both stateless and stateful components, or does it always require state?
 * How would executing your feature differ in implementation between the two?
 
-// TODO: make the reader not want to die.
+Use the API reference and example below to help make sense of your requirements.
 
 ## Naive Stateless Hook
 The signature of a stateless hook:
