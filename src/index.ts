@@ -7,6 +7,7 @@ export * from './core/class-private-state';
 
 //utils
 export * from './core/disposers';
+export * from './react-util';
 
 // js decor
 export * from './class-decor/index';
