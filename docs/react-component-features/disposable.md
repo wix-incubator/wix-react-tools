@@ -8,7 +8,7 @@ Allows you to easily manage resources clean-ups by means of a [`Disposers`](../c
 ## API
 
 ### `disposable.This`
-The signature of the class this feature enhances. It has but one field:
+The signature of the class this feature enhances. It has one field:
 ```ts
   readonly disposer: Disposers;
 ```
