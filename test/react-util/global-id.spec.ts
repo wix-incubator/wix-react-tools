@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { expect } from 'test-drive-react';
-import { getRootId } from '../../src/react-util/global-id';
+import { getRootId, getLocalId, separator } from '../../src/react-util/global-id';
 
 interface TestProps {
     id: string;
@@ -27,7 +27,10 @@ describe('GlobalID', () => {
 
    describe('getLocalId', () => {
        it('generates a new unique ID for a child element', () => {
-           throw new Error('To be implemented');
+           const id = 'schmarrn';
+           const rootId = 'kaiser';
+
+           expect(getLocalId(rootId, id)).to.equal(`${rootId}${separator}${id}`);
        });
    });
 });
