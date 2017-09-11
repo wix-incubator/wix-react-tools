@@ -8,7 +8,7 @@ interface Props {
 }
 
 @disposable
-class DisposableComp extends React.Component<Props, any> implements disposable.Instance {
+class DisposableComp extends React.Component<Props, any> implements disposable.This {
 
     readonly disposer: Disposers;
 

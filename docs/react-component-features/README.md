@@ -63,13 +63,15 @@ In order for the component's API to reflect these properties it has to declare t
 Such features will set according demands from the provided component's type,
 so that enhancing a component that does not declare the correct API will result in Typescript validation errors. 
 
-By convention, `feature`s properties type will be exported under the its namespace as `feature.Props`.
+By convention: 
+ - `feature`s expected properties type will be exported under the its namespace as `feature.Props`.
+ - `feature`s expected type will be exported under the its namespace as `feature.This`.
  
-example:
+examples:
  
 ```ts
 import * as React from 'react';
-import { someFeature } from 'wix-react-tools';
+import { someFeature, someOtherFeature } from 'wix-react-tools';
 
 interface Props extends someFeature.Props {
     name:string;
@@ -77,6 +79,13 @@ interface Props extends someFeature.Props {
 
 @someFeature
 class Comp extends React.Component<Props> {
+ render() {
+     return <div>{this.props.name}</div>;
+ }
+}
+
+@someOtherFeature
+class Comp extends React.Component<Props> implements someOtherFeature.This{
  render() {
      return <div>{this.props.name}</div>;
  }

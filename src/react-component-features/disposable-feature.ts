@@ -10,15 +10,15 @@ export const privateDisposers: StateProvider<Disposers> = privateState('disposer
 
 export namespace disposable {
     /**
-     * The type of instance a decorated component should expect
+     * The type a decorated component should implement
      */
-    export interface Instance extends React.Component {
+    export interface This extends React.Component {
         readonly disposer: Disposers;
     }
 }
 
-export const disposable = chain<disposable.Instance>(
-    after<disposable.Instance>((instance, methodReturn) => {
+export const disposable = chain<disposable.This>(
+    after<disposable.This>((instance, methodReturn) => {
         if (privateDisposers.hasState(instance)){
             privateDisposers(instance).disposeAll();
         }
@@ -26,7 +26,7 @@ export const disposable = chain<disposable.Instance>(
     }, "componentWillUnmount"),
     defineProperties<any>({
         disposer: {
-            get: function getDisposer(this: disposable.Instance) {
+            get: function getDisposer(this: disposable.This) {
                 return privateDisposers(this);
             }
         }
