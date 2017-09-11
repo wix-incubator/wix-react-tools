@@ -3,12 +3,12 @@
 
 Helps manage clean-ups according to the life cycle of the component. 
 
-Allows you to keep track of bound resources by means of a [`Disposers`](../core/disposers.md) object that is bound to the component's lifecycle.
+Allows you to easily manage resources clean-ups by means of a [`Disposers`](../core/disposers.md) object that is bound to the component's lifecycle.
 
 ## API
 
 ### `disposable.This`
-The signature of the class this feature enhances. It has but one field:
+The signature of the class this feature enhances. It has one field:
 ```ts
   readonly disposer: Disposers;
 ```
