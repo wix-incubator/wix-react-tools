@@ -1,6 +1,6 @@
 {
   "name": "wix-react-tools",
-  "version": "3.0.0-2",
+  "version": "3.0.0",
   "description": "Utilities and helpers to build stunning react components",
   "author": "Amir Arad (amira@wix.com)",
   "license": "MIT",
@@ -71,7 +71,7 @@
     "source-map-support": "^0.4.16",
     "stylable": "^4.0.3",
     "test-drive-react": "^0.6.0",
-    "typescript": "~2.4.2",
+    "typescript": "~2.5.2",
     "typings-checker": "^2.0.0",
     "webpack": "^3.5.5",
     "webpack-dev-server": "^2.5.1"

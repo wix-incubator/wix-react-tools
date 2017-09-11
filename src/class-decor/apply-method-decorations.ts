@@ -1,7 +1,7 @@
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import _union = require('lodash/union');
 import {getGlobalConfig} from "../core/config";
-import {AnyArgs, Class, GlobalConfig} from "../core/types";
+import {Class, GlobalConfig} from "../core/types";
 import {
     AfterMethodHook,
     BeforeMethodHook,
@@ -11,9 +11,6 @@ import {
     MixerData
 } from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
-// import {THList, THListToTuple} from "typelevel-ts";
-export type THList = any;
-export type THListToTuple<T> = any;
 
 const edgeClassData = classPrivateState('edge class data', clazz => new EdgeClassData(clazz));
 
@@ -22,7 +19,7 @@ export const initEdgeClass = (clazz: Class<object>) => {
         edgeClassData(clazz).init();
     }
 };
-function notIfExists(hook: { ifExists?: boolean }) {
+function notIfExists(hook: Function & { ifExists?: boolean }) {
     return !hook.ifExists;
 }
 function shouldCreateMethod(methodData: MethodData): boolean {
@@ -100,7 +97,7 @@ function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
 
 function runBeforeHooks<T extends object>(target: T, hooks: Array<BeforeMethodHook> | null, methodName: keyof T, methodArgs: any[]) {
     if (hooks) {
-        hooks.forEach((hook: BeforeMethodHook<AnyArgs, T>) => {
+        hooks.forEach((hook: BeforeMethodHook<any, T>) => {
             methodArgs = hook(target, methodArgs);
             if (!_isArrayLikeObject(methodArgs)) {
                 errorBeforeDidNotReturnedArray(methodArgs);
@@ -141,12 +138,12 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, hooks: Array<M
     return retVal;
 }
 
-function createNextForMiddlewareHook<T extends object, A extends THList, R>(target: T, originalMethod: (...args: any[]) => R, middlewareHooks: Array<MiddlewareMethodHook<A, R, T>>, idx: number, tracker: MiddlewareTracker) {
+function createNextForMiddlewareHook<T extends object, A, R>(target: T, originalMethod: (...args: any[]) => R, middlewareHooks: Array<MiddlewareMethodHook<A, R, T>>, idx: number, tracker: MiddlewareTracker) {
     return (args: any[]): R => {
         tracker.reportNextMiddleware(idx);
         return middlewareHooks.length <= idx ?
             (originalMethod && originalMethod.apply(target, args)) :
-            middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1, tracker), args as THListToTuple<A>);
+            middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1, tracker), args as any);
     };
 }
 

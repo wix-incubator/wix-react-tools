@@ -1,9 +1,9 @@
 import * as React from "react";
-import { SFC } from 'react';
+import { SFC, Component } from 'react';
 import { ClientRenderer, expect, sinon } from "test-drive-react";
 import { makeClassComponent, resetAll, spyAll, testWithBothComponentTypes } from "../test-drivers/test-tools";
 import { inBrowser } from "mocha-plugin-env/dist/src";
-import { ElementArgs, Rendered, StatefulElementHook, StatelessElementHook } from "../../src/react-decor/common";
+import { ElementArgs, StatefulElementHook, StatelessElementHook } from "../../src/react-decor/common";
 import { GlobalConfig, Instance } from "../../src/core/types";
 import { runInContext } from "../../src/core/config";
 import { decorateReactComponent } from "../../src/react-decor"; // todo: implement
@@ -52,7 +52,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
     describe(`decorate react component with stateless hooks`, () => {
         function testReactClassAndFunctionDecoration(Comp: any) {
             it('should wrap a react component, without any hooks', () => {
-                const wrap = decorateReactComponent<PropsWithName, Rendered<any>>({});
+                const wrap = decorateReactComponent<PropsWithName, Component<any>>({});
                 const WrappedComp = wrap(Comp);
 
                 const { select } = clientRenderer.render(<WrappedComp name="Jon" />); // todo: maybe fix currently client only
@@ -175,7 +175,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
     describe('decorate react class component with stateful hooks', () => {
         const ClassComp = makeClassComponent(SFComp);
 
-        const statefulHook: StatefulElementHook<PropsWithName> = function (this: Instance<Rendered<PropsWithName>>, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+        const statefulHook: StatefulElementHook<PropsWithName> = function (this: Instance<Component<PropsWithName>>, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
             expect(this.props).to.equal(componentProps);
             return args;
         };
@@ -256,7 +256,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                     return args;
                 });
 
-                const wrap = decorateReactComponent<PropsWithName, Rendered<any>>({
+                const wrap = decorateReactComponent<PropsWithName, Component<any>>({
                     onRootElement: [hook],
                     onEachElement: [hook]
                 });
