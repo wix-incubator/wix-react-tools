@@ -1,14 +1,17 @@
 import * as React from 'react';
 import { privateState, StateProvider } from '../core/private-state';
 
+let counter: number = 0;
+const provider: StateProvider<{id: number}, object> = privateState('globalId', () => ({ id: counter++ }));
 export const separator = '##';
 
 export function isComponentInstance(value: any): value is React.Component {
     return value && value instanceof React.Component;
 }
 
-let counter: number = 0;
-const provider: StateProvider<{id: number}, object> = privateState('globalId', () => ({ id: counter++ }));
+export interface GlobalIDTarget {
+    id?: string;
+}
 
 export function getRootId(obj: object): string {
     if (isComponentInstance(obj)) {
