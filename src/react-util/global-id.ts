@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { isComponentInstance } from '../react-decor/common';
 import { privateState, StateProvider } from '../core/private-state';
 
@@ -7,15 +6,19 @@ const provider: StateProvider<string> = privateState('globalId', () => `${counte
 const separator = '\u2794';
 const globalIdPropsError = 'tried to get root id for a props object but the key id was not found.';
 
-export interface GlobalIDProps {
+export interface MandatoryProps {
     id: string;
 }
 
-function isGlobalIDProps(obj: any): obj is GlobalIDProps {
+export interface OptionalProps {
+    id?: string;
+}
+
+function isGlobalIDProps(obj: any): obj is MandatoryProps {
     return obj && obj.hasOwnProperty('id');
 }
 
-function getRootId(obj: object): string {
+export function getRootId(obj: object): string {
     if (isComponentInstance(obj)) {
         if (isGlobalIDProps(obj.props)) {
             return obj.props.id;
@@ -29,16 +32,6 @@ function getRootId(obj: object): string {
     }
 }
 
-function getLocalId(rootId: string, id: string): string {
+export function getLocalId(rootId: string, id: string): string {
     return `${rootId}${separator}${id}`;
 }
-
-export namespace globalId {
-    export type Props = GlobalIDProps;
-}
-
-export const globalId = {
-    getRootId,
-    getLocalId
-};
-

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { expect } from 'test-drive-react';
-import { globalId } from '../../src';
+import * as globalId from '../../src';
 
-class TestClass extends React.Component<globalId.Props> {}
+class TestClass extends React.Component<globalId.OptionalProps> {}
 
 const { getRootId, getLocalId } = globalId;
 
