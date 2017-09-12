@@ -11,7 +11,6 @@ let counter: number = 0;
 const provider: StateProvider<number, object> = privateState('globalId', () => ({ id: counter++ }));
 
 export function getRootId(obj: object): string {
-    debugger;
     if (isComponentInstance(obj)) {
         if (obj.props && obj.props.hasOwnProperty('id')) return (obj.props as {id: string}).id;
     } else {
