@@ -16,7 +16,7 @@ describe('GlobalID', () => {
             const componentInstance = new TestClass();
             expect(getRootId(componentInstance)).to.equal(getRootId(componentInstance));
 
-            const props = {};
+            const props = { id };
             expect(getRootId(props)).to.equal(getRootId(props));
         });
 
@@ -25,9 +25,13 @@ describe('GlobalID', () => {
             const differentInstance = new TestClass();
             expect(getRootId(componentInstance)).to.not.equal(getRootId(differentInstance));
 
-            const props = {};
-            const differentProps = {};
+            const props = { id };
+            const differentProps = { id: anotherId };
             expect(getRootId(props)).to.not.equal(getRootId(differentProps));
+        });
+
+        it('throws an exception when trying to get rootId for props object without id provided', () => {
+            expect(() => getRootId({})).to.throw();
         });
 
         it('resolves the id from props in case it was passed', () => {
@@ -51,5 +55,9 @@ describe('GlobalID', () => {
         it('returns different localIds for different parameters', () => {
             expect(getLocalId(rootId, id)).to.not.equal(getLocalId(rootId, anotherId));
         });
+
+        it('returns different localIds for same different roots', () => {
+            expect(getLocalId(rootId, id)).to.not.equal(getLocalId(anotherId, id));
+        })
     });
 });

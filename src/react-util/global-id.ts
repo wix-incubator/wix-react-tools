@@ -1,16 +1,13 @@
 import * as React from 'react';
+import { isComponentInstance } from '../react-decor/common';
 import { privateState, StateProvider } from '../core/private-state';
 
 let counter: number = 0;
-const provider: StateProvider<{id: number}, object> = privateState('globalId', () => ({ id: counter++ }));
+const provider: StateProvider<{id: string}> = privateState('globalId', () => ({ id: `${counter++}` }));
 const separator = '\u2794';
 
-export function isComponentInstance(value: any): value is React.Component {
-    return value && value instanceof React.Component;
-}
-
 export interface GlobalIDProps {
-    id?: string;
+    id: string;
 }
 
 export interface GlobalID {
@@ -18,22 +15,31 @@ export interface GlobalID {
     getLocalId: (rootId: string, id: string) => string
 }
 
+export class GlobalIDPropsError extends Error {
+    public name: string = 'GlobalIDPropsError';
+    public message: string = 'GlobalID Error: tried to get root id for a props object but the key id was not found.';
+}
+
+function conformsToGlobalIDProps(obj: React.Component): obj is React.Component<GlobalIDProps> {
+    return obj.props && obj.props.hasOwnProperty('id');
+}
+
 function getRootId(obj: object): string {
     if (isComponentInstance(obj)) {
-        if (obj.props && obj.props.hasOwnProperty('id')) {
-            return (obj.props as {id: string}).id;
+        if (conformsToGlobalIDProps(obj)) {
+            return obj.props.id;
         }
+        return provider(obj).id;
     } else {
         if (obj.hasOwnProperty('id')) {
             return (obj as {id: string}).id;
         }
+        throw new GlobalIDPropsError();
     }
-
-    return `${provider(obj).id}`;
 }
 
 function getLocalId(rootId: string, id: string): string {
-    return `${rootId}${separator}${id}a`;
+    return `${rootId}${separator}${id}`;
 }
 
 export namespace globalId {
