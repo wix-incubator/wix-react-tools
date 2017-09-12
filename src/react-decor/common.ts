@@ -21,7 +21,11 @@ export function isNotEmptyArrayLike(arr: Array<any> | undefined): arr is Array<a
 }
 
 export function isReactClassComponent(value: any): value is React.ComponentClass<any> {
-    return value && value.prototype && value.prototype instanceof React.Component;
+    return value && isComponentInstance(value.prototype);
+}
+
+export function isComponentInstance(value: any): value is React.Component {
+    return value && value instanceof React.Component;
 }
 
 export type ElementType<P> =
