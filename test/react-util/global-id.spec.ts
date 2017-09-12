@@ -23,18 +23,18 @@ describe('GlobalID', () => {
             const differentInstance = new TestClass();
             expect(getRootId(componentInstance)).to.not.equal(getRootId(differentInstance));
 
-            const props = { id: 'props'};
-            const differentProps = { id: 'differentProps'};
+            const props = {};
+            const differentProps = {};
             expect(getRootId(props)).to.not.equal(getRootId(differentProps));
         });
 
-       it('resolves the id from props in case it was passed', () => {
-           const componentInstance = new TestClass({id});
-           expect(getRootId(componentInstance)).to.equal(id);
+        it('resolves the id from props in case it was passed', () => {
+            const componentInstance = new TestClass({id});
+            expect(getRootId(componentInstance)).to.equal(id);
 
-           const props = { id: anotherId };
-           expect(getRootId(props)).to.equal(anotherId);
-       });
+            const props = { id: anotherId };
+            expect(getRootId(props)).to.equal(anotherId);
+        });
 
         it('resolves the id from a component\'s private state if it was not provided in props', () => {
             expect(typeof getRootId(new TestClass())).to.equal('string');
@@ -42,12 +42,12 @@ describe('GlobalID', () => {
     });
 
     describe('getLocalId', () => {
-       it('returns the same localId for the same parameters', () => {
-           expect(getLocalId(rootId, id)).to.equal(getLocalId(rootId, id));
-       });
+        it('returns the same localId for the same parameters', () => {
+            expect(getLocalId(rootId, id)).to.equal(getLocalId(rootId, id));
+        });
 
-       it('returns different localIds for different parameters', () => {
-           expect(getLocalId(rootId, id)).to.not.equal(getLocalId(rootId, anotherId));
-       });
+        it('returns different localIds for different parameters', () => {
+            expect(getLocalId(rootId, id)).to.not.equal(getLocalId(rootId, anotherId));
+        });
     });
 });
