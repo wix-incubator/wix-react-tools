@@ -5,6 +5,7 @@ import { privateState, StateProvider } from '../core/private-state';
 let counter: number = 0;
 const provider: StateProvider<{id: string}> = privateState('globalId', () => ({ id: `${counter++}` }));
 const separator = '\u2794';
+const globalIdPropsError = 'tried to get root id for a props object but the key id was not found.';
 
 export interface GlobalIDProps {
     id: string;
@@ -13,11 +14,6 @@ export interface GlobalIDProps {
 export interface GlobalID {
     getRootId: (obj: object) => string,
     getLocalId: (rootId: string, id: string) => string
-}
-
-export class GlobalIDPropsError extends Error {
-    public name: string = 'GlobalIDPropsError';
-    public message: string = 'GlobalID Error: tried to get root id for a props object but the key id was not found.';
 }
 
 function conformsToGlobalIDProps(obj: React.Component): obj is React.Component<GlobalIDProps> {
@@ -34,7 +30,7 @@ function getRootId(obj: object): string {
         if (obj.hasOwnProperty('id')) {
             return (obj as {id: string}).id;
         }
-        throw new GlobalIDPropsError();
+        throw new Error(globalIdPropsError);
     }
 }
 
