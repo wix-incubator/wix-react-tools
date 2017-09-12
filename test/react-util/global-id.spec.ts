@@ -5,10 +5,11 @@ import { getLocalId, getRootId, GlobalIDTarget } from '../../src';
 class TestClass extends React.Component<GlobalIDTarget> {}
 
 describe('GlobalID', () => {
-   describe('getRootId', () => {
-       const id = 'pancake';
-       const propsId = 'propsId';
+    const id = 'pancake';
+    const anotherId = 'muffin';
+    const rootId = 'kaiser';
 
+    describe('getRootId', () => {
         it('returns the same ID for the same parameter', () => {
             const componentInstance = new TestClass();
             expect(getRootId(componentInstance)).to.equal(getRootId(componentInstance));
@@ -28,23 +29,19 @@ describe('GlobalID', () => {
         });
 
        it('resolves the id from props in case it was passed', () => {
-           const testClass = new TestClass({id});
-           expect(getRootId(testClass)).to.equal(id);
+           const componentInstance = new TestClass({id});
+           expect(getRootId(componentInstance)).to.equal(id);
 
-           const props = { id: propsId };
-           expect(getRootId(props)).to.equal(propsId);
+           const props = { id: anotherId };
+           expect(getRootId(props)).to.equal(anotherId);
        });
 
         it('resolves the id from a component\'s private state (if relevant) if it was not provided in props', () => {
             expect(typeof getRootId(new TestClass())).to.equal('string');
         });
-   });
+    });
 
-   describe('getLocalId', () => {
-       const id = 'schmarrn';
-       const anotherId = 'muffin';
-       const rootId = 'kaiser';
-
+    describe('getLocalId', () => {
        it('returns the same localId for the same parameters', () => {
            expect(getLocalId(rootId, id)).to.equal(getLocalId(rootId, id));
        });
@@ -52,5 +49,5 @@ describe('GlobalID', () => {
        it('returns different localIds for different parameters', () => {
            expect(getLocalId(rootId, id)).to.not.equal(getLocalId(rootId, anotherId));
        });
-   });
+    });
 });
