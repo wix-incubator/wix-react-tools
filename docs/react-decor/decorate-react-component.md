@@ -34,7 +34,7 @@ The signature of a stateful hook:
 ```tsx
 (this: Instance<T>, props: P, args: ElementArgs<E>) => ElementArgs<E>
 ```
-> Stateful hooks are executed bound to the `this` of the component instance, and so have full access to the instance's members, private or otherwise (e.g. `this.state...`).
+> Stateful hooks are executed bound to the `this` of the component instance, and so have full access to the instance's members, private or otherwise (e.g. `this.state...`). This capability is only present on `class` based components.
 
 ### Unified Hook
 The only difference between a stateful and a stateless hook is the `this` context with which they're executed (`undefined` for stateless, and the component instance for stateful). This is reflected in the following unified hook signature:
