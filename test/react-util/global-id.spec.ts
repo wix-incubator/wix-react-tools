@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { expect } from 'test-drive-react';
-import { getRootId, getLocalId, OptionalProps} from '../../src';
+import { getRootId, getLocalId, OptionalProps } from '../../src';
 
 class TestClass extends React.Component<OptionalProps> {}
 
