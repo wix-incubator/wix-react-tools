@@ -24,14 +24,16 @@ describe('GlobalID', () => {
 
             const providedIdInstance = new TestClass({id});
             expect(getRootId(providedIdInstance)).to.equal(id);
-
-            const incrementedIdInstance = new TestClass();
-            expect(getRootId(incrementedIdInstance)).to.equal('1');
             expect(getRootId(firstInstance)).to.equal('0');
         });
 
         it('produces a new unique ID and stores it in case there was no id given in props or found in private state', () => {
-            throw new Error('To be implemented');
+            const secondInstance = new TestClass();
+            expect(getRootId(secondInstance)).to.equal('1');
+
+            const incrementedIdInstance = new TestClass();
+            expect(getRootId(incrementedIdInstance)).to.equal('2');
+            expect(getRootId(secondInstance)).to.equal('1');
         });
    });
 
