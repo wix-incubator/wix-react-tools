@@ -9,37 +9,7 @@ Each mixin provides:
 * typescript interface to implement
 * props interface
 
-# how to use
-
-```tsx
-import {globalId,globalIdInterface, globalIdProps}
-
-@globalId
-class MyComp extends React.Component<globalIdProps & MyProps,any> implements globalIdInterface{
-    getGlobalId(...rest):string{};
-    render(){
-        <div>
-            <input id="nameInput"></input>
-            <label forHtml="nameInput"></label>
-        </div>
-    }
-}
-
-React.render(<MyComp id="App"></MyComp>)
-
-//will render:
-
-<div>
-    <input id="App-nameInput"></input>
-    <label forHtml="App-nameInput"></label>
-</div>
-```
-
 ## available mixins:
-
-[global-id](https://github.com/wix/react-bases/blob/master/docs/global-id.md)
-
-*Easily generate namespaced global DOM ID's that can be used in label forHtml property and more*
 
 [props-injection](https://github.com/wix/react-bases/blob/master/docs/props-injection.md)
 

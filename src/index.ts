@@ -24,9 +24,6 @@ export * from './react-component-features/stylable-feature';
 // legacy :
 //bases
 export * from './old/bases/observable-component';
-//mixins
-export * from './old/mixins/global-id-decorator';
-
 
 // customized exports:
 import {rootProps} from "./react-component-features/root-props";

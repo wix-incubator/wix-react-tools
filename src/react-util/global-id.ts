@@ -8,7 +8,7 @@ export function isComponentInstance(value: any): value is React.Component {
 }
 
 let counter: number = 0;
-const provider: StateProvider<number, object> = privateState('globalId', () => ({ id: counter++ }));
+const provider: StateProvider<{id: number}, object> = privateState('globalId', () => ({ id: counter++ }));
 
 export function getRootId(obj: object): string {
     if (isComponentInstance(obj)) {
