@@ -7,28 +7,22 @@ export function isComponentInstance(value: any): value is React.Component {
     return value && value instanceof React.Component;
 }
 
-export class GlobalID {
-    private counter: number = 0;
-    private provider: StateProvider<object, number>;
-    constructor(key: string) {
-        super(key);
+let counter: number = 0;
+const provider: StateProvider<number, object> = privateState('globalId', () => counter++);
 
-        this.provider = privateState(key, () => this.counter++);
+export function getRootId(obj: object): string {
+    if (isComponentInstance(obj)) {
+        if (obj.props.hasOwnProperty('id')) return (obj.props as {id: string}).id;
+    } else {
+        if (obj.hasOwnProperty('id')) return (obj as {id: string}).id;
     }
 
-    getRootId(obj: object): string {
-        if (isComponentInstance(obj)) {
-            if (obj.props.hasOwnProperty('id')) return (obj.props as {id: string}).id;
-        } else {
-            if (obj.hasOwnProperty('id')) return (obj as {id: string}).id;
-        }
-
-        return this.provider(obj);
-    }
-
-    getLocalId(rootId: string, id: string) {
-        return `${rootId}${separator}${id}`;
-    }
+    return `${provider(obj)}`;
 }
+
+export function getLocalId(rootId: string, id: string): string {
+    return `${rootId}${separator}${id}`;
+}
+
 
 
