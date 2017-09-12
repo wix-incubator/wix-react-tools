@@ -32,8 +32,7 @@ The signature of a stateless hook:
 The signature of a stateful hook:
 
 ```tsx
-(this: Instance<T>, props: P, args: ElementArgs<E>): ElementArgs<E>
-}
+(this: Instance<T>, props: P, args: ElementArgs<E>) => ElementArgs<E>
 ```
 > Stateful hooks are executed bound to the `this` of the component instance, and so have full access to the instance's members, private or otherwise (e.g. `this.state...`).
 
@@ -71,7 +70,7 @@ interface DecorReactHooks<P extends object, T extends Component<P> = Component<P
 ## Examples
 
 ### Simple stateless hook
-The following hook adds, changes (or adds if the property doesn't exist), and deletes a property. Running this hook on `onRootElement` will cause it to execute one time, only for the root node. Running it using `onEachElement` will have it run twice. You can see the results below.
+The following hook  adds, changes (or adds if the property doesn't exist), and deletes a property. Running this hook on `onRootElement` will cause it to execute one time, only for the root node. Running it using `onEachElement` will have it run twice. You can see the results below.
 
 ### Creating a hook
 
