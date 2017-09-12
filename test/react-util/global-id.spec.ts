@@ -36,7 +36,7 @@ describe('GlobalID', () => {
            expect(getRootId(props)).to.equal(anotherId);
        });
 
-        it('resolves the id from a component\'s private state (if relevant) if it was not provided in props', () => {
+        it('resolves the id from a component\'s private state if it was not provided in props', () => {
             expect(typeof getRootId(new TestClass())).to.equal('string');
         });
     });
