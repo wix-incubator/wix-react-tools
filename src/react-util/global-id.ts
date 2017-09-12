@@ -10,15 +10,11 @@ export interface MandatoryProps {
     id: string;
 }
 
-export interface OptionalProps {
-    id?: string;
-}
-
 function isGlobalIDProps(obj: any): obj is MandatoryProps {
     return obj && obj.hasOwnProperty('id');
 }
 
-export function getRootId(obj: object): string {
+function getRootId(obj: object): string {
     if (isComponentInstance(obj)) {
         if (isGlobalIDProps(obj.props)) {
             return obj.props.id;
@@ -32,6 +28,15 @@ export function getRootId(obj: object): string {
     }
 }
 
-export function getLocalId(rootId: string, id: string): string {
+function getLocalId(rootId: string, id: string): string {
     return `${rootId}${separator}${id}`;
 }
+
+export namespace globalId {
+    export type Props = MandatoryProps;
+}
+
+export const globalId = {
+    getRootId,
+    getLocalId
+};
