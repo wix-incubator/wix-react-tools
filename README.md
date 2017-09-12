@@ -34,6 +34,11 @@ Applies a stylable stylesheet to a component, Allowing it to use the stylesheet'
 
 More details in [stylable feature](./docs/react-component-features/stylable.md)
 
+### disposable feature 
+Helps manage clean-ups according to the lifecycle of the component. 
+
+More details in [disposable feature](./docs/react-component-features/disposable.md)
+
 ## merge Event Handlers
 merge two event handlers into one. 
 To avoid unnecessary render calls as a result of using this utility, this function is [memoized](https://en.wikipedia.org/wiki/Memoization), meaning calling it twice with the same arguments will produce the same result.

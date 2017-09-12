@@ -1,5 +1,5 @@
 import {resetAll, spyAll} from "../test-drivers/test-tools";
-import {add, after, before, middleware, onInstance} from "../../src";
+import {add, after, before, defineProperties, middleware, onInstance} from "../../src";
 import {expect} from "test-drive";
 
 describe('class-decor documentation examples', () => {
@@ -137,6 +137,30 @@ describe('class-decor documentation examples', () => {
             }
 
             @add({printMessage})
+            class Logger {
+                printMessage: (text: string) => string;
+            }
+            const logger = new Logger();
+            const result = logger.printMessage('hello');
+            expectLog(
+                `hello`
+            );
+            expect(result).to.eql('message printed: hello');
+        });
+    });
+
+    describe('defineProperties', () => {
+        it('directly on class', () => {
+            function printMessage(text: string) {
+                console.log(text);
+                return 'message printed: ' + text;
+            }
+
+            @defineProperties({
+                printMessage: {
+                    get: () => printMessage,
+                }
+            })
             class Logger {
                 printMessage: (text: string) => string;
             }
