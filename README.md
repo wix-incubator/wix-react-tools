@@ -24,23 +24,26 @@ A React Component Feature is a function that takes a component and returns a com
 
 More details in [React Component Features](./docs/react-component-features/README.md)
 
-### properties feature 
+### properties feature
 Connects some common component properties to the component's render output.
 
 More details in [properties feature](./docs/react-component-features/properties.md)
 
-### stylable feature 
+### stylable feature
 Applies a stylable stylesheet to a component, Allowing it to use the stylesheet's class and state names natively.
 
 More details in [stylable feature](./docs/react-component-features/stylable.md)
 
-### disposable feature 
-Helps manage clean-ups according to the lifecycle of the component. 
+### disposable feature
+Helps manage clean-ups according to the lifecycle of the component.
 
 More details in [disposable feature](./docs/react-component-features/disposable.md)
 
+## decorateReactComponent
+decorateReactComponent offers a way of applying hooks to React components in order to implement various features. These hooks temporarily [monkey-patch](https://en.wikipedia.org/wiki/Monkey_patch) `React.createElement` and `React.cloneElement` (`cloneElement` handling to be added soon) in order to customize every element created by your component. Further reading in [decorateReactComponent](./docs/react-decor/decorate-react-component.md)
+
 ## merge Event Handlers
-merge two event handlers into one. 
+merge two event handlers into one.
 To avoid unnecessary render calls as a result of using this utility, this function is [memoized](https://en.wikipedia.org/wiki/Memoization), meaning calling it twice with the same arguments will produce the same result.
 Its twin function, `chainFunctions`, has the same output, without using a cache layer. use it when the arguments of the function are not expected to be chained again.
 ```ts
@@ -57,7 +60,7 @@ Wrapping tools for functions
 More details in [function-decor](./docs/function-decor)
 
 ## private-state
-Privately extend any object, without inheritance or visibility concerns 
+Privately extend any object, without inheritance or visibility concerns
 More details in [private-state](./docs/core/private-state.md)
 
 ## configuraiton
@@ -69,12 +72,12 @@ More details in [config](./docs/core/config.md)
 ```ts
 import { setGlobalConfig } from "wix-react-tools";
 
-setGlobalConfig({ devMode: false }); //Defines devMode flags as false.  
+setGlobalConfig({ devMode: false }); //Defines devMode flags as false.
 ```
 
 ### GlobalConfig
 the type of configuration this project expects
-The following are all of the project's flags: 
+The following are all of the project's flags:
 
 | flag    	| purpose                                                       	|
 |---------	|---------------------------------------------------------------	|
@@ -93,9 +96,9 @@ The following are all of the project's flags:
  - open `http://localhost:8080/webtest.bundle` to run live tests that will update while you change the source code
 
 ## how to contribute new features
-1. open an issue describing the use-case for the feature. 
+1. open an issue describing the use-case for the feature.
 2. in that issue, explain how a user may solve the problem without the solution, describe the solution design, and the reasoning behind it.
-3. after agreeing on a solution design, start a branch with [github reference](https://help.github.com/articles/autolinked-references-and-urls/) to the issue. 
+3. after agreeing on a solution design, start a branch with [github reference](https://help.github.com/articles/autolinked-references-and-urls/) to the issue.
 4. add a markdown ("readme") description of the feature in the docs, containing the feature's description, user-code level examples, and API documentation of the feature.
 5. write acceptance tests for the feature, including all the documented code examples. If strong typings are part of the feature's requirements, add tests in the `typings-checker` folder as well.
 6. implement the feature, add tests as needed.
