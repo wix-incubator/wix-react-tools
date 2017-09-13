@@ -5,20 +5,18 @@ const { getRootId, getLocalId } = globalId;
 
 describe('Global ID', () => {
     describe('getRootId', () => {
-        it('throws an error when passed a props object without id', () => {
-// $ExpectError tried to get root id for a props object
-            getRootId({});
-        });
-
-        it('throws an error when passed something other than object', () => {
-// $ExpectError tried to get root id for a props object
-            getRootId([]);
-
+        it('throws an error when passed things other than objects', () => {
 // $ExpectError Argument of type '"wrong"' is not assignable
             getRootId('wrong');
 
 // $ExpectError Argument of type 'null' is not assignable
             getRootId(null);
+        });
+
+        it('throws an error when passed a props object without id', () => {
+           getRootId({});
+
+           getRootId([]);
         });
     });
 
