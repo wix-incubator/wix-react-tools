@@ -24,7 +24,7 @@ A React Component Feature is a function that takes a component and returns a com
 
 More details in [React Component Features](./docs/react-component-features/README.md)
 
-### properties feature -
+### properties feature
 Connects some common component properties to the component's render output.
 
 More details in [properties feature](./docs/react-component-features/properties.md)
