@@ -2,9 +2,14 @@ export {decorReactClass} from "./react-decor-class";
 export {DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook, StatelessElementHook} from "./common";
 
 import {Component, ComponentType} from "react";
+import {createDecorationReflection} from "./react-decor-reflection";
+import {privateState} from "../core/private-state";
+import {StatefulElementHook, StatelessElementHook} from "./common";
 import {decorReactClass} from "./react-decor-class";
 import {DecorReactHooks, isReactClassComponent, StatelessDecorReactHooks} from "./common";
-import {decorReactFunc} from "./react-decor-function"; // todo: fix exports in index
+import {decorReactFunc} from "./react-decor-function";
+
+export const decorationReflection = createDecorationReflection('react-decor-private-state');
 
 export type Wrapper<P extends object, T extends Component<P> = Component<P>> = <T1 extends ComponentType<P>>(comp: T1) => T1
 
@@ -15,13 +20,17 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
     const functionalDecorator = decorReactFunc(statelessHooks);
 
     // return wrapper with router built in
-    function wrapper<T1 extends ComponentType<P>>(comp: T1): T1 {
-        if (isReactClassComponent(comp)) {
-            return classDecorator(comp as any) as T1;
-        } else if (typeof comp === 'function') {
-            return functionalDecorator(comp as any) as T1;
+    function wrapper<T1 extends ComponentType<P>>(Comp: T1): T1 {
+        let Wrapped = Comp;
+        
+        if (isReactClassComponent(Comp)) {
+            Wrapped = classDecorator(Comp as any) as T1;
+        } else if (typeof Comp === 'function') {
+            Wrapped = functionalDecorator(Comp as any) as T1;
         }
-        return comp;
+        
+        decorationReflection.addHooksToDecorReflection(Comp, Wrapped, wrapper);
+        return Wrapped;
     }
 
     return wrapper;

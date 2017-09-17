@@ -6,7 +6,7 @@ import { inBrowser } from "mocha-plugin-env/dist/src";
 import { ElementArgs, StatefulElementHook, StatelessElementHook } from "../../src/react-decor/common";
 import { GlobalConfig, Instance } from "../../src/core/types";
 import { runInContext } from "../../src/core/config";
-import { decorateReactComponent } from "../../src/react-decor"; // todo: implement
+import { decorateReactComponent } from "../../src/react-decor";
 
 const _console = console;
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
