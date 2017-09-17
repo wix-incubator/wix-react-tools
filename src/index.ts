@@ -1,6 +1,7 @@
 // business logic
 export * from './core/functional';
 export * from './core/types';
+export * from './core/dev-mode';
 export * from './core/config';
 export {privateState, StateProvider, STATE_DEV_MODE_KEY} from './core/private-state';
 export * from './core/class-private-state';
