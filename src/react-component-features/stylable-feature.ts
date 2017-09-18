@@ -1,4 +1,4 @@
-import {RuntimeStylesheet, Stylesheet} from "stylable";
+import {RuntimeStylesheet, Stylesheet} from "stylable/runtime";
 import {decorateReactComponent} from "../react-decor/index";
 import {ElementArgs, StatelessElementHook} from "../react-decor/common";
 
