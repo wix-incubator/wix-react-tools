@@ -1,5 +1,5 @@
 import {properties, stylable} from "../../src";
-import {createGenerator} from "stylable";
+import {createGenerator} from "stylable/dist/src/generator";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
