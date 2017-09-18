@@ -2,20 +2,19 @@ export {decorReactClass} from "./react-decor-class";
 export {DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook, StatelessElementHook} from "./common";
 
 import {Component, ComponentType} from "react";
-import {createDecorationReflection} from "./react-decor-reflection";
-import {privateState} from "../core/private-state";
-import {StatefulElementHook, StatelessElementHook} from "./common";
+import {reflection} from "./react-decor-reflection";
 import {decorReactClass} from "./react-decor-class";
 import {DecorReactHooks, isReactClassComponent, StatelessDecorReactHooks} from "./common";
 import {decorReactFunc} from "./react-decor-function";
 
-export const decorationReflection = createDecorationReflection('react-decor-private-state');
+const decorationReflection = reflection('react-decor-private-state');
+export const { isDecorated } = decorationReflection;
 
-export type Wrapper<P extends object, T extends Component<P> = Component<P>> = <T1 extends ComponentType<P>>(comp: T1) => T1
+export type Wrapper<P extends object> = <T extends ComponentType<P>>(comp: T) => T
 
 export function decorateReactComponent<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>): Wrapper<P>;
-export function decorateReactComponent<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks: DecorReactHooks<P, T>): Wrapper<P, T>;
-export function decorateReactComponent<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): Wrapper<P, T> {
+export function decorateReactComponent<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks: DecorReactHooks<P, T>): Wrapper<P>;
+export function decorateReactComponent<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): Wrapper<P> {
     const classDecorator = decorReactClass(classHooks || statelessHooks);
     const functionalDecorator = decorReactFunc(statelessHooks);
 
@@ -29,7 +28,7 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
             Wrapped = functionalDecorator(Comp as any) as T1;
         }
         
-        decorationReflection.addHooksToDecorReflection(Comp, Wrapped, wrapper);
+        decorationReflection.registerDecorator(Comp, Wrapped, wrapper);
         return Wrapped;
     }
 

@@ -3,16 +3,12 @@ import { expect, sinon } from "test-drive-react";
 import { testWithBothComponentTypes } from "../test-drivers/test-tools";
 import { ElementArgs } from "../../src/react-decor/common";
 import { runInContext } from "../../src/core/config";
-import { decorateReactComponent, decorationReflection, StatefulElementHook, StatelessElementHook } from "../../src";
+import { decorateReactComponent, isDecorated, StatelessElementHook } from "../../src";
 
 type PropsWithName = { name: string };
 
 const SFComp: React.SFC<PropsWithName> = ({name}) => (
-    <div data-automation-id="root" data-delete-me="TBDeleted" data-change-me="TBChanged">
-        <span data-automation-id="content">
-            {name}
-        </span>
-    </div>
+    <div />
 );
 
 const hook: StatelessElementHook<PropsWithName> = (_p: PropsWithName, args: ElementArgs<any>): ElementArgs<any> => {
@@ -23,7 +19,7 @@ describe("react-decorator-reflection", () => {
     describe("isDecorated", () => {
         function suite(Comp: any) {
             it("should return false on an undecorated component", () => {
-                expect(decorationReflection.isDecorated(Comp)).to.equal(false);
+                expect(isDecorated(Comp)).to.equal(false);
             });
     
             it("should return true for a wrapped component", () => {
@@ -31,13 +27,13 @@ describe("react-decorator-reflection", () => {
 
                 const WrappedComp = wrapper(Comp);
     
-                expect(decorationReflection.isDecorated(WrappedComp)).to.equal(true);
+                expect(isDecorated(WrappedComp)).to.equal(true);
             });
     
             it("should return false for a component not wrapped", () => {
                 const wrapper = decorateReactComponent({onEachElement: [hook]});
                 
-                expect(decorationReflection.isDecorated(Comp, wrapper)).to.equal(false);
+                expect(isDecorated(Comp, wrapper)).to.equal(false);
             });
 
             it("should return false for a component not wrapped by specific wrapper", () => {
@@ -46,7 +42,7 @@ describe("react-decorator-reflection", () => {
 
                 const WrappedComp = wrapper(Comp);
                 
-                expect(decorationReflection.isDecorated(WrappedComp, wrapper2)).to.equal(false);
+                expect(isDecorated(WrappedComp, wrapper2)).to.equal(false);
             });
 
             it("should return true for a component wrapped by a single decorator", () => {
@@ -54,7 +50,7 @@ describe("react-decorator-reflection", () => {
 
                 const WrappedComp = wrapper(Comp);
                 
-                expect(decorationReflection.isDecorated(WrappedComp, wrapper)).to.equal(true);
+                expect(isDecorated(WrappedComp, wrapper)).to.equal(true);
             });
 
             it("should return true for a component wrapped by multiple specific decorators", () => {
@@ -64,39 +60,36 @@ describe("react-decorator-reflection", () => {
                 const WrappedComp = wrapper(Comp);
                 const WrappedComp2 = wrapper2(WrappedComp);
                 
-                expect(decorationReflection.isDecorated(WrappedComp2, wrapper)).to.equal(true);
-                expect(decorationReflection.isDecorated(WrappedComp2, wrapper2)).to.equal(true);
+                expect(isDecorated(WrappedComp2, wrapper)).to.equal(true);
+                expect(isDecorated(WrappedComp2, wrapper2)).to.equal(true);
             });
-            
-            it("should fire a warning (in devMode only) when trying to double wrap with the same decorator", () => {
-                const _warn = console.warn;
-                console.warn = sinon.spy();
 
-                runInContext({ devMode: true }, () => {
-                    const wrapper = decorateReactComponent({onEachElement: [hook]});
-                    
-                    const WrappedComp = wrapper(Comp);
-                    const WrappedComp2 = wrapper(WrappedComp);
+            describe("with console stubbing", () => {
+                const sandbox = sinon.sandbox.create();
+                beforeEach(() => sandbox.stub(console, 'warn'));
+                afterEach(() => sandbox.restore());
 
-                    expect(console.warn).to.have.been.calledOnce;
-                    expect(console.warn).to.have.been.calledWith(WrappedComp2, sinon.match(/is already wrapped with/), wrapper);
+                it("should fire a warning when trying to double wrap with the same decorator (in devMode only) ", () => {
+                    runInContext({ devMode: true }, () => {
+                        const wrapper = decorateReactComponent({onEachElement: [hook]});
+                        
+                        const WrappedComp = wrapper(Comp);
+                        const WrappedComp2 = wrapper(WrappedComp);
+    
+                        expect(console.warn).to.have.been.calledOnce;
+                        expect(console.warn).to.have.been.calledWith(WrappedComp2, sinon.match(/is already decorated with/), wrapper);
+                    });
                 });
     
-                console.warn = _warn;
-            });
-
-            it("should fire a warning (in devMode only) when trying to double wrap with the same decorator", () => {
-                const _warn = console.warn;
-                console.warn = sinon.spy();
-                const wrapper = decorateReactComponent({onEachElement: [hook]});
-
-                const WrappedComp = wrapper(Comp);
-                const WrappedComp2 = wrapper(WrappedComp);
-
-                expect(console.warn).to.not.have.been.called;
+                it("should not fire a warning when trying to double wrap with the same decorator (outside of devMode)", () => {
+                    const wrapper = decorateReactComponent({onEachElement: [hook]});
     
-                console.warn = _warn;
-            });
+                    const WrappedComp = wrapper(Comp);
+                    wrapper(WrappedComp);
+    
+                    expect(console.warn).to.not.have.been.called;
+                });
+            })
         }
     
         testWithBothComponentTypes(SFComp, suite);

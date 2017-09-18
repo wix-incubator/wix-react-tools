@@ -11,7 +11,6 @@ import {
     ReactHTML,
     ReactNode,
     ReactSVG,
-    ReactType,
     SFC
 } from "react";
 import { Instance } from '../core/types';
