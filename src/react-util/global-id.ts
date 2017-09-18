@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { isComponentInstance } from '../react-decor/common';
 import { privateState, StateProvider } from '../core/private-state';
 
@@ -10,11 +11,13 @@ export interface MandatoryProps {
     id: string;
 }
 
+export type Identifiable = React.Component | { id: string }
+
 function isGlobalIDProps(obj: any): obj is MandatoryProps {
     return obj && obj.hasOwnProperty('id');
 }
 
-function getRootId(obj: object): string {
+function getRootId(obj: Identifiable): string {
     if (isComponentInstance(obj)) {
         if (isGlobalIDProps(obj.props)) {
             return obj.props.id;

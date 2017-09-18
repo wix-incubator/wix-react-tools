@@ -14,8 +14,10 @@ describe('Global ID', () => {
         });
 
         it('throws an error when passed a props object without id', () => {
+// $ExpectError Argument of type '{}' is not assignable to parameter of type 'Identifiable'.
            getRootId({});
 
+// $ExpectError Argument of type 'never[]' is not assignable to parameter of type 'Identifiable'.
            getRootId([]);
         });
     });

@@ -31,8 +31,7 @@ describe('GlobalID', () => {
         });
 
         it('throws an exception when trying to get rootId for props object without id provided', () => {
-            debugger;
-            expect(() => getRootId({})).to.throw();
+            expect(() => getRootId({} as any)).to.throw();
         });
 
         it('resolves the id from props in case it was passed', () => {
