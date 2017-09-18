@@ -1,69 +1,88 @@
 # Wix React Tools
- [![npm version](https://badge.fury.io/js/wix-react-tools.svg)](https://www.npmjs.com/package/wix-react-tools)
- [![Greenkeeper badge](https://badges.greenkeeper.io/wix/wix-react-tools.svg)](https://greenkeeper.io/)
- [![Build Status](https://travis-ci.org/wix/wix-react-tools.svg?branch=master)](https://travis-ci.org/wix/wix-react-tools)
 
-> This library provides helpful utilities and features for React components.
+[![npm version](https://badge.fury.io/js/wix-react-tools.svg)](https://www.npmjs.com/package/wix-react-tools)
+[![Greenkeeper badge](https://badges.greenkeeper.io/wix/wix-react-tools.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/wix/wix-react-tools.svg?branch=master)](https://travis-ci.org/wix/wix-react-tools)
 
-### Installation
+This library provides helpful utilities and features for React components.
 
-Install **wix-react-tools** as a dependency in your local project
+## Installation
+
+Install **wix-react-tools** as a dependency in your local project.
 
 Using npm:
+
 ```bash
 npm install wix-react-tools --save
 ```
 
 Using yarn:
+
 ```bash
 yarn add wix-react-tools
 ```
 
 ## React Component Features
-A React Component Feature is a function that takes a component and returns a component with all the characteristics of the original component, and one or more new features.
+
+A React Component Feature is a function that takes a component and returns a component with all the characteristics of the original component, plus one or more new features.
 
 More details in [React Component Features](./docs/react-component-features/README.md)
 
 ### properties feature
+
 Connects some common component properties to the component's render output.
 
 More details in [properties feature](./docs/react-component-features/properties.md)
 
 ### stylable feature
+
 Applies a stylable stylesheet to a component, Allowing it to use the stylesheet's class and state names natively.
 
 More details in [stylable feature](./docs/react-component-features/stylable.md)
 
 ### disposable feature
+
 Helps manage clean-ups according to the lifecycle of the component.
 
 More details in [disposable feature](./docs/react-component-features/disposable.md)
 
 ## decorateReactComponent
-decorateReactComponent offers a way of applying hooks to React components in order to implement various features. These hooks temporarily [monkey-patch](https://en.wikipedia.org/wiki/Monkey_patch) `React.createElement` and `React.cloneElement` (`cloneElement` handling to be added soon) in order to customize every element created by your component. Further reading in [decorateReactComponent](./docs/react-decor/decorate-react-component.md)
+
+`decorateReactComponent` offers a way of applying hooks to React components in order to implement various features. These hooks temporarily [monkey-patch](https://en.wikipedia.org/wiki/Monkey_patch) `React.createElement`, `React.cloneElement`, and `cloneElement` (to be added soon) in order to customize every element created by your component. Further reading in [decorateReactComponent](./docs/react-decor/decorate-react-component.md)
 
 ## merge Event Handlers
-merge two event handlers into one.
+
+Merge two event handlers into one.
+
 To avoid unnecessary render calls as a result of using this utility, this function is [memoized](https://en.wikipedia.org/wiki/Memoization), meaning calling it twice with the same arguments will produce the same result.
-Its twin function, `chainFunctions`, has the same output, without using a cache layer. use it when the arguments of the function are not expected to be chained again.
+
+Its twin function, `chainFunctions`, has the same output without using a cache layer. Use it when the arguments of the function are not expected to be chained again.
+
 ```ts
 function cachedChainFunctions<T extends Function>(first:T, last:T):T & {clear():void}
 function chainFunctions<T extends Function>(first:T, last:T):T
 ```
 
 ## disposers
-The `Disposers` class is helpful in keeping track of disposer functions, and clearing them when needed.
+
+The `Disposers` class is helpful in keeping track of disposer functions and clearing them when needed.
+
 More details in [disposers](./docs/core/disposers.md)
 
 ## function-decor
-Wrapping tools for functions
+
+Wrapping tools for functions.
+
 More details in [function-decor](./docs/function-decor)
 
 ## private-state
-Privately extend any object, without inheritance or visibility concerns
+
+Privately extend any object, without inheritance or visibility concerns.
+
 More details in [private-state](./docs/core/private-state.md)
 
-## configuraiton
+## configuration
+
 Static configuration allows passing any form of data/flags to tools.
 More details in [config](./docs/core/config.md)
 
@@ -76,6 +95,7 @@ setGlobalConfig({ devMode: false }); //Defines devMode flags as false.
 ```
 
 ### GlobalConfig
+
 the type of configuration this project expects
 The following are all of the project's flags:
 
@@ -87,15 +107,18 @@ The following are all of the project's flags:
 # developer documentation
 
 ## how to build and test
+
  - clone the repository
  - in the cloned folder, run `npm install`
  - run `npm test` to build and test the code in both nodejs and browser
 
 ## how to debug (browser)
+
  - run `npm start` to run a development server
  - open `http://localhost:8080/webtest.bundle` to run live tests that will update while you change the source code
 
 ## how to contribute new features
+
 1. open an issue describing the use-case for the feature.
 2. in that issue, explain how a user may solve the problem without the solution, describe the solution design, and the reasoning behind it.
 3. after agreeing on a solution design, start a branch with [github reference](https://help.github.com/articles/autolinked-references-and-urls/) to the issue.
@@ -105,6 +128,7 @@ The following are all of the project's flags:
 7. when the feature seems complete, open a pull request (PR)  with [github reference](https://help.github.com/articles/autolinked-references-and-urls/) to the issue.
 
 ## how to contribute bug fixes
+
 The process is similar to that of new features, only the bar of explanations and documentations may be lower. start by opening an issue describing the bug.
 
 
