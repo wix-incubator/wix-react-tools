@@ -21,6 +21,7 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
         } else if (typeof comp === 'function') {
             return functionalDecorator(comp as any) as T1;
         }
+
         return comp;
     }
 

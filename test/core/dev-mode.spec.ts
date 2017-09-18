@@ -1,10 +1,13 @@
 import {expect} from "test-drive";
-import {devMode,  runInContext, getGlobalConfig} from "../../src";
-import {getProcessEnv} from "../../src/core/dev-mode";
+import {devMode, getGlobalConfig, runInContext} from "../../src";
+import {overrideGlobalConfig} from "../../src/core/config";
 
-declare const process: {env: any} | undefined;
+declare const process: { env: any };
 
 describe('dev-mode', () => {
+    beforeEach('reset global state', () => {
+        overrideGlobalConfig({});
+    });
 
     describe('global config constants', () => {
         it("devMode.ON  sets global config to dev-mode", () => {
@@ -24,13 +27,13 @@ describe('dev-mode', () => {
     describe('process.env', () => {
         it("devMode.ON  sets global config to dev-mode", () => {
             expect(runInContext(devMode.ON, () => {
-                return getProcessEnv().NODE_ENV;
-            })).to.not.eql('production')
+                return process.env.NODE_ENV;
+            })).to.eql('development')
         });
 
         it("devMode.OFF un-sets global config to dev-mode", () => {
             expect(runInContext(devMode.OFF, () => {
-                return getProcessEnv().NODE_ENV;
+                return process.env.NODE_ENV;
             })).to.eql('production');
         });
     });

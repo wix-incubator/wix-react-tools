@@ -1,29 +1,33 @@
-import {onGlobalConfig} from "./config";
+import {onGlobalConfig, setGlobalConfig} from "./config";
 
-//declare const process: {env: any} | undefined;
-const _process = this['process'] || {env:{NODE_ENV : process.env.NODE_ENV}};
-this['process'] = _process;
+declare const global: any;
+declare const window: any;
+declare let process: any;
+const globalCtx = (typeof self === 'object' && self.self === self && self) ||
+    (typeof global === 'object' && global['global'] === global && global) || window;
+
+globalCtx['process'] = process = globalCtx['process'] || process || {};
+process.env = process.env || {};
 
 export const devMode = {
-    ON : Object.freeze({
+    ON: Object.freeze({
         devMode: true
     }),
-    OFF : Object.freeze({
+    OFF: Object.freeze({
         devMode: false
     })
 };
 
-if (_process) {
-    _process.env = _process.env || {};
-    onGlobalConfig('devMode', (newVal: any) => {
-        if (newVal) {
-            _process.env.NODE_ENV = 'development';
-        } else {
-            _process.env.NODE_ENV = 'production';
-        }
-    });
+if (process.env.NODE_ENV == 'production') {
+    setGlobalConfig(devMode.OFF);
+} else {
+    setGlobalConfig(devMode.ON);
 }
 
-export function getProcessEnv(){
-    return _process.env;
-}
+onGlobalConfig('devMode', (newVal: any) => {
+    if (newVal) {
+        process.env.NODE_ENV = 'development';
+    } else {
+        process.env.NODE_ENV = 'production';
+    }
+});

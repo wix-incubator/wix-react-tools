@@ -1,6 +1,6 @@
-import {expect} from "test-drive";
+import {expect, sinon} from "test-drive-react";
 import {getGlobalConfig, overrideGlobalConfig, runInContext, setGlobalConfig} from "../../src";
-import {Dictionary} from "../../src/core/config";
+import {Dictionary, onGlobalConfig} from "../../src/core/config";
 
 const sampleConfig = {
     foo: 'bar',
@@ -18,6 +18,29 @@ describe('config', () => {
     });
     beforeEach('cleanup', () => {
         overrideGlobalConfig({});
+    });
+
+    it('setGlobalConfig, getGlobalConfig, overrideGlobalConfig', () => {
+        setGlobalConfig(sampleConfig);
+        expect(getGlobalConfig(), 'after setting sampleConfig').to.containSubset(sampleConfig);
+        setGlobalConfig(sampleConfig2);
+        expect(getGlobalConfig(), 'after setting sampleConfig2')
+            .to.containSubset(sampleConfig).and
+            .to.containSubset(sampleConfig2);
+        overrideGlobalConfig(sampleConfig);
+        expect(getGlobalConfig(), 'after setting sampleConfig').to.containSubset(sampleConfig);
+    });
+
+    it('onGlobalConfig + setGlobalConfig', () => {
+        const spy1 = sinon.spy();
+        const spy2 = sinon.spy();
+        onGlobalConfig('foo', spy1);
+        onGlobalConfig('foo', spy2);
+        setGlobalConfig(sampleConfig);
+        expect(spy1).to.have.callCount(1);
+        expect(spy1).to.have.been.calledWith(sampleConfig.foo);
+        expect(spy2).to.have.callCount(1);
+        expect(spy2).to.have.been.calledWith(sampleConfig.foo);
     });
 
     it('setGlobalConfig, getGlobalConfig, overrideGlobalConfig', () => {
