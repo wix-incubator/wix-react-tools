@@ -8,7 +8,7 @@ interface Props {
 }
 
 @disposable
-class DisposableComp extends React.Component<Props, any> {
+class DisposableComp extends React.Component<Props, any> implements disposable.This {
 
     readonly disposer: Disposers;
 
@@ -17,7 +17,7 @@ class DisposableComp extends React.Component<Props, any> {
     }
 
     render() {
-        return <div data-automation-id="test"></div>;
+        return <div />;
     }
 }
 
@@ -28,12 +28,12 @@ describe.assuming(inBrowser(), 'only in browser')("disposable decorator", () => 
 
     it('called on unmount', () => {
         let sinonSpy = sinon.spy();
-        const {container} = clientRenderer.render(<div></div>);
+        const {container} = clientRenderer.render(<div />);
 
-        clientRenderer.render(<div><DisposableComp hook={sinonSpy}></DisposableComp></div>, container);
+        clientRenderer.render(<div><DisposableComp hook={sinonSpy} /></div>, container);
         expect(sinonSpy).to.have.callCount(0);
 
-        clientRenderer.render(<div></div>, container);
+        clientRenderer.render(<div />, container);
         expect(sinonSpy).to.have.callCount(1);
     });
 });

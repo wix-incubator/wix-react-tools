@@ -8,6 +8,7 @@ export * from './core/class-private-state';
 
 //utils
 export * from './core/disposers';
+export * from './react-util/global-id';
 
 // js decor
 export * from './class-decor/index';
@@ -17,16 +18,13 @@ export * from "./function-decor";
 export * from './react-decor/index';
 
 // react features
-export * from './react-component-features/disposable-decorator';
+export {disposable} from './react-component-features/disposable-feature';
 export * from './react-component-features/properties-feature';
 export * from './react-component-features/stylable-feature';
 
 // legacy :
 //bases
 export * from './old/bases/observable-component';
-//mixins
-export * from './old/mixins/global-id-decorator';
-
 
 // customized exports:
 import {rootProps} from "./react-component-features/root-props";

@@ -18,3 +18,16 @@ export type GlobalConfig = {
 export type NotNull = object | number | boolean | string;
 
 export type NumberToString = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+
+export interface TypedPropertyDescriptor<T> {
+    configurable?: boolean;
+    enumerable?: boolean;
+    value?: T;
+    writable?: boolean;
+    get? (): T;
+    set? (v: T): void;
+}
+
+export type TypedPropertyDescriptorMap<T extends object> = {
+    [P in keyof T]: TypedPropertyDescriptor<T[P]>;
+    } & PropertyDescriptorMap;
