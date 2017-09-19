@@ -1,9 +1,7 @@
 import * as React from "react";
-import { expect, sinon } from "test-drive-react";
-import { testWithBothComponentTypes } from "../test-drivers/test-tools";
-import { ElementArgs } from "../../src/react-decor/common";
-import { runInContext } from "../../src/core/config";
-import { decorateReactComponent, isDecorated, StatelessElementHook } from "../../src";
+import {expect, sinon} from "test-drive-react";
+import {testWithBothComponentTypes} from "../test-drivers/test-tools";
+import {runInContext, decorateReactComponent, isDecorated, StatelessElementHook, devMode, ElementArgs} from "../../src";
 
 type PropsWithName = { name: string };
 
@@ -20,19 +18,19 @@ const wrapper2 = decorateReactComponent({onEachElement: [hook]});
 describe("react-decorator-reflection", () => {
     describe("isDecorated", () => {
         function suite(Comp: any) {
-            const WrappedComp = wrapper(Comp);            
+            const WrappedComp = wrapper(Comp);
 
             it("should return false on an undecorated component", () => {
                 expect(isDecorated(Comp)).to.equal(false);
             });
-    
+
             it("should return true for a wrapped component", () => {
-    
+
                 expect(isDecorated(WrappedComp)).to.equal(true);
             });
-    
+
             it("should return false for a component not wrapped", () => {
-                
+
                 expect(isDecorated(Comp, wrapper)).to.equal(false);
             });
 
@@ -46,7 +44,7 @@ describe("react-decorator-reflection", () => {
 
             it("should return true for a component wrapped by multiple specific decorators", () => {
                 const WrappedComp2 = wrapper2(WrappedComp);
-                
+
                 expect(isDecorated(WrappedComp2, wrapper)).to.equal(true);
                 expect(isDecorated(WrappedComp2, wrapper2)).to.equal(true);
             });
@@ -57,22 +55,23 @@ describe("react-decorator-reflection", () => {
                 afterEach(() => sandbox.restore());
 
                 it("should fire a warning when trying to double wrap with the same decorator (in devMode only) ", () => {
-                    runInContext({ devMode: true }, () => {
+                    runInContext(devMode.ON, () => {
                         const WrappedComp2 = wrapper(WrappedComp);
-    
+
                         expect(console.warn).to.have.been.calledOnce;
                         expect(console.warn).to.have.been.calledWith(WrappedComp2, sinon.match(/is already decorated with/), wrapper);
                     });
                 });
-    
+
                 it("should not fire a warning when trying to double wrap with the same decorator (outside of devMode)", () => {
-                    wrapper(WrappedComp);
-    
-                    expect(console.warn).to.not.have.been.called;
+                    runInContext(devMode.OFF, () => {
+                        wrapper(WrappedComp);
+                        expect(console.warn).to.not.have.been.called;
+                    });
                 });
             })
         }
-    
+
         testWithBothComponentTypes(SFComp, suite);
     });
 });

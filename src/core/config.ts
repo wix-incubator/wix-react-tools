@@ -10,14 +10,26 @@ let dirty = true;
 
 let publicState: Readonly<Dictionary> = {};
 
+// TODO use eventEmitter?
+type Listener = <T>(newVal:any)=>void;
+let listeners : {[k:string]:Listener[]} = {};
+
 
 export function overrideGlobalConfig<T extends object = GlobalConfig>(config: T): void {
-    internalState = deepClone(config);
+    unsafeOverrideGlobalConfig(deepClone(config));
+}
+
+ function unsafeOverrideGlobalConfig<T extends object = GlobalConfig>(config: T): void {
+    internalState = config;
     dirty = true;
 }
 
 export function setGlobalConfig<T extends object = GlobalConfig>(config: T): void {
     deepMergeClone(internalState, config);
+    const propNames = Object.keys(config);
+    propNames.forEach(function (name) {
+        listeners[name] && listeners[name].forEach(l => l(internalState[name]));
+    });
     dirty = true;
 }
 
@@ -28,8 +40,12 @@ export function getGlobalConfig<T extends object = GlobalConfig>(): T {
     return publicState as T;
 }
 
+export function onGlobalConfig(name:string, listener: <T>(newVal:any)=>void){
+    listeners[name] ? listeners[name].push(listener) : listeners[name] = [listener];
+}
+
 export function runInContext<T extends object = GlobalConfig>(config: T, func: Function, test = false) {
-    const cleanup = overrideGlobalConfig.bind(null, deepClone(internalState));
+    const cleanup = unsafeOverrideGlobalConfig.bind(null, deepClone(internalState));
     let result: any = null;
     dirty = true;
     try {

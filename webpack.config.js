@@ -20,11 +20,6 @@ module.exports = {
         libraryTarget: 'umd',
         pathinfo: true
     },
-    plugins:[new webpack.DefinePlugin({
-        'process.env': {
-            NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'production'),
-        },
-    })],
     devServer: {
         contentBase: distPath,
         inline: true,

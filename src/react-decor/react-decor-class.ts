@@ -73,7 +73,7 @@ class ReactDecorData<P extends object, T extends Component<P> = Component<P>> {
             let rootArgs = this.originalArgs.get(rootElement);
             this.originalArgs.clear();
             if (rootArgs === undefined) {
-                if (getGlobalConfig<GlobalConfig>().devMode) {
+                if (process.env.NODE_ENV !== 'production') {
                     console.warn('unexpected root node :', rootElement);
                 }
             } else {
@@ -153,8 +153,10 @@ export function decorReactClass<P extends object, T extends Component<any>>(hook
             mixData.onRootElementHooks.add(h);
         });
 
-        if (getGlobalConfig<GlobalConfig>().devMode && !mixed.displayName && componentClazz.name) {
-            mixed.displayName = componentClazz.name;
+        if(process.env.NODE_ENV !== 'production') {
+            if (!mixed.displayName && componentClazz.name) {
+                mixed.displayName = componentClazz.name;
+            }
         }
         return mixed;
     };

@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {after, GlobalConfig, middleware, runInContext} from "../../src";
+import {after, GlobalConfig, middleware, runInContext, devMode} from "../../src";
 
 
 // TODO: change tests to function-decor style (instead of class decor) and make them pass
@@ -29,7 +29,7 @@ describe("class-decor dev mode warnings", () => {
         }
 
         it("prompts a warning when in dev mode", () => {
-            runInContext<GlobalConfig>({devMode: true}, overrideMethodReturnedValueWithUndefined);
+            runInContext<GlobalConfig>(devMode.ON, overrideMethodReturnedValueWithUndefined);
 
             expect(console.warn).to.have.callCount(1);
             expect(console.warn).to.have.been.calledWith('@after returnsValue Did you forget to return a value?');
@@ -52,7 +52,7 @@ describe("class-decor dev mode warnings", () => {
             }
             let duck = new Duck();
 
-            runInContext<GlobalConfig>({devMode: true}, () => {
+            runInContext<GlobalConfig>(devMode.ON, () => {
                 duck.duckWillQuack();
                 expect(console.warn).to.have.callCount(1);
                 expect(console.warn).to.have.been.calledWithMatch(/\@middleware/);
@@ -70,7 +70,7 @@ describe("class-decor dev mode warnings", () => {
             }
             let duck = new Duck();
 
-            runInContext<GlobalConfig>({devMode: true}, () => {
+            runInContext<GlobalConfig>(devMode.ON, () => {
                 duck.duckWillQuack();
                 expect(console.warn).to.have.callCount(0);
             });
