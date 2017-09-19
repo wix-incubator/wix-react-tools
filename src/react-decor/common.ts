@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
     Attributes,
     ClassicComponent,
@@ -7,11 +6,11 @@ import {
     Component,
     ComponentClass,
     ComponentState,
+    ComponentType,
     HTMLAttributes,
     ReactHTML,
     ReactNode,
     ReactSVG,
-    ReactType,
     SFC
 } from "react";
 import { Instance } from '../core/types';
@@ -20,12 +19,12 @@ export function isNotEmptyArrayLike(arr: Array<any> | undefined): arr is Array<a
     return !!(arr && (arr.length > 0));
 }
 
-export function isReactClassComponent(value: any): value is React.ComponentClass<any> {
+export function isReactClassComponent(value: any): value is ComponentClass<any> {
     return value && isComponentInstance(value.prototype);
 }
 
 export function isComponentInstance(value: any): value is React.Component {
-    return value && value instanceof React.Component;
+    return value && value instanceof Component;
 }
 
 export type ElementType<P> =
@@ -54,6 +53,8 @@ export function translateArgumentsToObject<P extends {}>(args: ElementArgsTuple<
 export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): ElementArgsTuple<P> {
     return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
 }
+
+export type Wrapper<P extends object> = <T extends ComponentType<P>>(comp: T) => T
 
 export interface ElementHook<P extends object, T extends Component<P> = Component<P>> {
     <E = object>(this: Instance<T>|undefined, props: P, args: ElementArgs<E>): ElementArgs<E>
