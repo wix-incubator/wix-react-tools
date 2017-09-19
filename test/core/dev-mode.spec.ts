@@ -11,30 +11,25 @@ describe('dev-mode', () => {
 
     describe('global config constants', () => {
         it("devMode.ON  sets global config to dev-mode", () => {
-            expect(runInContext(devMode.ON, () => {
-                return getGlobalConfig().devMode;
-            })).to.be.ok
+            const globalDevMode: boolean | undefined = runInContext(devMode.ON, () => getGlobalConfig().devMode);
+            expect(globalDevMode).to.be.ok
         });
 
         it("devMode.OFF un-sets global config to dev-mode", () => {
-            expect(runInContext(devMode.OFF, () => {
-                return getGlobalConfig().devMode;
-            })).to.not.be.ok
+            const globalDevMode: boolean | undefined = runInContext(devMode.OFF, () => getGlobalConfig().devMode);
+            expect(globalDevMode).to.not.be.ok
         });
     });
 
-
     describe('process.env', () => {
         it("devMode.ON  sets global config to dev-mode", () => {
-            expect(runInContext(devMode.ON, () => {
-                return process.env.NODE_ENV;
-            })).to.eql('development')
+            const nodeEnv = runInContext(devMode.ON, () => process.env.NODE_ENV);
+            expect(nodeEnv).to.eql('development')
         });
 
         it("devMode.OFF un-sets global config to dev-mode", () => {
-            expect(runInContext(devMode.OFF, () => {
-                return process.env.NODE_ENV;
-            })).to.eql('production');
+            const nodeEnv = runInContext(devMode.OFF, () => process.env.NODE_ENV);
+            expect(nodeEnv).to.eql('production');
         });
     });
 });

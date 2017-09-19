@@ -18,12 +18,16 @@ export const devMode = {
     })
 };
 
-if (process.env.NODE_ENV == 'production') {
+// set global config's devMode flag according to environment
+if (process.env.NODE_ENV === 'production') {
     setGlobalConfig(devMode.OFF);
-} else {
+}
+
+if (process.env.NODE_ENV === 'development') {
     setGlobalConfig(devMode.ON);
 }
 
+// set process.env.NODE_ENV according to global config's devMode flag
 onGlobalConfig('devMode', (newVal: any) => {
     if (newVal) {
         process.env.NODE_ENV = 'development';
