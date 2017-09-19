@@ -1,4 +1,3 @@
-import {getGlobalConfig} from "./config";
 import {NotNull} from "./types";
 
 export const STATE_DEV_MODE_KEY = "$private-context";
