@@ -98,7 +98,7 @@ class ReactDecorData<P extends object, T extends Component<P> = Component<P>> {
             this.onEachElementHooks.collect().forEach((hook: StatefulElementHook<P, T>) => {
                 args = hook.call(this.lastRendering, this.lastRendering.props, args);
                 if (args === undefined) {
-                    throw new Error('Error: onChildElement hook returned undefined');
+                    throw new Error('Error: onEachElement hook returned undefined');
                 }
             });
             this.currentArgs = functionArgs;
@@ -125,21 +125,6 @@ const reactMixData: ClassStateProvider<ReactDecorData<object, Component<any>>, C
         return new ReactDecorData<T>(mixerData, inherited); // create react-decor data
     });
 
-export function onChildElement<P extends object, T extends Component<any>>(hook: StatefulElementHook<P, T>): ClassDecorator<T> {
-    return function onChildElementDecorator<C extends Class<T>>(componentClazz: C): C {
-        let mixed = mix(componentClazz);
-        reactMixData(mixed).onEachElementHooks.add(hook);
-        return mixed;
-    };
-}
-
-export function onRootElement<P extends object, T extends Component<any>>(hook: StatefulElementHook<P, T>): ClassDecorator<T> {
-    return function onRootElementDecorator<C extends Class<T>>(componentClazz: C): C {
-        let mixed = mix(componentClazz);
-        reactMixData(mixed).onRootElementHooks.add(hook);
-        return mixed;
-    };
-}
 
 export function decorReactClass<P extends object, T extends Component<any>>(hooks: DecorReactHooks<P, T>): ClassDecorator<T> {
     return function reactClassDecorator<C extends Class<T> & React.ComponentClass>(componentClazz: C): C {

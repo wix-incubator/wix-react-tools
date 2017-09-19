@@ -1,4 +1,4 @@
-import {onChildElement, onRootElement, simulateRender} from "../../src/react-decor/react-decor-class";
+import {decorReactClass, simulateRender} from "../../src/react-decor/react-decor-class";
 import * as React from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
@@ -38,27 +38,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
                 </div>
             }
         }
-
-        it('onRootElement', () => {
-            @onRootElement(overrideClassesHook)
-            class MyComp extends SuperComp {
-            }
-
-            const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
-            expect(select('Root')).to.have.property('className', 'App');
-            expect(select('Child')).to.have.property('className', 'otherClassName');
-        });
-        it('onChildElement', () => {
-            @onChildElement(overrideClassesHook)
-            class MyComp extends SuperComp {
-            }
-
-            const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
-            expect(select('Root')).to.have.property('className', 'App');
-            expect(select('Child')).to.have.property('className', 'App');
-        });
     });
-    describe('onRootElement', () => {
+    describe('onRootElement hooks', () => {
         let warn = console.warn;
         beforeEach("replace console.warn with spy", () => {
             console.warn = sinon.spy();
@@ -74,7 +55,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
             return args;
         }
 
-        @onRootElement(justAHook)
+        @decorReactClass({onEachElement:[justAHook]})
         class MyComp extends React.Component {
             render() {
                 return result;
@@ -96,7 +77,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
         it('does not warn on unknown root if null', () => {
             runInContext(devMode.ON, () => {
-                @onRootElement(justAHook)
+                @decorReactClass({onEachElement:[justAHook]})
                 class MyComp2 extends React.Component {
                     render() {
                         return null;
@@ -114,10 +95,10 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
 
     });
-    describe('onChildElement', () => {
+
+    describe('onEachElement hooks', () => {
         it('throws when hook returns undefined', () => {
-            @onChildElement((() => {
-            }) as any)
+            @decorReactClass({onEachElement:[(() => {}) as any]})
             class MyComp extends React.Component {
                 render() {
                     return <div/>
@@ -126,13 +107,13 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
             // expect the error to have a message with these strings: `onChildElement` , `hook`, `undefined`
             expect(
                 () => clientRenderer.render(<MyComp/>)
-            ).to.throw(Error, /(?=.*onChildElement.*)(?=.*hook.*)(?=.*undefined.*)/);
+            ).to.throw(Error, /(?=.*onEachElement.*)(?=.*hook.*)(?=.*undefined.*)/);
         });
 
         it('cleans up hook even if render throws', () => {
-            @onChildElement((() => {
+            @decorReactClass({onEachElement:[(() => {
                 throw new Error('weeeeeee!!');
-            }) as any)
+            }) as any]})
             class MyComp extends React.Component {
                 render() {
                     return <div/>
@@ -154,8 +135,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
                 return args;
             }
 
-            @onChildElement(FooHook)
-            @onChildElement(BarHook)
+            @decorReactClass({onEachElement:[FooHook]})
+            @decorReactClass({onEachElement:[BarHook]})
             class MyComp extends React.Component {
                 render() {
                     return <div data-automation-id="1"/>
@@ -177,12 +158,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
                 return args;
             }
 
-            @onChildElement(FooHook)
+            @decorReactClass({onEachElement:[FooHook]})
             class BaseComp extends React.Component {
 
             }
 
-            @onChildElement(BarHook)
+            @decorReactClass({onEachElement:[BarHook]})
             class MyComp extends BaseComp {
                 render() {
                     return <div data-automation-id="1"/>

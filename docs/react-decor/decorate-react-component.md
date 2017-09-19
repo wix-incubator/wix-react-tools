@@ -61,7 +61,7 @@ If the feature does not require state, then you can simply provide your hooks on
 If the feature requires a different implementation for SFC/Class components, provide those hooks separately.
 
 ```tsx
-decorateReactComponent(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): Wrapper<P, T>
+decorateReactComponent(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P>): Wrapper<P>
 ```
 
 ```tsx
@@ -76,6 +76,22 @@ interface DecorReactHooks<P extends object, T extends Component<P> = Component<P
     onRootElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
     onEachElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
 }
+```
+
+## onRootElement API
+
+`onRootElement` is a sugar for when you only want to add a single hook to the root element of the component.
+
+```tsx
+onRootElement(statelessHook: StatelessElementHook, classHook?: StatefulElementHook): Wrapper {
+```
+
+## onEachElement API
+
+`onEachElement` is a sugar for when you only want to add a single hook to every element of the component.
+
+```tsx
+onEachElement(statelessHook: StatelessElementHook, classHook?: StatefulElementHook): Wrapper {
 ```
 
 ## Examples
