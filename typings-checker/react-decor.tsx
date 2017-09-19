@@ -8,20 +8,20 @@ type PropsWithName = { name: string };
 type PropsWithName2 = { name: Function };
 
 describe('React Decorator', () => {
-    // $ExpectType Wrapper<{}, Component<{}, {}>>
+    // $ExpectType Wrapper<{}>
     decorateReactComponent({});
 
-    // $ExpectType Wrapper<{}, Component<{}, {}>>
+    // $ExpectType Wrapper<{}>
     decorateReactComponent({}, {});
 
-    // $ExpectType Wrapper<PropsWithName, Component<PropsWithName, {}>>
+    // $ExpectType Wrapper<PropsWithName>
     decorateReactComponent(
         {
             onEachElement: [hook],
             onRootElement: [hook]
         });
 
-    // $ExpectType Wrapper<PropsWithName, Component<PropsWithName, {}>>
+    // $ExpectType Wrapper<PropsWithName>
     decorateReactComponent(
         {
             onEachElement: [hook],
