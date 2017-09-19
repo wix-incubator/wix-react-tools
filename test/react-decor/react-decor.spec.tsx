@@ -3,10 +3,7 @@ import { SFC, Component } from 'react';
 import { ClientRenderer, expect, sinon } from "test-drive-react";
 import { makeClassComponent, resetAll, spyAll, testWithBothComponentTypes } from "../test-drivers/test-tools";
 import { inBrowser } from "mocha-plugin-env/dist/src";
-import { ElementArgs, StatefulElementHook, StatelessElementHook } from "../../src/react-decor/common";
-import { GlobalConfig, Instance } from "../../src/core/types";
-import { runInContext } from "../../src/core/config";
-import { decorateReactComponent } from "../../src/react-decor";
+import { decorateReactComponent, devMode, runInContext, Instance, ElementArgs, StatefulElementHook, StatelessElementHook } from "../../src";
 
 const _console = console;
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
@@ -160,7 +157,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         }
         function testDefaultDisplayName(Comp: any, type:'SFC'|'Class Component') {
             it(`should copy name to displayName if original comp has no displayName - ${type}`, () => {
-                runInContext({ devMode: true }, () => {
+                runInContext(devMode.ON, () => {
                     const wrap = decorateReactComponent<PropsWithName>({});
                     const WrappedComp = wrap(Comp);
 
@@ -215,7 +212,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
         function nullTest(Comp: any) {
             it('does not warn on unknown root if null', () => {
-                runInContext<GlobalConfig>({ devMode: true }, () => {
+                runInContext(devMode.ON, () => {
                     const wrap = decorateReactComponent({ onRootElement: [rootHook] });
                     const WrappedComp = wrap(Comp);
                     clientRenderer.render(<WrappedComp name="" />);
@@ -229,7 +226,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
             const wrap = decorateReactComponent({ onRootElement: [rootHook] });
             const WrappedComp = wrap(Comp);
             it('warns on unknown root in dev mode', () => {
-                runInContext<GlobalConfig>({ devMode: true }, () => {
+                runInContext(devMode.ON, () => {
                     clientRenderer.render(<WrappedComp name="" />);
                     expect(_console.warn).to.have.callCount(1);
                     expect(_console.warn).to.have.been.calledWithMatch(/unexpected root/);
@@ -237,7 +234,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
             });
 
             it('does not warn on unknown root out of dev mode', () => {
-                runInContext<GlobalConfig>({ devMode: false }, () => {
+                runInContext(devMode.OFF, () => {
                     clientRenderer.render(<WrappedComp name="" />);
                     expect(_console.warn).to.have.callCount(0);
                 });

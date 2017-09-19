@@ -52,7 +52,7 @@ export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDeco
             if (rootElementArgs) {
                 rootElementArgs = hooks.onRootElement.reduce(getHooksReducer(context.componentProps), rootElementArgs);
                 renderResult = cloneElement(renderResult, (rootElementArgs!).elementProps);
-            } else if (getGlobalConfig<GlobalConfig>().devMode) {
+            } else if (process.env.NODE_ENV !== 'production') {
                 console.warn('unexpected root node : ', renderResult);
             }
         }
@@ -66,7 +66,7 @@ export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDeco
         after: [applyRootHooks]
     });
 
-    return getGlobalConfig().devMode ? translateName(decorator) : decorator;
+    return process.env.NODE_ENV !== 'production' ? translateName(decorator) : decorator;
 }
 
 // create a custom react create element function that applies the given hooks

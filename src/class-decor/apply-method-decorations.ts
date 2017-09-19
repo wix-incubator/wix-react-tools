@@ -1,7 +1,7 @@
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import _union = require('lodash/union');
-import {getGlobalConfig} from "../core/config";
-import {Class, GlobalConfig} from "../core/types";
+import {Class} from "../core/types";
+import "../core/dev-mode";
 import {
     AfterMethodHook,
     BeforeMethodHook,
@@ -125,7 +125,7 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, hooks: Array<M
     let retVal;
     if (hooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
-        let tracker: MiddlewareTracker = (getGlobalConfig<GlobalConfig>().devMode) ? new MiddlewareTracker() : dummyTracker;
+        let tracker: MiddlewareTracker = (process.env.NODE_ENV !== 'production') ? new MiddlewareTracker() : dummyTracker;
         //Run middleware:
         retVal = hooks[0](target, createNextForMiddlewareHook(target, originalMethod, hooks, 1, tracker), methodArgs);
         if (tracker.lastMiddlewareRunning < hooks.length) {
@@ -148,13 +148,13 @@ function createNextForMiddlewareHook<T extends object, A, R>(target: T, original
 }
 
 function runAfterHooks<T extends object>(target: T, hooks: Array<AfterMethodHook> | null, methodName: keyof T, methodResult: any) {
-    const devMode = getGlobalConfig<GlobalConfig>().devMode;
-
     if (hooks) {
         hooks.forEach((hook: AfterMethodHook) => {
             const hookMethodResult = hook(target, methodResult);
-            if (devMode && methodResult !== undefined && hookMethodResult === undefined) {
-                console.warn(`@after ${methodName} Did you forget to return a value?`);
+            if (process.env.NODE_ENV !== 'production') {
+                if (methodResult !== undefined && hookMethodResult === undefined) {
+                    console.warn(`@after ${methodName} Did you forget to return a value?`);
+                }
             }
             methodResult = hookMethodResult;
         });

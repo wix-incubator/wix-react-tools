@@ -1,8 +1,13 @@
 import {onGlobalConfig, setGlobalConfig} from "./config";
 
+declare global {
+    const process: any;
+}
+
 declare const global: any;
 declare const window: any;
 declare let process: any;
+
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global['global'] === global && global) || window;
 

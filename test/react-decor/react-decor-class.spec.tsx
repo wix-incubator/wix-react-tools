@@ -1,10 +1,8 @@
 import {onChildElement, onRootElement, simulateRender} from "../../src/react-decor/react-decor-class";
-import {ElementArgs} from "../../src/react-decor/common";
 import * as React from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
-import {runInContext} from "../../src/core/config";
-import {GlobalConfig} from "../../src/core/types";
+import {devMode, runInContext, ElementArgs} from "../../src";
 import {HTMLAttributes} from "react";
 
 declare const process: any;
@@ -83,7 +81,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
             }
         }
         it('warns on unknown root in dev mode', () => {
-            runInContext<GlobalConfig>({devMode: true}, () => {
+            runInContext(devMode.ON, () => {
                 simulateRender(MyComp);
                 expect(console.warn).to.have.callCount(1);
                 expect(console.warn).to.have.been.calledWithMatch(/unexpected root/);
@@ -91,13 +89,13 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
 
         it('does not warn on unknown root out of dev mode', () => {
-            runInContext<GlobalConfig>({devMode: false}, () => {
+            runInContext(devMode.OFF, () => {
                 simulateRender(MyComp);
                 expect(console.warn).to.have.callCount(0);
             });
         });
         it('does not warn on unknown root if null', () => {
-            runInContext<GlobalConfig>({devMode: true}, () => {
+            runInContext(devMode.ON, () => {
                 @onRootElement(justAHook)
                 class MyComp2 extends React.Component {
                     render() {
@@ -109,7 +107,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
             });
         });
         it('ignores unknown root out of dev mode', () => {
-            runInContext<GlobalConfig>({devMode: false}, () => {
+            runInContext(devMode.OFF, () => {
                 new MyComp().render();
                 expect(console.warn).to.have.callCount(0);
             });

@@ -1,5 +1,5 @@
 export {decorReactClass} from "./react-decor-class";
-export {DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook, StatelessElementHook, Wrapper} from "./common";
+export {DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook, StatelessElementHook, Wrapper, ElementArgs} from "./common";
 
 import {Component, ComponentType} from "react";
 import {reflection} from "./react-decor-reflection";
