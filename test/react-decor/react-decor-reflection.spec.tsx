@@ -14,50 +14,37 @@ const SFComp: React.SFC<PropsWithName> = ({name}) => (
 const hook: StatelessElementHook<PropsWithName> = (_p: PropsWithName, args: ElementArgs<any>): ElementArgs<any> => {
     return args;
 };
+const wrapper = decorateReactComponent({onEachElement: [hook]});
+const wrapper2 = decorateReactComponent({onEachElement: [hook]});
 
 describe("react-decorator-reflection", () => {
     describe("isDecorated", () => {
         function suite(Comp: any) {
+            const WrappedComp = wrapper(Comp);            
+
             it("should return false on an undecorated component", () => {
                 expect(isDecorated(Comp)).to.equal(false);
             });
     
             it("should return true for a wrapped component", () => {
-                const wrapper = decorateReactComponent({onEachElement: [hook]});
-
-                const WrappedComp = wrapper(Comp);
     
                 expect(isDecorated(WrappedComp)).to.equal(true);
             });
     
             it("should return false for a component not wrapped", () => {
-                const wrapper = decorateReactComponent({onEachElement: [hook]});
                 
                 expect(isDecorated(Comp, wrapper)).to.equal(false);
             });
 
             it("should return false for a component not wrapped by specific wrapper", () => {
-                const wrapper = decorateReactComponent({onEachElement: [hook]});
-                const wrapper2 = decorateReactComponent({onEachElement: [hook]});
-
-                const WrappedComp = wrapper(Comp);
-                
                 expect(isDecorated(WrappedComp, wrapper2)).to.equal(false);
             });
 
             it("should return true for a component wrapped by a single decorator", () => {
-                const wrapper = decorateReactComponent({onEachElement: [hook]});
-
-                const WrappedComp = wrapper(Comp);
-                
                 expect(isDecorated(WrappedComp, wrapper)).to.equal(true);
             });
 
             it("should return true for a component wrapped by multiple specific decorators", () => {
-                const wrapper = decorateReactComponent({onEachElement: [hook]});
-                const wrapper2 = decorateReactComponent({onEachElement: [hook]});
-
-                const WrappedComp = wrapper(Comp);
                 const WrappedComp2 = wrapper2(WrappedComp);
                 
                 expect(isDecorated(WrappedComp2, wrapper)).to.equal(true);
@@ -71,9 +58,6 @@ describe("react-decorator-reflection", () => {
 
                 it("should fire a warning when trying to double wrap with the same decorator (in devMode only) ", () => {
                     runInContext({ devMode: true }, () => {
-                        const wrapper = decorateReactComponent({onEachElement: [hook]});
-                        
-                        const WrappedComp = wrapper(Comp);
                         const WrappedComp2 = wrapper(WrappedComp);
     
                         expect(console.warn).to.have.been.calledOnce;
@@ -82,9 +66,6 @@ describe("react-decorator-reflection", () => {
                 });
     
                 it("should not fire a warning when trying to double wrap with the same decorator (outside of devMode)", () => {
-                    const wrapper = decorateReactComponent({onEachElement: [hook]});
-    
-                    const WrappedComp = wrapper(Comp);
                     wrapper(WrappedComp);
     
                     expect(console.warn).to.not.have.been.called;

@@ -1,35 +1,35 @@
 import { Wrapper } from './index';
 import { privateState } from "../core/private-state";
 import { getGlobalConfig } from "../core/config";
-import { GlobalConfig } from "../core/types";
 
 export function reflection<T extends object = any>(id: string) {
     const decorationReflection = privateState<Array<any>, T>(id, (targetObj: T) => []);
 
     return {
-        registerDecorator(CompBeforeDecoration: T, CompAfterDecoration: T, decoratorIdentifier: any): void {
-            const isWrapped = decorationReflection.hasState(CompAfterDecoration);
-            const newDecorators = decorationReflection(CompAfterDecoration); // new private state will be created if missing
+        registerDecorator(source: T, target: T, decoratorId: any): void {
+            const isTargetDecorated = decorationReflection.hasState(target);
+            const newDecorators = decorationReflection(target); // new private state will be created if missing
 
-            if (!isWrapped && CompBeforeDecoration !== CompAfterDecoration && decorationReflection.hasState(CompBeforeDecoration)) {
-                const prevDecorators = decorationReflection(CompBeforeDecoration);
+            // check if target is not yet decorated, and copies all decorators from the source to the new target
+            if (!isTargetDecorated && source !== target && decorationReflection.hasState(source)) {
+                const prevDecorators = decorationReflection(source);
                 newDecorators.push(...prevDecorators);
             }
 
-            if (newDecorators.indexOf(decoratorIdentifier) !== -1) {
-                if (getGlobalConfig<GlobalConfig>().devMode) {
-                    console.warn(CompAfterDecoration, ' is already decorated with ', decoratorIdentifier); 
+            if (newDecorators.indexOf(decoratorId) !== -1) {
+                if (getGlobalConfig().devMode) {
+                    console.warn(target, ' is already decorated with ', decoratorId); 
                 }
                 return undefined;
             }
-            newDecorators.push(decoratorIdentifier);
+            newDecorators.push(decoratorId);
         },
-        isDecorated(Comp: T, wrapper?: any): boolean {
+        isDecorated(Comp: T, decoratorId?: any): boolean {
             const decorators = decorationReflection(Comp);
-            if (!wrapper) {
+            if (!decoratorId) {
                 return decorationReflection(Comp).length > 0;
             } else {
-                return decorators.some(decorator => decorator === wrapper);
+                return decorators.some(decorator => decorator === decoratorId);
             }
         }
     }
