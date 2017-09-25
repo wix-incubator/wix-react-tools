@@ -67,3 +67,7 @@ calling `logger.printMessage('hello')` will print (by order):
  - `"message printed: goodbye"`
  
 and return `"wrapped=> message printed: goodbye"`
+
+## Inheriting decorated methods
+
+Decorating class methods for inheritance has some notable edge cases, see [Inheriting decorated methods](inheriting-decorated-methods.md) for further details.

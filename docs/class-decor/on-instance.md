@@ -2,11 +2,10 @@
 register callback to be called on instance creation.
 the callback receives the arguments of the constructor.
 
-note:
 ## API
 
 arguments:
-- hook: function to call before constructor execution
+- hook: function that will be called before constructor execution
 - targetClass: class to modify
 
 returns: the modified class

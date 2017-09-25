@@ -26,7 +26,7 @@ The function is [curried](https://lodash.com/docs#curry), so it can be used as a
         hook: <R=void>(instance:T, methodResult:R)=>R, 
         methodName: keyof T): ClassDecorator<T>;
  
-    function before<T extends object>(
+    function after<T extends object>(
         hook: <R=void>(instance:T, methodResult:R)=>R, 
         methodName: keyof T, 
         target: Class<T>): Class<T>;
@@ -54,3 +54,8 @@ calling `logger.printMessage('hello')` will print (by order):
  - `"message printed: hello"`
  
 and to return `"wrapped=> message printed: hello"`
+
+
+## Inheriting decorated methods
+
+Decorating class methods for inheritance has some notable edge cases, see [Inheriting decorated methods](inheriting-decorated-methods.md) for further details.

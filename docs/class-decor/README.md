@@ -5,20 +5,16 @@ The main use case is to customize react lifecycle methods in class components.
 
  - [onInstance](on-instance.md) - register callback to be called on instance creation
  - [add](add.md) - add a method to a class
- - [defineProperties](defineProperties.md) - define properties in a class's prototype
+ - [defineProperties](define-properties.md) - define properties in a class's prototype
 
 ## function-decor support
 
 Class-decor also supports [function-decor](../function-decor/README.md) functionality over class methods:
- - before - register a callback to be called before a class method is called
- - after - register a callback to be called before a class method is called
- - middleware - add a middleware to a method
+ - [before](before.md) - register a callback to be called before a class method is called
+ - [after](after.md) - register a callback to be called before a class method is called
+ - [middleware](middleware.md) - add a middleware to a method
 
 
-### `.ifExists` modifier for method decorations
-**missing documentation**
+## Inheriting decorated methods
 
-
-### Inheriting decorated methods
-
-**missing documentation**
+Decorating class methods for inheritance has some notable edge cases, see [Inheriting decorated methods](inheriting-decorated-methods.md) for further details.

@@ -1,8 +1,9 @@
 # add
 
-add public methods to a class. this is done using the prototype and is the most performant option, it is unsuitable for lifecycle methods as it is overriden by methods with the same name on the class (or inheriting classes).  
+add public methods to a class (specifically the class'es prototype). 
+A method added in this manner will be overridden by a method with the same name in the class or in an inheriting class.  
 
-This is the best way to add traits to classes. 
+This is the preferred way to add traits to classes. 
 
 ## API
 
