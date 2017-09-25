@@ -76,9 +76,15 @@ More details in [disposers](./docs/core/disposers.md)
 
 ## function-decor
 
-Wrapping tools for functions.
+Wrapping library for functions.
 
 More details in [function-decor](./docs/function-decor)
+
+## class-decor
+
+Hooks library for ES6 classes
+
+More details in [class-decor](./docs/class-decor/README.md)
 
 ## private-state
 
