@@ -2,11 +2,11 @@
 
 A React Component Feature is a function that takes a component and returns a component with all the characteristics of the original component, and one or more new features. By using the `stylable` [Feature Factory](./README.md#Configurable-Features) from **wix-react-tools**, you can integrate a **Stylable** stylesheet with a React component or a stateless functional component (SFC). The component can now use the stylesheet's class and state names natively.
 
-Integrate the above Stylable stylesheet with a React component using the `@stylable` **Feature Factory**. The `stylable` Feature Factory, accepts a Stylable stylesheet, and produces a new feature that is applied to a component.
+Integrate the above **Stylable** stylesheet with a React component using the `@stylable` **Feature Factory**. The `stylable` Feature Factory, accepts a **Stylable** stylesheet, and produces a new feature that is applied to a component.
 
-### Example Sytlable code
+### Example Stylable code
 
-For the following examples, use the following Stylable code which is in a file named `style.st.css`:
+For the following examples, use the following **Stylable** code which is in a file named `style.st.css`:
 
 ```css
 .root {
