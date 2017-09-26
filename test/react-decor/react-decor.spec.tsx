@@ -199,39 +199,52 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         });
     });
 
-    describe('uses React.cloneElement', () => {
-        beforeEach(() => {
-            (React as any).cloneElement = sinon.spy(React.cloneElement);
+    describe('react decoration warnings', () => {
+        let warn = _console.warn;
+        beforeEach("replace console.warn with spy", () => {
+            _console.warn = sinon.spy();
         });
 
-        afterEach(() => {
-            (React as any).cloneElement.reset();
+        afterEach("reset console.warn", () => {
+            _console.warn = warn;
         });
 
-        const statelessHook1: StatelessElementHook<{}> = function(_props: {}, args: ElementArgs<any>): ElementArgs<any> {
-            return args;
-        };
-        const statelessHook2: StatelessElementHook<{}> = function(_props: {}, args: ElementArgs<any>): ElementArgs<any> {
-            return args;
-        };
-        const CompToClone = (props: any) => (<div>
-            <span></span>
-            <span></span>
-        </div>);
-        const wrapper = decorateReactComponent({ onRootElement: [statelessHook1, statelessHook2] });
+        const result = <div />;
+        const Comp: SFC<PropsWithName> = () => result;
+        const CompReturnsNull: SFC<PropsWithName> = () => null;
 
-        function suite(Comp: any) {
-            it('should maintain the root element ref/key', () => {
-                const WrappedComp = wrapper(Comp);
-
-                const { select } = clientRenderer.render(<WrappedComp renderChild={true} />);
-
-                expect(React.cloneElement).to.have.been.calledOnce;
+        function nullTest(Comp: any) {
+            it('does not warn on unknown root if null', () => {
+                runInContext<GlobalConfig>({ devMode: true }, () => {
+                    const wrap = decorateReactComponent({ onRootElement: [rootHook] });
+                    const WrappedComp = wrap(Comp);
+                    clientRenderer.render(<WrappedComp name="" />);
+                    expect(_console.warn).to.have.callCount(0);
+                });
             });
         }
+        testWithBothComponentTypes(CompReturnsNull, nullTest);
 
-        testWithBothComponentTypes(CompToClone, suite);
-    });
+        function suite(Comp: any) {
+            const wrap = decorateReactComponent({ onRootElement: [rootHook] });
+            const WrappedComp = wrap(Comp);
+            it('warns on unknown root in dev mode', () => {
+                runInContext<GlobalConfig>({ devMode: true }, () => {
+                    clientRenderer.render(<WrappedComp name="" />);
+                    expect(_console.warn).to.have.callCount(1);
+                    expect(_console.warn).to.have.been.calledWithMatch(/unexpected root/);
+                });
+            });
+
+            it('does not warn on unknown root out of dev mode', () => {
+                runInContext<GlobalConfig>({ devMode: false }, () => {
+                    clientRenderer.render(<WrappedComp name="" />);
+                    expect(_console.warn).to.have.callCount(0);
+                });
+            });
+        }
+        testWithBothComponentTypes(Comp, suite);
+    })
 
     describe(`regression`, () => {
         const SFComp: React.SFC = () => <div><span /></div>;
@@ -253,7 +266,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 expect(hook).to.have.been.called;
             });
         }
-
+        
         testWithBothComponentTypes(SFComp, testReactClassAndFunctionDecoration);
 
         describe('with multiple children', () => {
