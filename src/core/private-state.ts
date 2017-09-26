@@ -1,5 +1,7 @@
 import {NotNull} from "./types";
 
+declare const process: {env : {[k:string]: any}};
+
 export const STATE_DEV_MODE_KEY = "$private-context";
 const privates = new WeakMap();
 

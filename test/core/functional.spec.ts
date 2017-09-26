@@ -1,0 +1,69 @@
+import {chainFunctions, cachedChainFunctions, Chain} from "../../src";
+import {expect, sinon} from "test-drive-react";
+
+// make a new function
+function func() {
+    return () => {
+
+    };
+}
+
+const ARGS = [1, 2, 3];
+
+describe("chainFunctions", () => {
+    function suite(chain: Chain, isCached: boolean) {
+
+        it('calls the two handlers with the arguments provided', () => {
+            const spy1 = sinon.spy();
+            const spy2 = sinon.spy();
+            const merged = chain(spy1, spy2);
+
+            // not call handlers in merging phase
+            expect(spy1).to.have.callCount(0);
+            expect(spy2).to.have.callCount(0);
+
+            merged(...ARGS);
+            // call handlers when calling merged function
+            expect(spy1).to.have.callCount(1);
+            expect(spy1).to.have.calledWithExactly(...ARGS);
+            expect(spy2).to.have.callCount(1);
+            expect(spy2).to.have.calledWithExactly(...ARGS);
+        });
+        if (isCached) {
+            it('cache results, provide pointer-equal function if given same arguments', () => {
+                const f1 = func();
+                const f2 = func();
+
+                expect(chain(f1, f2)).to.equal(chain(f1, f2)); // notice the use of .equal and *not* .eql
+            });
+
+            it('not use cache for different order of same arguments', () => {
+                const f1 = func();
+                const f2 = func();
+
+                expect(chain(f1, f2)).to.not.equal(chain(f2, f1)); // notice the use of .equal and *not* .eql
+            });
+
+            it('not use cache for different arguments', () => {
+                expect(chain(func(), func())).to.not.equal(chain(func(), func())); // notice the use of .equal and *not* .eql
+            });
+        } else {
+            it('does not cache results', () => {
+                const f1 = func();
+                const f2 = func();
+
+                expect(chain(f1, f2)).to.not.equal(chain(f1, f2)); // notice the use of .equal and *not* .eql
+            });
+        }
+    }
+
+    suite(chainFunctions, false);
+
+    describe(".cached", () => {
+        suite(chainFunctions.cached, true);
+    });
+
+    describe("(DEPRECATED) cachedChainFunctions", () => {
+        suite(cachedChainFunctions, true);
+    });
+});

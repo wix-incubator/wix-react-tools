@@ -96,12 +96,14 @@ More details in [private-state](./docs/core/private-state.md)
 ## configuration
 
 Static configuration allows passing any form of data/flags to tools.
+
 More details in [config](./docs/core/config.md)
 
 ## dev mode
 
 Constant values to use for configuring development mode on or off, 
-and synchronizes the [config](./docs/core/config.md)'s development flag with `process.env.NODE_ENV`
+and synchronizes the [config](./docs/core/config.md)'s development flag with `process.env.NODE_ENV`.
+
 More details in [dev mode](./docs/core/dev-mode.md)
 
 # developer documentation

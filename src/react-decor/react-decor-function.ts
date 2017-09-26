@@ -5,8 +5,8 @@ import {
     DecorReactHooks, ElementArgs, StatelessElementHook, isNotEmptyArrayLike, translateArgumentsToObject,
     translateObjectToArguments
 } from "./common";
-import {getGlobalConfig} from "../core/config";
-import {GlobalConfig} from "../core/types";
+
+declare const process: {env : {[k:string]: any}};
 
 export type CreateElementArgsTuple<P extends {}> = [ReactType, undefined | (Attributes & Partial<P>), ReactNode];
 export type SFCDecorator<T extends object> = <T1 extends T>(comp: SFC<T1>) => SFC<T1>;

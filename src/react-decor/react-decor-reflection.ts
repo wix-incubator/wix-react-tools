@@ -1,6 +1,6 @@
-import { Wrapper } from './index';
 import { privateState } from "../core/private-state";
-import { getGlobalConfig } from "../core/config";
+
+declare const process: {env : {[k:string]: any}};
 
 export function reflection<T extends object = any>(id: string) {
     const decorationReflection = privateState<Array<any>, T>(id, (targetObj: T) => []);
