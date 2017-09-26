@@ -158,18 +158,17 @@ describe('class-decor documentation examples', () => {
 
             @defineProperties({
                 printMessage: {
-                    get: () => printMessage,
+                    set: printMessage,
                 }
             })
             class Logger {
-                printMessage: (text: string) => string;
+                printMessage : string;
             }
             const logger = new Logger();
-            const result = logger.printMessage('hello');
+            logger.printMessage = 'hello';
             expectLog(
                 `hello`
             );
-            expect(result).to.eql('message printed: hello');
         });
     });
 });

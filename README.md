@@ -55,17 +55,18 @@ More details in [disposable feature](./docs/react-component-features/disposable.
 Produce unique ID values for react components
 More details in [global ID](./docs/react-util/global-id.md)
 
-## merge Event Handlers
+## `chainFunctions`
 
-Merge two event handlers into one.
+Accept two function arguments.
+Returns a new function that when executed calls the two functions, one after the other with the same arguments, and returns void.
 
-To avoid unnecessary render calls as a result of using this utility, this function is [memoized](https://en.wikipedia.org/wiki/Memoization), meaning calling it twice with the same arguments will produce the same result.
+### `chainFunctions.cached`
 
-Its twin function, `chainFunctions`, has the same output without using a cache layer. Use it when the arguments of the function are not expected to be chained again.
+To avoid unnecessary render calls when using this utility to produce a property, the `cached` modifier is a [memoized](https://en.wikipedia.org/wiki/Memoization) version, meaning calling it twice with the same arguments will produce the same result.
 
 ```ts
-function cachedChainFunctions<T extends Function>(first:T, last:T):T & {clear():void}
 function chainFunctions<T extends Function>(first:T, last:T):T
+function chainFunctions.cached<T extends Function>(first:T, last:T):T & {clear():void}
 ```
 
 ## disposers
@@ -76,9 +77,15 @@ More details in [disposers](./docs/core/disposers.md)
 
 ## function-decor
 
-Wrapping tools for functions.
+Wrapping library for functions.
 
 More details in [function-decor](./docs/function-decor)
+
+## class-decor
+
+Hooks library for ES6 classes
+
+More details in [class-decor](./docs/class-decor/README.md)
 
 ## private-state
 
@@ -89,12 +96,14 @@ More details in [private-state](./docs/core/private-state.md)
 ## configuration
 
 Static configuration allows passing any form of data/flags to tools.
+
 More details in [config](./docs/core/config.md)
 
 ## dev mode
 
 Constant values to use for configuring development mode on or off, 
-and synchronizes the [config](./docs/core/config.md)'s development flag with `process.env.NODE_ENV`
+and synchronizes the [config](./docs/core/config.md)'s development flag with `process.env.NODE_ENV`.
+
 More details in [dev mode](./docs/core/dev-mode.md)
 
 # developer documentation

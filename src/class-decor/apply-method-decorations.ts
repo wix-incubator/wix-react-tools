@@ -12,6 +12,8 @@ import {
 } from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
 
+declare const process: {env : {[k:string]: any}};
+
 const edgeClassData = classPrivateState('edge class data', clazz => new EdgeClassData(clazz));
 
 export const initEdgeClass = (clazz: Class<object>) => {

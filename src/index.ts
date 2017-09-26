@@ -22,9 +22,6 @@ export {disposable} from './react-component-features/disposable-feature';
 export * from './react-component-features/properties-feature';
 export * from './react-component-features/stylable-feature';
 
-// legacy :
-//bases
-export * from './old/bases/observable-component';
 
 // customized exports:
 import {rootProps} from "./react-component-features/root-props";

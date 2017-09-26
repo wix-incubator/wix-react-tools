@@ -48,12 +48,12 @@ export function add<T extends { [k: string]: Function }, T1 extends T>(mixin: T,
     return target ? curried(target) : curried;
 }
 
-export function defineProperties<T extends object>(mixin: TypedPropertyDescriptorMap<T>): ClassDecorator<T>;
-export function defineProperties<T extends object, T1 extends T>(mixin: TypedPropertyDescriptorMap<T>, target: Class<T1>): Class<T1>;
-export function defineProperties<T extends object, T1 extends T>(mixin: TypedPropertyDescriptorMap<T>, target?: Class<T1>): Class<T1> | ClassDecorator<T> {
+export function defineProperties<T extends object>(properties: TypedPropertyDescriptorMap<T>): ClassDecorator<T>;
+export function defineProperties<T extends object, T1 extends T>(properties: TypedPropertyDescriptorMap<T>, target: Class<T1>): Class<T1>;
+export function defineProperties<T extends object, T1 extends T>(properties: TypedPropertyDescriptorMap<T>, target?: Class<T1>): Class<T1> | ClassDecorator<T> {
     function curried<T1 extends T>(t: Class<T1>) {
         const mixed = mix(t);
-        Object.defineProperties(mixed.prototype, mixin);
+        Object.defineProperties(mixed.prototype, properties);
         return mixed;
     }
 

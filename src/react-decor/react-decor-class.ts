@@ -12,6 +12,8 @@ import {getGlobalConfig, runInContext} from "../core/config";
 
 import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
 
+declare const process: {env : {[k:string]: any}};
+
 // TODO: make union based of all different overloaded signatures of createElement
 // also consider <P extends HTMLAttributes<HTMLElement>>
 // export type ElementHook<T extends Component<any>> = <P = object>(instance: T, args: ElementArgs<P>) => ElementArgs<P>;
