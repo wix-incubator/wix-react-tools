@@ -1,5 +1,5 @@
 # config
-Generic global configuration allow passing data/flags to tools, either statically or for the duration of a specific task (e.g. a specific server side page render)
+Generic global configuration allow passing data/flags to tools, either statically or for the duration of a specific task (e.g. keeping the request context globally for the duration of a server request)
 
 ## setGlobalConfig
 Merge the argument to the current config
