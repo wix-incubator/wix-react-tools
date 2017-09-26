@@ -51,7 +51,7 @@ export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDeco
 
             if (rootElementArgs) {
                 rootElementArgs = hooks.onRootElement.reduce(getHooksReducer(context.componentProps), rootElementArgs);
-                renderResult = cloneElement(renderResult, (rootElementArgs!).elementProps);
+                renderResult = cloneElement(renderResult, rootElementArgs!.elementProps, ...rootElementArgs!.children);
             } else if (getGlobalConfig<GlobalConfig>().devMode) {
                 console.warn('unexpected root node : ', renderResult);
             }
