@@ -1,4 +1,3 @@
-import {getGlobalConfig} from "./config";
 import {NotNull} from "./types";
 
 export const STATE_DEV_MODE_KEY = "$private-context";
@@ -78,14 +77,14 @@ function getStateContext<T extends object = any>(targetObj: T, initIfNone: boole
     let privateContext: { [key: string]: any } | null = null;
     if (privates.has(targetObj)) {
         privateContext = privates.get(targetObj);
-        if (getGlobalConfig().devMode) {
+        if (process.env.NODE_ENV !== 'production') {
             if (!targetObj.hasOwnProperty(STATE_DEV_MODE_KEY)) {
                 Object.defineProperty(targetObj, STATE_DEV_MODE_KEY, {value: privateContext});
             }
         }
     } else if (initIfNone) {
         privates.set(targetObj, privateContext = {});
-        if (getGlobalConfig().devMode) {
+        if (process.env.NODE_ENV !== 'production') {
             Object.defineProperty(targetObj, STATE_DEV_MODE_KEY, {value: privateContext});
         }
     }

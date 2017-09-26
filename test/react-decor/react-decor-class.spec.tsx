@@ -1,10 +1,8 @@
-import {onChildElement, onRootElement, simulateRender} from "../../src/react-decor/react-decor-class";
-import {ElementArgs} from "../../src/react-decor/common";
+import {decorReactClass, simulateRender} from "../../src/react-decor/react-decor-class";
 import * as React from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
-import {runInContext} from "../../src/core/config";
-import {GlobalConfig} from "../../src/core/types";
+import {devMode, runInContext, ElementArgs} from "../../src";
 import {HTMLAttributes} from "react";
 
 declare const process: any;
@@ -40,27 +38,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
                 </div>
             }
         }
-
-        it('onRootElement', () => {
-            @onRootElement(overrideClassesHook)
-            class MyComp extends SuperComp {
-            }
-
-            const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
-            expect(select('Root')).to.have.property('className', 'App');
-            expect(select('Child')).to.have.property('className', 'otherClassName');
-        });
-        it('onChildElement', () => {
-            @onChildElement(overrideClassesHook)
-            class MyComp extends SuperComp {
-            }
-
-            const {select} = clientRenderer.render(<MyComp classOverride="App"/>);
-            expect(select('Root')).to.have.property('className', 'App');
-            expect(select('Child')).to.have.property('className', 'App');
-        });
     });
-    describe('onRootElement', () => {
+    describe('onRootElement hooks', () => {
         let warn = console.warn;
         beforeEach("replace console.warn with spy", () => {
             console.warn = sinon.spy();
@@ -76,14 +55,14 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
             return args;
         }
 
-        @onRootElement(justAHook)
+        @decorReactClass({onEachElement:[justAHook]})
         class MyComp extends React.Component {
             render() {
                 return result;
             }
         }
         it('warns on unknown root in dev mode', () => {
-            runInContext<GlobalConfig>({devMode: true}, () => {
+            runInContext(devMode.ON, () => {
                 simulateRender(MyComp);
                 expect(console.warn).to.have.callCount(1);
                 expect(console.warn).to.have.been.calledWithMatch(/unexpected root/);
@@ -91,14 +70,14 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
         });
 
         it('does not warn on unknown root out of dev mode', () => {
-            runInContext<GlobalConfig>({devMode: false}, () => {
+            runInContext(devMode.OFF, () => {
                 simulateRender(MyComp);
                 expect(console.warn).to.have.callCount(0);
             });
         });
         it('does not warn on unknown root if null', () => {
-            runInContext<GlobalConfig>({devMode: true}, () => {
-                @onRootElement(justAHook)
+            runInContext(devMode.ON, () => {
+                @decorReactClass({onEachElement:[justAHook]})
                 class MyComp2 extends React.Component {
                     render() {
                         return null;
@@ -109,17 +88,17 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
             });
         });
         it('ignores unknown root out of dev mode', () => {
-            runInContext<GlobalConfig>({devMode: false}, () => {
+            runInContext(devMode.OFF, () => {
                 new MyComp().render();
                 expect(console.warn).to.have.callCount(0);
             });
         });
 
     });
-    describe('onChildElement', () => {
+
+    describe('onEachElement hooks', () => {
         it('throws when hook returns undefined', () => {
-            @onChildElement((() => {
-            }) as any)
+            @decorReactClass({onEachElement:[(() => {}) as any]})
             class MyComp extends React.Component {
                 render() {
                     return <div/>
@@ -128,13 +107,13 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
             // expect the error to have a message with these strings: `onChildElement` , `hook`, `undefined`
             expect(
                 () => clientRenderer.render(<MyComp/>)
-            ).to.throw(Error, /(?=.*onChildElement.*)(?=.*hook.*)(?=.*undefined.*)/);
+            ).to.throw(Error, /(?=.*onEachElement.*)(?=.*hook.*)(?=.*undefined.*)/);
         });
 
         it('cleans up hook even if render throws', () => {
-            @onChildElement((() => {
+            @decorReactClass({onEachElement:[(() => {
                 throw new Error('weeeeeee!!');
-            }) as any)
+            }) as any]})
             class MyComp extends React.Component {
                 render() {
                     return <div/>
@@ -156,8 +135,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
                 return args;
             }
 
-            @onChildElement(FooHook)
-            @onChildElement(BarHook)
+            @decorReactClass({onEachElement:[FooHook]})
+            @decorReactClass({onEachElement:[BarHook]})
             class MyComp extends React.Component {
                 render() {
                     return <div data-automation-id="1"/>
@@ -179,12 +158,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
                 return args;
             }
 
-            @onChildElement(FooHook)
+            @decorReactClass({onEachElement:[FooHook]})
             class BaseComp extends React.Component {
 
             }
 
-            @onChildElement(BarHook)
+            @decorReactClass({onEachElement:[BarHook]})
             class MyComp extends BaseComp {
                 render() {
                     return <div data-automation-id="1"/>

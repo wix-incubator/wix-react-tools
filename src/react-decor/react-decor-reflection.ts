@@ -17,8 +17,8 @@ export function reflection<T extends object = any>(id: string) {
             }
 
             if (newDecorators.indexOf(decoratorId) !== -1) {
-                if (getGlobalConfig().devMode) {
-                    console.warn(target, ' is already decorated with ', decoratorId); 
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn(target, ' is already decorated with ', decoratorId);
                 }
                 return undefined;
             }

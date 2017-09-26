@@ -50,6 +50,11 @@ More details in [disposable feature](./docs/react-component-features/disposable.
 
 `decorateReactComponent` offers a way of applying hooks to React components in order to implement various features. These hooks temporarily [monkey-patch](https://en.wikipedia.org/wiki/Monkey_patch) `React.createElement`, `React.cloneElement`, and `cloneElement` (to be added soon) in order to customize every element created by your component. Further reading in [decorateReactComponent](./docs/react-decor/decorate-react-component.md)
 
+## global ID
+
+Produce unique ID values for react components
+More details in [global ID](./docs/react-util/global-id.md)
+
 ## merge Event Handlers
 
 Merge two event handlers into one.
@@ -86,23 +91,11 @@ More details in [private-state](./docs/core/private-state.md)
 Static configuration allows passing any form of data/flags to tools.
 More details in [config](./docs/core/config.md)
 
-### Usage Example:
+## dev mode
 
-```ts
-import { setGlobalConfig } from "wix-react-tools";
-
-setGlobalConfig({ devMode: false }); //Defines devMode flags as false.
-```
-
-### GlobalConfig
-
-the type of configuration this project expects
-The following are all of the project's flags:
-
-| flag    	| purpose                                                       	|
-|---------	|---------------------------------------------------------------	|
-| devMode 	| expose internals and show warnings to improve debugging 	|
-
+Constant values to use for configuring development mode on or off, 
+and synchronizes the [config](./docs/core/config.md)'s development flag with `process.env.NODE_ENV`
+More details in [dev mode](./docs/core/dev-mode.md)
 
 # developer documentation
 
