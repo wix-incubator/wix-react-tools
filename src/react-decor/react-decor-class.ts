@@ -1,7 +1,7 @@
 import {ClassDecorator} from "../class-decor/index";
 import {decorFunction} from "../function-decor";
 import * as React from "react";
-import {HTMLAttributes, ReactElement, Component} from "react";
+import {HTMLAttributes, ReactElement, Component, cloneElement} from "react";
 import {
     DecorReactHooks, ElementArgs, ElementArgsTuple, StatefulElementHook, translateArgumentsToObject
 } from "./common";
@@ -50,6 +50,22 @@ export function simulateRender(component: React.ComponentClass): JSX.Element | n
         return new component().render();
     });
 }
+
+function arraysAreEqual(arr1: Array<any>, arr2: Array<any>): boolean {
+    let arr1Length = arr1.length;
+    if (arr1Length !== arr2.length) {
+        return false;
+    }
+    
+    while (arr1Length--) {
+        if (arr1[arr1Length] !== arr2[arr1Length]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 class ReactDecorData<P extends object, T extends Component<P> = Component<P>> {
     onEachElementHooks: List<StatefulElementHook<P, T>>;
     onRootElementHooks: List<StatefulElementHook<P, T>>;
@@ -86,8 +102,13 @@ class ReactDecorData<P extends object, T extends Component<P> = Component<P>> {
                         throw new Error('Error: onRootElement hook returned undefined');
                     }
                 });
-                // TODO see what's the deal with cloneElement https://facebook.github.io/react/docs/react-api.html#cloneelement
-                return original(rootArgsObj.type as any, rootArgsObj.elementProps, ...rootArgsObj.children);
+                
+                if (rootElement.props.children && rootElement.props.children.length !== undefined && arraysAreEqual(rootElement.props.children, rootArgsObj.children)) {
+                    // optimisation for when children are equal before/after root hook
+                    return cloneElement(rootElement, rootArgsObj.elementProps);
+                } else {
+                    return cloneElement(rootElement, rootArgsObj.elementProps, ...rootArgsObj.children);
+                }
             }
         }
         return rootElement;

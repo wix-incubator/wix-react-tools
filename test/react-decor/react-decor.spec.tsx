@@ -29,12 +29,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         clientRenderer.cleanup();
     });
 
-    const statelessHook1: StatelessElementHook<PropsWithName> = function (_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+    const statelessHook1: StatelessElementHook<PropsWithName> = function(_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
         console.log(args.elementProps['data-automation-id']);
         return args;
     };
 
-    const statelessHook2: StatelessElementHook<PropsWithName> = function (_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+    const statelessHook2: StatelessElementHook<PropsWithName> = function(_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
         console.log(args.elementProps['data-automation-id']);
         return args;
     };
@@ -48,7 +48,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
     type PropsWithName = { name: string };
 
-    const SFComp: React.SFC<PropsWithName> = ({name}) => (
+    const SFComp: React.SFC<PropsWithName> = ({ name }) => (
         <div data-automation-id="root" data-delete-me="TBDeleted" data-change-me="TBChanged">
             <span data-automation-id="content">
                 {name}
@@ -176,7 +176,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                     const wrap = decorateReactComponent({onEachElement: [statelessHook1]});
                     const WrappedComp = wrap(Comp);
 
-                    clientRenderer.render(<WrappedComp name="Jon"/>);
+                    clientRenderer.render(<WrappedComp name="Jon" />);
                     expect(console.log.getCall(0)).to.have.been.calledWithMatch(/content/);
                     expect(console.log.getCall(1)).to.have.been.calledWithMatch(/root/);
                 });
@@ -291,7 +291,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
     describe('decorate react class component with stateful hooks', () => {
         const ClassComp = makeClassComponent(SFComp);
 
-        const statefulHook: StatefulElementHook<PropsWithName> = function (this: Instance<Component<PropsWithName>>, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+        const statefulHook: StatefulElementHook<PropsWithName> = function(this: Instance<Component<PropsWithName>>, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
             expect(this.props).to.equal(componentProps);
             return args;
         };
@@ -369,7 +369,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
         function testReactClassAndFunctionDecoration(Comp: any) {
             it('elementProps is never empty', () => {
-                const hook: StatelessElementHook<{}> = sinon.spy(function (_p: any, args: ElementArgs<any>): ElementArgs<any> {
+                const hook: StatelessElementHook<{}> = sinon.spy(function(_p: any, args: ElementArgs<any>): ElementArgs<any> {
                     expect(args.elementProps).to.containSubset({});
                     return args;
                 });
@@ -384,7 +384,54 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 expect(hook).to.have.been.called;
             });
         }
-
+        
         testWithBothComponentTypes(SFComp, testReactClassAndFunctionDecoration);
+
+        describe('with multiple children', () => {
+            const statelessHook1: StatelessElementHook<{}> = function(_props: {}, args: ElementArgs<any>): ElementArgs<any> {
+                return args;
+            };
+            const statelessHook2: StatelessElementHook<{}> = function(_props: {}, args: ElementArgs<any>): ElementArgs<any> {
+                return args;
+            };
+            const CompToClone = (props: any) => (<div>
+                <span data-automation-id="child1" />
+                <span data-automation-id="child2" />
+            </div>);
+
+            function suite(Comp: any) {
+                it('multiple children with no changes', () => {
+                    const wrapper = decorateReactComponent({ onRootElement: [statelessHook1, statelessHook2] });
+                    const WrappedComp = wrapper(Comp);
+
+                    const { select } = clientRenderer.render(<WrappedComp renderChild={true} />);
+
+                    expect(select("child1")).to.exist;
+                    expect(select("child2")).to.exist;
+                });
+
+                it('multiple children with adding and removing a child', () => {
+                    // this hook adds and removes a child                    
+                    const statelessHook3: StatelessElementHook<{}> = function(_props: {}, args: ElementArgs<any>): ElementArgs<any> {
+                        args.children = args.children.concat([]);
+                        args.children.pop();
+                        args.children.push(<span data-automation-id="child3" />);
+
+                        return args;
+                    };
+
+                    const wrapper = decorateReactComponent({ onRootElement: [statelessHook1, statelessHook2, statelessHook3] });
+                    const WrappedComp = wrapper(Comp);
+
+                    const { select } = clientRenderer.render(<WrappedComp renderChild={true} />);
+
+                    expect(select("child1")).to.exist;
+                    expect(select("child2")).to.not.exist;
+                    expect(select("child3")).to.exist;
+                });
+            }
+
+            testWithBothComponentTypes(CompToClone, suite);
+        });
     });
 });
