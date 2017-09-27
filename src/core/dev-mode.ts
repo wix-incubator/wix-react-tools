@@ -30,9 +30,9 @@ if (process.env.NODE_ENV === 'development') {
 
 // set process.env.NODE_ENV according to global config's devMode flag
 onGlobalConfig('devMode', (newVal: any) => {
-    if (newVal) {
-        process.env.NODE_ENV = 'development';
-    } else {
+    if (newVal === false){
         process.env.NODE_ENV = 'production';
+    } else {
+        process.env.NODE_ENV = 'development';
     }
 });

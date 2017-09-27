@@ -29,14 +29,14 @@ describe("class-decor dev mode warnings", () => {
         }
 
         it("prompts a warning when in dev mode", () => {
-            runInContext<GlobalConfig>(devMode.ON, overrideMethodReturnedValueWithUndefined);
+            runInContext(devMode.ON, overrideMethodReturnedValueWithUndefined);
 
             expect(console.warn).to.have.callCount(1);
             expect(console.warn).to.have.been.calledWith('@after returnsValue Did you forget to return a value?');
         });
 
         it("does not prompt a warning when not in dev mode", () => {
-            runInContext<GlobalConfig>({devMode: false}, overrideMethodReturnedValueWithUndefined);
+            runInContext(devMode.OFF, overrideMethodReturnedValueWithUndefined);
 
             expect(console.warn).to.have.callCount(0);
         });
@@ -52,7 +52,7 @@ describe("class-decor dev mode warnings", () => {
             }
             let duck = new Duck();
 
-            runInContext<GlobalConfig>(devMode.ON, () => {
+            runInContext(devMode.ON, () => {
                 duck.duckWillQuack();
                 expect(console.warn).to.have.callCount(1);
                 expect(console.warn).to.have.been.calledWithMatch(/\@middleware/);
@@ -70,7 +70,7 @@ describe("class-decor dev mode warnings", () => {
             }
             let duck = new Duck();
 
-            runInContext<GlobalConfig>(devMode.ON, () => {
+            runInContext(devMode.ON, () => {
                 duck.duckWillQuack();
                 expect(console.warn).to.have.callCount(0);
             });
@@ -85,7 +85,7 @@ describe("class-decor dev mode warnings", () => {
             }
             let duck = new Duck();
 
-            runInContext<GlobalConfig>({devMode: false}, () => {
+            runInContext(devMode.OFF, () => {
                 duck.duckWillQuack();
                 expect(console.warn).to.have.callCount(0);
             });

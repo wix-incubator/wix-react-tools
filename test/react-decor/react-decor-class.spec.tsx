@@ -13,7 +13,7 @@ function inProduction() {
     return false;
 }
 
-describe.assuming(inBrowser(), 'only in browser')('react-decor', () => {
+describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
     describe.assuming(inProduction(), 'only in production mode')('react contract regression tests', () => {
         it('in production mode', () => {
             // This test either passes or is ignored. It's here as a log artifact, to know whether other tests run in production mode

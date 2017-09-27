@@ -30,5 +30,9 @@ describe('dev-mode', () => {
             const nodeEnv = runInContext(devMode.OFF, () => process.env.NODE_ENV);
             expect(nodeEnv).to.eql('production');
         });
+
+        it("process.env.NODE_ENV is not set to 'production' by default during tests", () => {
+            expect(process.env.NODE_ENV).to.not.eql('production');
+        });
     });
 });
