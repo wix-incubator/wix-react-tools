@@ -171,7 +171,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 expect((content as HTMLSpanElement).innerText).to.equal('Jon');
             });
 
-            describe('node hooks', () => {
+            describe('onEachElement hooks', () => {
                 it('should allow adding a single node hook (which prints every type of node rendered) to a react component', () => {
                     const wrap = decorateReactComponent({onEachElement: [statelessHook1]});
                     const WrappedComp = wrap(Comp);
@@ -215,9 +215,22 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 });
             });
 
-            describe('root hooks', () => {
+            describe('onRootElement hooks', () => {
                 it('should allow adding a single root hook to a component that will add/remove/change the root elements props', () => {
                     const wrap = decorateReactComponent({onRootElement: [addChangeRemoveHook]});
+                    const WrappedComp = wrap(Comp);
+
+                    const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
+
+                    expect(select('root')).to.not.have.attribute('data-delete-me');
+                    expect(select('root')).to.have.attribute('data-add-me', 'Jon');
+                    expect(select('root')).to.have.attribute('data-change-me', 'Jon');
+                    expect(select('content')).to.be.ok;
+                });
+                it('recognise cloned elements', () => {
+                    const wrap = decorateReactComponent({
+                        onRootElement: [(_props, args)=>({...args, elementProps:{ ...(args.elementProps as object) }}), addChangeRemoveHook],
+                        onEachElement: [statelessHook1]});
                     const WrappedComp = wrap(Comp);
 
                     const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -384,7 +397,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 expect(hook).to.have.been.called;
             });
         }
-        
+
         testWithBothComponentTypes(SFComp, testReactClassAndFunctionDecoration);
 
         describe('with multiple children', () => {
@@ -411,7 +424,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 });
 
                 it('multiple children with adding and removing a child', () => {
-                    // this hook adds and removes a child                    
+                    // this hook adds and removes a child
                     const statelessHook3: StatelessElementHook<{}> = function(_props: {}, args: ElementArgs<any>): ElementArgs<any> {
                         args.children = args.children.concat([]);
                         args.children.pop();

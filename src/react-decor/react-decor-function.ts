@@ -30,20 +30,25 @@ const translateName = middleware((next:(args:[React.SFC])=>React.SFC, args:[Reac
     }
     return result;
 });
+const emptyObj = Object.freeze({});
+const context = {
+    hooks : emptyObj,
+    componentProps: emptyObj,
+    createArgsMap: new Map()
+} as HookContext<object>; // componentProps will be overwritten before render
+const wrappedCreateElement = makeCustomCreateElement(context);
 
-export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
-    const context = {
-        hooks,
-        componentProps: {} as T,
-        createArgsMap: new Map()
-    } as HookContext<T>; // componentProps will be overwritten before render
-    const wrappedCreateElement = makeCustomCreateElement(context);
-
-    const replaceCreateElement = (args: [T, any]): [T, any] => {
+const replaceCreateElement = (hooks : DecorReactHooks<object>) => (args: [object, any]): [object, any] => {
+    if (React.createElement !== wrappedCreateElement) {
+        context.createArgsMap.clear();
+        context.hooks = hooks;
         context.componentProps = args[0]; // [0] for props in a functional react component
         React.createElement = wrappedCreateElement;
-        return args;
-    };
+    }
+    return args;
+};
+
+export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
 
     const applyRootHooks = <P extends {}>(renderResult: ReactElement<P>): ReactElement<P> => {
         if (renderResult && isNotEmptyArrayLike(hooks.onRootElement)) {
@@ -52,17 +57,17 @@ export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDeco
             if (rootElementArgs) {
                 rootElementArgs = hooks.onRootElement.reduce(getHooksReducer(context.componentProps), rootElementArgs);
                 renderResult = cloneElement(renderResult, (rootElementArgs!).elementProps, ...rootElementArgs!.children);
+                context.createArgsMap.set(renderResult, rootElementArgs!);
             } else if (process.env.NODE_ENV !== 'production') {
                 console.warn('unexpected root node : ', renderResult);
             }
         }
-        context.createArgsMap.clear();
         React.createElement = originalCreateElement as ReactCreateElement;
         return renderResult;
     };
 
     const decorator = decorFunction({
-        before: [replaceCreateElement],
+        before: [replaceCreateElement(hooks)],
         after: [applyRootHooks]
     });
 
