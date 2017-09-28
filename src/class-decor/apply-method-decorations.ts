@@ -1,13 +1,12 @@
-import _isArrayLikeObject = require('lodash/isArrayLikeObject');
 import {Class} from "../core/types";
 import "../core/dev-mode";
 import {
     inheritedMixerData,
-    MethodData,
     MixerData
 } from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
 import {AfterHook, BeforeHook, MiddlewareHook} from "../function-decor";
+import {wrapMethod, unwrapMethod, MethodData} from "./function-decor-2";
 
 declare const process: {env : {[k:string]: any}};
 
@@ -28,12 +27,8 @@ function shouldCreateMethod(methodData: MethodData): boolean {
 }
 export class EdgeClassData<T extends object = object> {
 
-    // TODO move to function decor (use private state?)
-    private static unwrapMethod(method: Function | WrappedMethod): Function | undefined {
-        if ((method as WrappedMethod)[wrappedFlag]) {
-            return (method as WrappedMethod).originalMethod;
-        }
-        return method;
+    private static unwrapMethod(method: Function): Function | undefined {
+        return unwrapMethod(method);
     }
 
     constructor(private clazz: Class<T>) {
@@ -52,112 +47,17 @@ export class EdgeClassData<T extends object = object> {
                     if (this.clazz.prototype[methodName]) {
                         this.clazz.prototype[methodName] = this.wrapMethod(methodName, methodData, EdgeClassData.unwrapMethod(this.clazz.prototype[methodName]));
                     } else if (shouldCreateMethod(methodData)) {
-                        this.clazz.prototype[methodName] = this.wrapMethod(methodName, methodData);
+                        this.clazz.prototype[methodName] = this.wrapMethod(methodName, methodData, emptyMethod);
                     }
                 }
             });
     }
 
-    private wrapMethod<P extends keyof T>(methodName: P, methodData: MethodData, originalMethod?: T[P]): WrappedMethod {
-        // TODO dynamically named function
-        const result = function wrappedClassDecorMethod(this: T) {
-            let methodArgs: any[] = Array.prototype.slice.call(arguments);
-            methodArgs = runBeforeHooks(this, methodData.before, methodName, methodArgs);
-            let methodResult = runMiddlewareHooksAndOrigin(this, methodData.middleware, originalMethod || emptyMethod, methodName, methodArgs);
-            methodResult = runAfterHooks(this, methodData.after, methodName, methodResult);
-            return methodResult;
-        } as any as WrappedMethod;
-        result[wrappedFlag] = true;
-        if (originalMethod) {
-            result.originalMethod = originalMethod;
-        }
-        return result;
+    private wrapMethod<P extends keyof T>(methodName: P, methodData: MethodData, originalMethod: T[P]): Function {
+        return wrapMethod(methodName, methodData, originalMethod);
     }
 }
-
-const wrappedFlag = '$class-decor-wrapped-method'; //TODO Symbol or something
 
 function emptyMethod() {
 }
 
-type WrappedMethod<F extends Function = Function> = F & {
-    ['$class-decor-wrapped-method']: true;
-    originalMethod?: F;
-}
-
-function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
-    let serialized = '(unSerializable)';
-    try {
-        serialized = JSON.stringify(methodArgs)
-    } catch (e) {
-    }
-    throw new Error('before hook did not return an array-like object: ' + serialized)
-}
-
-function runBeforeHooks<T extends object>(target: T, hooks: Array<BeforeHook> | null, methodName: keyof T, methodArgs: any[]) {
-    if (hooks) {
-        hooks.forEach((hook: BeforeHook<T>) => {
-            methodArgs = hook.call(target, methodArgs);
-            if (!_isArrayLikeObject(methodArgs)) {
-                errorBeforeDidNotReturnedArray(methodArgs);
-            }
-        });
-    }
-    return methodArgs;
-}
-class MiddlewareTracker {
-    lastMiddlewareRunning = 0;
-
-    reportNextMiddleware(index: number) {
-        this.lastMiddlewareRunning = Math.max(index, this.lastMiddlewareRunning);
-    };
-}
-
-// to simplify code, use this instead of an active tracker
-const dummyTracker = {
-    lastMiddlewareRunning: Number.MAX_VALUE,
-    reportNextMiddleware(index: number){
-    }
-};
-
-function runMiddlewareHooksAndOrigin<T extends object>(target: T, hooks: Array<MiddlewareHook> | null, originalMethod: (...args: any[]) => any, methodName: keyof T, methodArgs: any[]) {
-    let retVal;
-    if (hooks) { // should never be an empty array - either undefined or with hook(s)
-        //keep track of last middleware running by ID to determine chain breakage:
-        let tracker: MiddlewareTracker = (process.env.NODE_ENV !== 'production') ? new MiddlewareTracker() : dummyTracker;
-        //Run middleware:
-        retVal = hooks[0].call(target, createNextForMiddlewareHook(target, originalMethod, hooks, 1, tracker), methodArgs);
-        if (tracker.lastMiddlewareRunning < hooks.length) {
-            console.warn(`@middleware ${hooks[tracker.lastMiddlewareRunning].name} for ${target.constructor.name}.${methodName}() did not call next`);
-        }
-    } else {
-        // No middleware - only original function
-        retVal = (originalMethod && originalMethod.apply(target, methodArgs));
-    }
-    return retVal;
-}
-
-function createNextForMiddlewareHook<T extends object, A, R>(target: T, originalMethod: (...args: any[]) => R, middlewareHooks: Array<MiddlewareHook<R, T>>, idx: number, tracker: MiddlewareTracker) {
-    return (args: any[]): R => {
-        tracker.reportNextMiddleware(idx);
-        return middlewareHooks.length <= idx ?
-            (originalMethod && originalMethod.apply(target, args)) :
-            middlewareHooks[idx].call(target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1, tracker), args as any);
-    };
-}
-
-function runAfterHooks<T extends object>(target: T, hooks: Array<AfterHook> | null, methodName: keyof T, methodResult: any) {
-    if (hooks) {
-        hooks.forEach((hook: AfterHook) => {
-            const hookMethodResult = hook.call(target, methodResult);
-            if (process.env.NODE_ENV !== 'production') {
-                if (methodResult !== undefined && hookMethodResult === undefined) {
-                    console.warn(`@after ${methodName} Did you forget to return a value?`);
-                }
-            }
-            methodResult = hookMethodResult;
-        });
-    }
-
-    return methodResult;
-}

@@ -2,6 +2,7 @@ import {Class, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 import {initEdgeClass} from "./apply-method-decorations";
 import {AfterHook, BeforeHook, MiddlewareHook} from "../function-decor";
+import {MethodData} from "./function-decor-2";
 
 type DumbClass = new(...args: any[]) => object;
 
@@ -92,11 +93,6 @@ type Hooks = {
     after: AfterHook;
 }
 
-export type MethodData = {
-    middleware: MiddlewareHook[] | null;
-    before: BeforeHook[] | null;
-    after: AfterHook[] | null;
-}
 function onClassInit(this: object) {
     initEdgeClass(this.constructor as Class<object>);
 }
