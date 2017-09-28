@@ -5,10 +5,9 @@ import {
     MixerData
 } from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
-import {AfterHook, BeforeHook, MiddlewareHook} from "../function-decor";
-import {wrapMethod, unwrapMethod, MethodData} from "./function-decor-2";
+import {unwrapMethod, decorateFunction, FunctionHooks} from "./function-decor-2";
 
-declare const process: {env : {[k:string]: any}};
+declare const process: { env: { [k: string]: any } };
 
 const edgeClassData = classPrivateState('edge class data', clazz => new EdgeClassData(clazz));
 
@@ -17,44 +16,37 @@ export const initEdgeClass = (clazz: Class<object>) => {
         edgeClassData(clazz).init();
     }
 };
+
 function notIfExists(hook: Function & { ifExists?: boolean }) {
     return !hook.ifExists;
 }
-function shouldCreateMethod(methodData: MethodData): boolean {
-    return Boolean((methodData.before && methodData.before.some(notIfExists)) ||
-        (methodData.after && methodData.after.some(notIfExists)) ||
-        (methodData.middleware && methodData.middleware.some(notIfExists)));
+
+function shouldCreateMethod(hooks: FunctionHooks): boolean {
+    return Boolean((hooks.before && hooks.before.some(notIfExists)) ||
+        (hooks.after && hooks.after.some(notIfExists)) ||
+        (hooks.middleware && hooks.middleware.some(notIfExists)));
 }
+
 export class EdgeClassData<T extends object = object> {
 
-    private static unwrapMethod(method: Function): Function | undefined {
-        return unwrapMethod(method);
-    }
+    mixerData: MixerData<Partial<T>> = inheritedMixerData.unsafe(this.clazz);
 
     constructor(private clazz: Class<T>) {
-    }
-
-    get mixerData(): MixerData<Partial<T>> {
-        return inheritedMixerData.unsafe(this.clazz);
     }
 
     init() {
         this.mixerData.hookedMethodNames()
             .forEach((methodName: keyof T) => {
-                let methodData = this.mixerData.getMethodData(methodName);
+                let methodData = this.mixerData.getMethodHooks(methodName);
                 if (methodData) {
                     // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
                     if (this.clazz.prototype[methodName]) {
-                        this.clazz.prototype[methodName] = this.wrapMethod(methodName, methodData, EdgeClassData.unwrapMethod(this.clazz.prototype[methodName]));
+                        this.clazz.prototype[methodName] = decorateFunction(unwrapMethod(this.clazz.prototype[methodName]), methodData.before, methodData.middleware, methodData.after, methodName);
                     } else if (shouldCreateMethod(methodData)) {
-                        this.clazz.prototype[methodName] = this.wrapMethod(methodName, methodData, emptyMethod);
+                        this.clazz.prototype[methodName] = decorateFunction(emptyMethod, methodData.before, methodData.middleware, methodData.after, methodName);
                     }
                 }
             });
-    }
-
-    private wrapMethod<P extends keyof T>(methodName: P, methodData: MethodData, originalMethod: T[P]): Function {
-        return wrapMethod(methodName, methodData, originalMethod);
     }
 }
 

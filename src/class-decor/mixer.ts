@@ -2,7 +2,7 @@ import {Class, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 import {initEdgeClass} from "./apply-method-decorations";
 import {AfterHook, BeforeHook, MiddlewareHook} from "../function-decor";
-import {MethodData} from "./function-decor-2";
+import {FunctionHooks} from "./function-decor-2";
 
 type DumbClass = new(...args: any[]) => object;
 
@@ -144,7 +144,7 @@ export class MixerData<T extends object> {
         return this.methodNames.collect();
     }
 
-    getMethodData(methodName: keyof T): MethodData | null {
+    getMethodHooks(methodName: keyof T): FunctionHooks | null {
         const before = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].before);
         const after = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].after);
         const middleware = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].middleware);

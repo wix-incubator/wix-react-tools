@@ -1,56 +1,57 @@
 import {AfterHook, BeforeHook, MiddlewareHook} from "../function-decor";
+import {privateState} from "../core/private-state";
+
 
 function _isArrayLikeObject(value: any): value is Array<any> {
     return value != null && typeof value == 'object' && typeof value.length == 'number' && value.length > -1;
 }
 
-export type MethodData = {
+export type FunctionHooks = {
     middleware: MiddlewareHook[] | null;
     before: BeforeHook[] | null;
     after: AfterHook[] | null;
 }
 
-export type WrappedMethod<F extends Function = Function> = F & {
-    ['$class-decor-wrapped-method']: true;
-    originalMethod: F;
+export type FunctionMetaData = FunctionHooks & {
+    original: Function;
 }
 
-export function wrapMethod<T extends Function>(methodName: string, methodData: MethodData, originalMethod: T): WrappedMethod<T> {
-    const result = function wrappedClassDecorMethod(this: T) {
+const metadata = privateState<FunctionMetaData, Function>('function-decor-metadata', () => ({
+    original: null as any,
+    middleware: null,
+    before: null,
+    after: null,
+}));
+
+export function decorateFunction<T extends Function>(toWrap: T, beforeHooks: BeforeHook[] | null, middlewareHooks: MiddlewareHook[] | null, afterHooks: AfterHook[] | null, functionName?:string): T {
+    const wrappedFunction = function wrappedFunction(this: any) {
         let methodArgs: any[] = Array.prototype.slice.call(arguments);
-        if (methodData.before) {
-            methodArgs = runBeforeHooks(this, methodData.before, methodArgs);
+        if (beforeHooks) {
+            methodArgs = runBeforeHooks(this, beforeHooks, methodArgs);
         }
         let methodResult;
-        if (methodData.middleware && methodData.middleware.length > 0) {
-            methodResult = runMiddlewareHooksAndOrigin(this, methodData.middleware, originalMethod, methodName, methodArgs);
+        if (middlewareHooks) {
+            methodResult = runMiddlewareHooksAndOrigin(this, middlewareHooks, toWrap, functionName || toWrap.name, methodArgs);
         } else {
-            methodResult = originalMethod.apply(this, methodArgs)
+            methodResult = toWrap.apply(this, methodArgs)
         }
-        if (methodData.after) {
-            methodResult = runAfterHooks(this, methodData.after, methodName, methodResult);
+        if (afterHooks) {
+            methodResult = runAfterHooks(this, afterHooks, functionName || toWrap.name, methodResult);
         }
         return methodResult;
-    } as any as WrappedMethod<T>;
-    result[wrappedFlag] = true;
-    if (originalMethod) {
-        result.originalMethod = originalMethod;
-    }
-    return result;
+    } as Function as T;
+
+    const functionMetaData = metadata(wrappedFunction);
+    functionMetaData.original = toWrap;
+    functionMetaData.middleware = middlewareHooks;
+    functionMetaData.before = beforeHooks;
+    functionMetaData.after = afterHooks;
+    return wrappedFunction;
 }
 
-
-export function unwrapMethod(method: Function | WrappedMethod): Function {
-    if (isWrapped(method)) {
-        return method.originalMethod;
-    }
-    return method;
+export function unwrapMethod(method: Function): Function {
+    return (metadata.hasState(method)) ? metadata(method).original : method;
 }
-
-function isWrapped<T extends Function>(method:T): method is WrappedMethod<T>{
-    return !!((method as any)[wrappedFlag]);
-}
-const wrappedFlag = '$class-decor-wrapped-method'; //TODO Symbol or something
 
 function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
     let serialized = '(unSerializable)';
@@ -93,7 +94,11 @@ function runMiddlewareHooksAndOrigin(context: any, hooks: Array<MiddlewareHook>,
     const retVal = hooks[0].call(context, createNextForMiddlewareHook(context, originalMethod, hooks, 1, tracker), methodArgs);
     if (process.env.NODE_ENV !== 'production') {
         if (tracker.lastMiddlewareRunning < hooks.length) {
-            console.warn(`@middleware ${hooks[tracker.lastMiddlewareRunning].name} for ${context.constructor.name}.${methodName}() did not call next`);
+            if (context) {
+                console.warn(`@middleware ${hooks[tracker.lastMiddlewareRunning].name} for ${context.constructor.name}.${methodName}() did not call next`);
+            } else {
+                console.warn(`@middleware ${hooks[tracker.lastMiddlewareRunning].name} for ${methodName}() did not call next`);
+            }
         }
     }
     return retVal;
