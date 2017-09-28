@@ -1,33 +1,42 @@
 import {chain, concat, map} from "lodash";
 
-export type FunctionWrapper<R = void, T = any> = <F extends Function>(func: F) => F
-
+export type HookWrappers = {
+    middleware?: Array<Function>,
+    before?: Array<Function>,
+    after?: Array<Function>
+}
+export type FunctionWrapper = <F extends Function>(func: F) => F
 export type BeforeHook<T = any> = (this: T, methodArguments: any) => any;
+export type AfterHook<R = void, T = any> = (this: T, methodResult: R) => R;
+export type MiddlewareHook<R = void, T = any> = (this: T, next: (methodArguments: any) => R, methodArguments: any) => R;
 
-export function before<T = any>(preMethod: BeforeHook<T>): FunctionWrapper<any, T> {
+
+
+
+
+
+export function before(preMethod: BeforeHook): FunctionWrapper {
     return function beforeWrapper<F extends Function>(originalFunction: F): F {
-        return function wrapped(this: T, ...methodArguments: any[]): any {
+        return function wrapped(this: any, ...methodArguments: any[]): any {
             return originalFunction.apply(this, preMethod.call(this, methodArguments));
         } as any as F;
     }
 }
 
-export type AfterHook<R = void, T = any> = (this: T, methodResult: R) => R;
 
-export function after<R=void, T=any>(postMethod: AfterHook<R, T>): FunctionWrapper<R, T> {
+export function after(postMethod: AfterHook<any>): FunctionWrapper {
     return function afterWrapper<F extends Function>(originalFunction: F): F {
-        return function wrapped(this: T, ...methodArguments: any[]): R {
+        return function wrapped(this: any, ...methodArguments: any[]): any {
             return postMethod.call(this, originalFunction.apply(this, methodArguments));
         } as any as F;
     }
 }
 
-export type MiddlewareHook<R = void, T = any> = (this: T, next: (methodArguments: any) => R, methodArguments: any) => R;
 
-export function middleware<R=void, T=any>(hook: MiddlewareHook<R, T>): FunctionWrapper<R, T> {
+export function middleware(hook: MiddlewareHook<any>): FunctionWrapper {
     return function middlewareWrapper<F extends Function>(originalFunction: F): F {
-        return function wrapped(this: T, ...methodArguments: any[]): R {
-            function next(this: T, args: any) {
+        return function wrapped(this: any, ...methodArguments: any[]): any {
+            function next(this: any, args: any) {
                 return originalFunction.apply(this, args);
             }
 
@@ -36,15 +45,9 @@ export function middleware<R=void, T=any>(hook: MiddlewareHook<R, T>): FunctionW
     }
 }
 
-export type HookWrappers = {
-    middleware?: Array<Function>,
-    before?: Array<Function>,
-    after?: Array<Function>
-}
-
-export function decorFunction<T extends Function>(wrappers: HookWrappers) {
-    return function wrapper<T1 extends T>(originalMethod: T1): T1 {
-        const result : T1 = chain(
+export function decorFunction(wrappers: HookWrappers) {
+    return function wrapper<T extends Function>(originalMethod: T): T {
+        const result : T = chain(
             concat(
                 map(wrappers.middleware, (mw: any) => middleware(mw)),
                 map(wrappers.before, (b: any) => before(b)),

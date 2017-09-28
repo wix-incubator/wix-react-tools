@@ -14,16 +14,18 @@ export type FunctionHooks = {
 
 export type FunctionMetaData = FunctionHooks & {
     original: Function;
+    name: string;
 }
 
 const metadata = privateState<FunctionMetaData, Function>('function-decor-metadata', () => ({
     original: null as any,
+    name: null as any,
     middleware: null,
     before: null,
     after: null,
 }));
 
-export function decorateFunction<T extends Function>(toWrap: T, beforeHooks: BeforeHook[] | null, middlewareHooks: MiddlewareHook[] | null, afterHooks: AfterHook[] | null, functionName?:string): T {
+export function decorateFunction<T extends Function>(toWrap: T, beforeHooks: BeforeHook[] | null, middlewareHooks: MiddlewareHook[] | null, afterHooks: AfterHook[] | null, functionName:string = toWrap.name): T {
     const wrappedFunction = function wrappedFunction(this: any) {
         let methodArgs: any[] = Array.prototype.slice.call(arguments);
         if (beforeHooks) {
@@ -31,17 +33,18 @@ export function decorateFunction<T extends Function>(toWrap: T, beforeHooks: Bef
         }
         let methodResult;
         if (middlewareHooks) {
-            methodResult = runMiddlewareHooksAndOrigin(this, middlewareHooks, toWrap, functionName || toWrap.name, methodArgs);
+            methodResult = runMiddlewareHooksAndOrigin(this, middlewareHooks, toWrap, functionName, methodArgs);
         } else {
             methodResult = toWrap.apply(this, methodArgs)
         }
         if (afterHooks) {
-            methodResult = runAfterHooks(this, afterHooks, functionName || toWrap.name, methodResult);
+            methodResult = runAfterHooks(this, afterHooks, functionName, methodResult);
         }
         return methodResult;
     } as Function as T;
 
     const functionMetaData = metadata(wrappedFunction);
+    functionMetaData.name = functionName;
     functionMetaData.original = toWrap;
     functionMetaData.middleware = middlewareHooks;
     functionMetaData.before = beforeHooks;
