@@ -21,19 +21,19 @@ declare const process: {env : {[k:string]: any}};
 const original: typeof React.createElement = React.createElement;
 // for root replication use React.cloneElement()
 
-function preRenderHook<T extends Component<any>>(instance: Instance<T>, args: never[]) {
+function preRenderHook<T extends Component<any>>(this: Instance<T>, args: never[]) {
     // find the lowest ReactDecorData attached to the instance
-    let currentReactDecorData = reactMixData.unsafe.inherited(instance.constructor);
-    currentReactDecorData.lastRendering = instance;
+    let currentReactDecorData = reactMixData.unsafe.inherited(this.constructor);
+    currentReactDecorData.lastRendering = this;
     (React as any).createElement = currentReactDecorData.createElementProxy;
     return args;
 }
 
-function postRenderHook<T extends Component<any>>(instance: Instance<T>, methodResult: ReactElement<any>) {
+function postRenderHook<T extends Component<any>>(this: Instance<T>, methodResult: ReactElement<any>) {
     // clean up createElement function
     (React as any).createElement = original;
     // find the lowest ReactDecorData attached to the instance
-    let currentReactDecorData = reactMixData.unsafe.inherited(instance.constructor);
+    let currentReactDecorData = reactMixData.unsafe.inherited(this.constructor);
     return currentReactDecorData.handleRoot(methodResult);
 }
 
@@ -56,7 +56,7 @@ function arraysAreEqual(arr1: Array<any>, arr2: Array<any>): boolean {
     if (arr1Length !== arr2.length) {
         return false;
     }
-    
+
     while (arr1Length--) {
         if (arr1[arr1Length] !== arr2[arr1Length]) {
             return false;
@@ -77,7 +77,7 @@ class ReactDecorData<P extends object, T extends Component<P> = Component<P>> {
     originalArgs = new Map<ReactElement<any>, ElementArgsTuple<any>>();
     currentArgs: ElementArgsTuple<any> | null = null;
 
-    constructor(mixData: MixerData<T>, superData: ReactDecorData<any> | null) {
+    constructor(mixData: MixerData<Instance<T>>, superData: ReactDecorData<any> | null) {
         this.onEachElementHooks = new List(superData && superData.onEachElementHooks);
         this.onRootElementHooks = new List(superData && superData.onRootElementHooks);
         if (!superData) {
@@ -102,7 +102,7 @@ class ReactDecorData<P extends object, T extends Component<P> = Component<P>> {
                         throw new Error('Error: onRootElement hook returned undefined');
                     }
                 });
-                
+
                 if (rootElement.props.children && rootElement.props.children.length !== undefined && arraysAreEqual(rootElement.props.children, rootArgsObj.children)) {
                     // optimisation for when children are equal before/after root hook
                     return cloneElement(rootElement, rootArgsObj.elementProps);

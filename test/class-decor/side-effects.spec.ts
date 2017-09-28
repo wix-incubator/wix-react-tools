@@ -52,14 +52,14 @@ describe("class decor side-effect", () => {
         });
 
         beforeEach('init classes', () => {
-            @after(hooks.spySuper, METHOD)
+            @after<any>(hooks.spySuper, METHOD)
             class _Super {
             }
             Super = _Super;
         });
 
         it("init of parent class do not leak to children", () => {
-            @after(hooks.spy1, METHOD)
+            @after<any>(hooks.spy1, METHOD)
             class Child1 extends Super {
 
             }
@@ -97,11 +97,11 @@ describe("class decor side-effect", () => {
 
         it("decorations on child of decorated class do not leak to siblings", () => {
 
-            @after(hooks.spy1, METHOD)
+            @after<any>(hooks.spy1, METHOD)
             class Child1 extends Super {
             }
 
-            @after(hooks.spy2, METHOD)
+            @after<any>(hooks.spy2, METHOD)
             class Child2 extends Super {
             }
 

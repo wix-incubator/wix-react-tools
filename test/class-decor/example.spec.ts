@@ -34,7 +34,7 @@ describe('class-decor documentation examples', () => {
 
     describe('onInstance', () => {
         it('directly on class', () => {
-            function init(instance: Logger, constructorArguments: [string]) {
+            function init(this: Logger, constructorArguments: [string]) {
                 console.log('called on constructor with "' + constructorArguments[0] + '"');
             }
 
@@ -55,14 +55,14 @@ describe('class-decor documentation examples', () => {
 
     describe('middleware', () => {
         it('directly on class', () => {
-            function logMW(instance: Logger, next: (n: [string]) => string, methodArguments: [string]) {
+            function logMW(this: Logger, next: (n: [string]) => string, methodArguments: [string]) {
                 console.log('called on method with ' + methodArguments[0]);
                 const result: string = next(['goodbye']);
                 console.log(result);
                 return 'wrapped=> ' + result
             }
 
-            @middleware(logMW, 'printMessage')
+            @middleware<Logger>(logMW, 'printMessage')
             class Logger {
                 printMessage(text: string) {
                     console.log(text);
@@ -82,12 +82,12 @@ describe('class-decor documentation examples', () => {
 
     describe('before', () => {
         it('directly on class', () => {
-            function preMethod(instance: Logger, methodArguments: [string]) {
+            function preMethod(this: Logger, methodArguments: [string]) {
                 console.log('called before method with ' + methodArguments[0]);
                 return ['goodbye'];
             }
 
-            @before(preMethod, 'printMessage')
+            @before<Logger>(preMethod, 'printMessage')
             class Logger {
                 printMessage(text: string) {
                     console.log(text);
@@ -106,12 +106,12 @@ describe('class-decor documentation examples', () => {
 
     describe('after', () => {
         it('directly on class', () => {
-            function postMethod(instance: Logger, methodReturn: string) {
+            function postMethod(this: Logger, methodReturn: string) {
                 console.log(methodReturn);
                 return 'wrapped=> ' + methodReturn;
             }
 
-            @after(postMethod, 'printMessage')
+            @after<Logger>(postMethod, 'printMessage')
             class Logger {
                 printMessage(text: string) {
                     console.log(text);

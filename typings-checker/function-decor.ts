@@ -12,7 +12,7 @@ describe(`middleware`, () => {
     describe(`Test original type`, () => {
 
         // $ExpectType (text: string) => string
-        middleware<[string], string>(mwHook)(original);
+        middleware<string>(mwHook)(original);
 
         // $ExpectType (text: string) => string
         middleware(mwHook)(original);
@@ -39,15 +39,15 @@ describe(`middleware`, () => {
         middleware(mwHook)(subset);
 
         // $ExpectType (text: "foo") => "bar"
-        middleware<[string], string>(mwHook)(subset);
+        middleware<string>(mwHook)(subset);
 
         // $ExpectError Type 'string' is not assignable
-        middleware<['foo'], 'bar'>(mwHook);
+        middleware<'bar'>(mwHook);
 
         describe(`documentation only (TODO: make it break)`, () => {
 
             // $ExpectType (text: string) => string
-            middleware<[string], string>(subsetMwHook)(original)
+            middleware<string>(subsetMwHook)(original)
         })
     })
 })
@@ -58,9 +58,6 @@ declare function incompatibleBHook(methodArguments: [number]): [number];
 describe(`before`, () => {
 
     describe(`Test original type`, () => {
-
-        // $ExpectType (text: string) => string
-        before<[string]>(bHook)(original);
 
         // $ExpectType (text: string) => string
         before(bHook)(original);
@@ -86,16 +83,13 @@ describe(`before`, () => {
         // $ExpectType (text: "foo") => "bar"
         before(bHook)(subset);
 
-        // $ExpectType (text: "foo") => "bar"
-        before<[string]>(bHook)(subset);
-
         // $DISABLED ExpectError Type '[string]' is not assignable
         // before<Args<['foo']>>(bHook);
 
         describe(`documentation only (TODO: make it break)`, () => {
 
             // $ExpectType (text: string) => string
-            before<[string]>(subsetBHook)(original)
+            before(subsetBHook)(original)
         })
     })
 })

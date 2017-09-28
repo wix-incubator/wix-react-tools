@@ -1,29 +1,26 @@
-import {Class} from "../core/types";
+import {Class, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 import {initEdgeClass} from "./apply-method-decorations";
-import _union = require('lodash/union');
+import {AfterHook, BeforeHook, MiddlewareHook} from "../function-decor";
 
 type DumbClass = new(...args: any[]) => object;
 
-export type ConstructorHook<T extends object> = (instance: T, constructorArguments: any[]) => void;
-export type BeforeMethodHook<A = any, T = any> = (instance: T, methodArguments: any) => any;
-export type AfterMethodHook<R = void, T = any> = (instance: T, methodResult: R) => R;
-export type MiddlewareMethodHook<A = any, R = void, T = any> = (instance: T, next: (methodArguments: any) => R, methodArguments: any) => R;
+export type ConstructorHook<T extends object> = (this: T, constructorArguments: any[]) => void;
 
 export type MixerDataProvider = {
-    <T extends object>(targetObj: Class<T>): MixerData<T>;
-    unsafe<T extends object>(targetObj: Class<T>): MixerData<T>;
+    <T extends object>(targetObj: Class<T>): MixerData<Instance<T>>;
+    unsafe<T extends object>(targetObj: Class<T>): MixerData<Instance<T>>;
     inherited: {
-        <T extends object>(targetObj: Class<T>): MixerData<T> | null;
-        unsafe<T extends object>(targetObj: Class<T>): MixerData<T>;
+        <T extends object>(targetObj: Class<T>): MixerData<Instance<T>> | null;
+        unsafe<T extends object>(targetObj: Class<T>): MixerData<Instance<T>>;
     }
-} & ClassStateProvider<MixerData<object>, Class<object>>;
+} & ClassStateProvider<MixerData<Instance<object>>, Class<object>>;
 
 function getSuper<T extends object, C extends T = T>(c: Class<C>): Class<T> {
     return Object.getPrototypeOf(c.prototype).constructor;
 }
 
-const getMixerData = classPrivateState<MixerData<object>>('mixer data', <T extends object>(c: Class<T>) => {
+const getMixerData = classPrivateState<MixerData<Instance<object>>>('mixer data', <T extends Instance<object>>(c: Class<T>) => {
     const superClass = getSuper<T>(c);
     return new MixerData<T>(superClass);
 }) as MixerDataProvider;
@@ -44,7 +41,7 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C {
         constructor(...args: any[]) {
             super(...args);
             getMixerData(Extended)
-                .visitConstructorHooks((cb: ConstructorHook<T>) => cb(this as any as T, args));
+                .visitConstructorHooks((cb: ConstructorHook<Instance<T>>) => cb.call(this as any as T, args));
         }
     }
     // initialize mixer data on Extended
@@ -81,26 +78,28 @@ export class List<T> {
 }
 
 type MethodMeta = {
-    middleware?: List<MiddlewareMethodHook>;
-    before?: List<BeforeMethodHook>;
-    after?: List<AfterMethodHook>;
+    middleware?: List<MiddlewareHook>;
+    before?: List<BeforeHook>;
+    after?: List<AfterHook>;
 }
 
 /**
  * type dictionary - maps name of hook to its type
  */
 type Hooks = {
-    middleware: MiddlewareMethodHook;
-    before: BeforeMethodHook;
-    after: AfterMethodHook;
+    middleware: MiddlewareHook;
+    before: BeforeHook;
+    after: AfterHook;
 }
 
 export type MethodData = {
-    middleware: MiddlewareMethodHook[] | null;
-    before: BeforeMethodHook[] | null;
-    after: AfterMethodHook[] | null;
+    middleware: MiddlewareHook[] | null;
+    before: BeforeHook[] | null;
+    after: AfterHook[] | null;
 }
-
+function onClassInit(this: object) {
+    initEdgeClass(this.constructor as Class<object>);
+}
 export class MixerData<T extends object> {
     private superData: MixerData<Partial<T>> | null;
     private constructorHooks: ConstructorHook<T>[] = [];
@@ -112,9 +111,6 @@ export class MixerData<T extends object> {
         this.methodNames = new List(this.superData && this.superData.methodNames);
         // TODO: generalize initEdgeClass to a new type of hook (once per edge class)
         if (!this.superData) {
-            const onClassInit = (firstInstance: T) => {
-                initEdgeClass(firstInstance.constructor as Class<T>);
-            };
             // if this is the first class in the hierarchy to be mixed
             this.addConstructorHook(onClassInit);
         }
@@ -175,15 +171,15 @@ export class MixerData<T extends object> {
         this.constructorHooks && this.constructorHooks.forEach(visitor);
     }
 
-    addBeforeHook(hook: BeforeMethodHook<any, T>, methodName: keyof T) {
+    addBeforeHook(hook: BeforeHook<T>, methodName: keyof T) {
         this.addToList('before', methodName, hook);
     }
 
-    addAfterHook(hook: AfterMethodHook<any, T>, methodName: keyof T) {
+    addAfterHook(hook: AfterHook<any, T>, methodName: keyof T) {
         this.addToList('after', methodName, hook);
     }
 
-    addMiddlewareHook(hook: MiddlewareMethodHook<any, any, T>, methodName: keyof T) {
+    addMiddlewareHook(hook: MiddlewareHook<any, T>, methodName: keyof T) {
         this.addToList('middleware', methodName, hook);
     }
 }

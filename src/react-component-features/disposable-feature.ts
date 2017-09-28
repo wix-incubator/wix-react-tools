@@ -18,9 +18,9 @@ export namespace disposable {
 }
 
 export const disposable = chain<disposable.This>(
-    after<disposable.This>((instance, methodReturn) => {
-        if (privateDisposers.hasState(instance)){
-            privateDisposers(instance).disposeAll();
+    after<disposable.This>(function( methodReturn){
+        if (privateDisposers.hasState(this)){
+            privateDisposers(this).disposeAll();
         }
         return methodReturn;
     }, "componentWillUnmount"),

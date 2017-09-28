@@ -1,10 +1,10 @@
 import {chain, concat, map} from "lodash";
 
-export type FunctionWrapper<A, R = void, T = any> = <F extends Function>(func: F) => F
+export type FunctionWrapper<R = void, T = any> = <F extends Function>(func: F) => F
 
-export type BeforeHook<A, T = any> = (this: T, methodArguments: any) => any;
+export type BeforeHook<T = any> = (this: T, methodArguments: any) => any;
 
-export function before<A, T = any>(preMethod: BeforeHook<A, T>): FunctionWrapper<A, any, T> {
+export function before<T = any>(preMethod: BeforeHook<T>): FunctionWrapper<any, T> {
     return function beforeWrapper<F extends Function>(originalFunction: F): F {
         return function wrapped(this: T, ...methodArguments: any[]): any {
             return originalFunction.apply(this, preMethod.call(this, methodArguments));
@@ -14,7 +14,7 @@ export function before<A, T = any>(preMethod: BeforeHook<A, T>): FunctionWrapper
 
 export type AfterHook<R = void, T = any> = (this: T, methodResult: R) => R;
 
-export function after<R=void, T=any>(postMethod: AfterHook<R, T>): FunctionWrapper<any, R, T> {
+export function after<R=void, T=any>(postMethod: AfterHook<R, T>): FunctionWrapper<R, T> {
     return function afterWrapper<F extends Function>(originalFunction: F): F {
         return function wrapped(this: T, ...methodArguments: any[]): R {
             return postMethod.call(this, originalFunction.apply(this, methodArguments));
@@ -22,9 +22,9 @@ export function after<R=void, T=any>(postMethod: AfterHook<R, T>): FunctionWrapp
     }
 }
 
-export type MiddlewareHook<A, R = void, T = any> = (this: T, next: (methodArguments: any) => R, methodArguments: any) => R;
+export type MiddlewareHook<R = void, T = any> = (this: T, next: (methodArguments: any) => R, methodArguments: any) => R;
 
-export function middleware<A, R=void, T=any>(hook: MiddlewareHook<A, R, T>): FunctionWrapper<A, R, T> {
+export function middleware<R=void, T=any>(hook: MiddlewareHook<R, T>): FunctionWrapper<R, T> {
     return function middlewareWrapper<F extends Function>(originalFunction: F): F {
         return function wrapped(this: T, ...methodArguments: any[]): R {
             function next(this: T, args: any) {

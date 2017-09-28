@@ -7,24 +7,24 @@ describe('middleware, before, after', () => {
     afterEach("reset console.warn", () => {
         spy.reset();
     });
-    function middlewareHook(instance: any, next: (...args: any[]) => any, methodArguments: any[]) {
+    function middlewareHook(this: any, next: (...args: any[]) => any, methodArguments: any[]) {
         spy();
         return next(...methodArguments);
     }
 
-    function beforeHook(instance: any, methodArguments: any[]) {
+    function beforeHook(this: any, methodArguments: any[]) {
         spy();
         return methodArguments;
     }
 
-    function afterHook(instance: any, methodResult: any) {
+    function afterHook(this: any, methodResult: any) {
         spy();
         return methodResult;
     }
 
     describe('by default creates a method if none previously exists', () => {
         it('before', () => {
-            @before(beforeHook, 'myMethod')
+            @before<Logger>(beforeHook, 'myMethod')
             class Logger {
                 myMethod: () => void;
             }
@@ -33,7 +33,7 @@ describe('middleware, before, after', () => {
             expect(spy).to.have.callCount(1);
         });
         it('after', () => {
-            @after(afterHook, 'myMethod')
+            @after<Logger>(afterHook, 'myMethod')
             class Logger {
                 myMethod: () => void;
             }
@@ -42,7 +42,7 @@ describe('middleware, before, after', () => {
             expect(spy).to.have.callCount(1);
         });
         it('middleware', () => {
-            @middleware(middlewareHook, 'myMethod')
+            @middleware<Logger>(middlewareHook, 'myMethod')
             class Logger {
                 myMethod: () => void;
             }
@@ -54,7 +54,7 @@ describe('middleware, before, after', () => {
 
     describe('with .ifExists, does not create a method if none previously exists', () => {
         it('before', () => {
-            @before.ifExists(beforeHook, 'myMethod')
+            @before.ifExists<Logger>(beforeHook, 'myMethod')
             class Logger {
                 myMethod: () => void;
             }
@@ -62,7 +62,7 @@ describe('middleware, before, after', () => {
             expect(logger.myMethod).to.equal(undefined);
         });
         it('after', () => {
-            @after.ifExists(afterHook, 'myMethod')
+            @after.ifExists<Logger>(afterHook, 'myMethod')
             class Logger {
                 myMethod: () => void;
             }
@@ -70,7 +70,7 @@ describe('middleware, before, after', () => {
             expect(logger.myMethod).to.equal(undefined);
         });
         it('middleware', () => {
-            @middleware.ifExists(middlewareHook, 'myMethod')
+            @middleware.ifExists<Logger>(middlewareHook, 'myMethod')
             class Logger {
                 myMethod: () => void;
             }
@@ -81,7 +81,7 @@ describe('middleware, before, after', () => {
 
     describe('with .ifExists, wraps a method if it previously exists', () => {
         it('before', () => {
-            @before.ifExists(beforeHook, 'myMethod')
+            @before.ifExists<Logger>(beforeHook, 'myMethod')
             class Logger {
                 myMethod() {
                 };
@@ -91,7 +91,7 @@ describe('middleware, before, after', () => {
             expect(spy).to.have.callCount(1);
         });
         it('after', () => {
-            @after.ifExists(afterHook, 'myMethod')
+            @after.ifExists<Logger>(afterHook, 'myMethod')
             class Logger {
                 myMethod() {
                 };
@@ -101,7 +101,7 @@ describe('middleware, before, after', () => {
             expect(spy).to.have.callCount(1);
         });
         it('middleware', () => {
-            @middleware.ifExists(middlewareHook, 'myMethod')
+            @middleware.ifExists<Logger>(middlewareHook, 'myMethod')
             class Logger {
                 myMethod() {
                 };

@@ -77,8 +77,10 @@ describe("class decor inheritance", () => {
         function checkClass(UserClass: typeof Base, spy3: sinon.SinonSpy) {
             let obj = new UserClass(ORIGIN_ARGUMENT);
             expect(obj.myNumber).to.equal(ORIGIN_ARGUMENT);
-            expect(first, 'first').to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT]);
-            expect(last, 'last').to.have.callCount(1).and.calledWith(sinon.match.same(obj), [ORIGIN_ARGUMENT]);
+            expect(first, 'first').to.have.callCount(1).and.calledWith([ORIGIN_ARGUMENT]);
+            expect(first, 'first').to.have.callCount(1).and.calledOn(sinon.match.same(obj));
+            expect(last, 'last').to.have.callCount(1).and.calledWith([ORIGIN_ARGUMENT]);
+            expect(last, 'last').to.have.callCount(1).and.calledOn(sinon.match.same(obj));
             expect(spy3, 'userConstructorSpy').to.have.callCount(1).and.calledWith(sinon.match.same(obj));
             expectSpyChain(
                 {n: 'first', c: first.firstCall},
@@ -101,21 +103,21 @@ describe("class decor inheritance", () => {
 
             function beforeAfterDecor<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
-                    before<T>((target: T, args: [number]) => {
-                        SPIES.firstBefore(target, args);
+                    before<T>(function(this: T, args: [number]){
+                        SPIES.firstBefore(this, args);
                         return [args[0] + 1]
                     }, METHOD),
-                    after<T>((target: T, result: number) => {
-                        SPIES.lastAfter(target, result);
+                    after<T>(function(this: T, result: number){
+                        SPIES.lastAfter(this, result);
                         return result + 1;
                     }, METHOD))(cls);
             }
 
             function middlewareDecor<T extends Base>(cls: Class<T>): Class<T> {
-                return middleware<T>((target: T, next: Function, args: [number]) => {
-                    SPIES.lastBefore(target, args);
+                return middleware<T>(function(this: T, next: Function, args: [number]){
+                    SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
-                    SPIES.firstAfter(target, res);
+                    SPIES.firstAfter(this, res);
                     return res + 1;
                 }, METHOD, cls);
             }
@@ -132,24 +134,24 @@ describe("class decor inheritance", () => {
         describe("before and after", () => {
             function outer<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
-                    before<T>((target: T, args: [number]) => {
-                        SPIES.firstBefore(target, args);
+                    before<T>(function(this: T, args: [number]){
+                        SPIES.firstBefore(this, args);
                         return [args[0] + 1]
                     }, METHOD),
-                    after<T>((target: T, result: number) => {
-                        SPIES.lastAfter(target, result);
+                    after<T>(function(this: T, result: number){
+                        SPIES.lastAfter(this, result);
                         return result + 1;
                     }, METHOD))(cls);
             }
 
             function inner<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
-                    before<T>((target: T, args: [number]) => {
-                        SPIES.lastBefore(target, args);
+                    before<T>(function(this: T, args: [number]){
+                        SPIES.lastBefore(this, args);
                         return [args[0] + 1]
                     }, METHOD),
-                    after<T>((target: T, result: number) => {
-                        SPIES.firstAfter(target, result);
+                    after<T>(function(this: T, result: number){
+                        SPIES.firstAfter(this, result);
                         return result + 1;
                     }, METHOD))(cls);
             }
@@ -160,19 +162,19 @@ describe("class decor inheritance", () => {
 
         describe("middleware", () => {
             function outer<T extends Base>(cls: Class<T>): Class<T> {
-                return middleware<T>((target: T, next: Function, args: [number]) => {
-                    SPIES.firstBefore(target, args);
+                return middleware<T>(function(this: T, next: Function, args: [number]){
+                    SPIES.firstBefore(this, args);
                     const res = next([args[0] + 1]);
-                    SPIES.lastAfter(target, res);
+                    SPIES.lastAfter(this, res);
                     return res + 1;
                 }, METHOD, cls);
             }
 
             function inner<T extends Base>(cls: Class<T>): Class<T> {
-                return middleware<T>((target: T, next: Function, args: [number]) => {
-                    SPIES.lastBefore(target, args);
+                return middleware<T>(function(this: T, next: Function, args: [number]) {
+                    SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
-                    SPIES.firstAfter(target, res);
+                    SPIES.firstAfter(this, res);
                     return res + 1;
                 }, METHOD, cls);
             }

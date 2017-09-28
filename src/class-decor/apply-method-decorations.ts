@@ -1,16 +1,13 @@
 import _isArrayLikeObject = require('lodash/isArrayLikeObject');
-import _union = require('lodash/union');
 import {Class} from "../core/types";
 import "../core/dev-mode";
 import {
-    AfterMethodHook,
-    BeforeMethodHook,
     inheritedMixerData,
     MethodData,
-    MiddlewareMethodHook,
     MixerData
 } from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
+import {AfterHook, BeforeHook, MiddlewareHook} from "../function-decor";
 
 declare const process: {env : {[k:string]: any}};
 
@@ -97,10 +94,10 @@ function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
     throw new Error('before hook did not return an array-like object: ' + serialized)
 }
 
-function runBeforeHooks<T extends object>(target: T, hooks: Array<BeforeMethodHook> | null, methodName: keyof T, methodArgs: any[]) {
+function runBeforeHooks<T extends object>(target: T, hooks: Array<BeforeHook> | null, methodName: keyof T, methodArgs: any[]) {
     if (hooks) {
-        hooks.forEach((hook: BeforeMethodHook<any, T>) => {
-            methodArgs = hook(target, methodArgs);
+        hooks.forEach((hook: BeforeHook<T>) => {
+            methodArgs = hook.call(target, methodArgs);
             if (!_isArrayLikeObject(methodArgs)) {
                 errorBeforeDidNotReturnedArray(methodArgs);
             }
@@ -123,13 +120,13 @@ const dummyTracker = {
     }
 };
 
-function runMiddlewareHooksAndOrigin<T extends object>(target: T, hooks: Array<MiddlewareMethodHook> | null, originalMethod: (...args: any[]) => any, methodName: keyof T, methodArgs: any[]) {
+function runMiddlewareHooksAndOrigin<T extends object>(target: T, hooks: Array<MiddlewareHook> | null, originalMethod: (...args: any[]) => any, methodName: keyof T, methodArgs: any[]) {
     let retVal;
     if (hooks) { // should never be an empty array - either undefined or with hook(s)
         //keep track of last middleware running by ID to determine chain breakage:
         let tracker: MiddlewareTracker = (process.env.NODE_ENV !== 'production') ? new MiddlewareTracker() : dummyTracker;
         //Run middleware:
-        retVal = hooks[0](target, createNextForMiddlewareHook(target, originalMethod, hooks, 1, tracker), methodArgs);
+        retVal = hooks[0].call(target, createNextForMiddlewareHook(target, originalMethod, hooks, 1, tracker), methodArgs);
         if (tracker.lastMiddlewareRunning < hooks.length) {
             console.warn(`@middleware ${hooks[tracker.lastMiddlewareRunning].name} for ${target.constructor.name}.${methodName}() did not call next`);
         }
@@ -140,19 +137,19 @@ function runMiddlewareHooksAndOrigin<T extends object>(target: T, hooks: Array<M
     return retVal;
 }
 
-function createNextForMiddlewareHook<T extends object, A, R>(target: T, originalMethod: (...args: any[]) => R, middlewareHooks: Array<MiddlewareMethodHook<A, R, T>>, idx: number, tracker: MiddlewareTracker) {
+function createNextForMiddlewareHook<T extends object, A, R>(target: T, originalMethod: (...args: any[]) => R, middlewareHooks: Array<MiddlewareHook<R, T>>, idx: number, tracker: MiddlewareTracker) {
     return (args: any[]): R => {
         tracker.reportNextMiddleware(idx);
         return middlewareHooks.length <= idx ?
             (originalMethod && originalMethod.apply(target, args)) :
-            middlewareHooks[idx](target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1, tracker), args as any);
+            middlewareHooks[idx].call(target, createNextForMiddlewareHook(target, originalMethod, middlewareHooks, idx + 1, tracker), args as any);
     };
 }
 
-function runAfterHooks<T extends object>(target: T, hooks: Array<AfterMethodHook> | null, methodName: keyof T, methodResult: any) {
+function runAfterHooks<T extends object>(target: T, hooks: Array<AfterHook> | null, methodName: keyof T, methodResult: any) {
     if (hooks) {
-        hooks.forEach((hook: AfterMethodHook) => {
-            const hookMethodResult = hook(target, methodResult);
+        hooks.forEach((hook: AfterHook) => {
+            const hookMethodResult = hook.call(target, methodResult);
             if (process.env.NODE_ENV !== 'production') {
                 if (methodResult !== undefined && hookMethodResult === undefined) {
                     console.warn(`@after ${methodName} Did you forget to return a value?`);

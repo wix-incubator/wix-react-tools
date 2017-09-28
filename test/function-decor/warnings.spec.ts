@@ -62,7 +62,7 @@ describe("class-decor dev mode warnings", () => {
         });
 
         it("doesn't warn you when a middleware DOES call its 'next' function (iff devMode is turned ON)", () => {
-            @middleware<Duck>((instance, next, args) => {
+            @middleware<Duck>((next, args) => {
                 next(args);
             }, "duckWillQuack")
             class Duck {
