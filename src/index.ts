@@ -12,7 +12,7 @@ export * from './react-util/global-id';
 
 // js decor
 export * from './class-decor/index';
-export * from "./function-decor";
+export * from "./functoin-decor/index";
 
 // react decor
 export * from './react-decor/index';
@@ -25,7 +25,7 @@ export * from './react-component-features/stylable-feature';
 
 // customized exports:
 import {rootProps} from "./react-component-features/root-props";
-import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./function-decor";
+import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./functoin-decor/index";
 import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./class-decor/index";
 
 function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc: F, cDFunc: C): F & C {

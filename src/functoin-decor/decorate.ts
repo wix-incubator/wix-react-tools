@@ -1,31 +1,12 @@
-import {AfterHook, BeforeHook, MiddlewareHook} from "../function-decor";
-import {privateState} from "../core/private-state";
+import {setMetadata} from "./reflection";
+import {AfterHook, BeforeHook, MiddlewareHook} from "./common";
 
 
 function _isArrayLikeObject(value: any): value is Array<any> {
     return value != null && typeof value == 'object' && typeof value.length == 'number' && value.length > -1;
 }
 
-export type FunctionHooks = {
-    middleware: MiddlewareHook[] | null;
-    before: BeforeHook[] | null;
-    after: AfterHook[] | null;
-}
-
-export type FunctionMetaData = FunctionHooks & {
-    original: Function;
-    name: string;
-}
-
-const metadata = privateState<FunctionMetaData, Function>('function-decor-metadata', () => ({
-    original: null as any,
-    name: null as any,
-    middleware: null,
-    before: null,
-    after: null,
-}));
-
-export function decorateFunction<T extends Function>(toWrap: T, beforeHooks: BeforeHook[] | null, middlewareHooks: MiddlewareHook[] | null, afterHooks: AfterHook[] | null, functionName:string = toWrap.name): T {
+export function innerDecorateFunction<T extends Function>(beforeHooks: BeforeHook[] | null, middlewareHooks: MiddlewareHook[] | null, afterHooks: AfterHook[] | null, toWrap: T, functionName:string = toWrap.name): T {
     const wrappedFunction = function wrappedFunction(this: any) {
         let methodArgs: any[] = Array.prototype.slice.call(arguments);
         if (beforeHooks) {
@@ -42,19 +23,13 @@ export function decorateFunction<T extends Function>(toWrap: T, beforeHooks: Bef
         }
         return methodResult;
     } as Function as T;
-
-    const functionMetaData = metadata(wrappedFunction);
-    functionMetaData.name = functionName;
-    functionMetaData.original = toWrap;
-    functionMetaData.middleware = middlewareHooks;
-    functionMetaData.before = beforeHooks;
-    functionMetaData.after = afterHooks;
+    for (let k in toWrap){
+        wrappedFunction[k] = toWrap[k];
+    }
+    setMetadata(wrappedFunction, functionName, toWrap, middlewareHooks, beforeHooks, afterHooks);
     return wrappedFunction;
 }
 
-export function unwrapMethod(method: Function): Function {
-    return (metadata.hasState(method)) ? metadata(method).original : method;
-}
 
 function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
     let serialized = '(unSerializable)';

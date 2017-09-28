@@ -1,6 +1,6 @@
 import React = require('react');
 import {Attributes, cloneElement, ReactElement, ReactNode, ReactType, SFC} from "react";
-import {decorFunction, middleware} from "../function-decor";
+import {decorFunction, middleware} from "../functoin-decor/index";
 import {
     DecorReactHooks, ElementArgs, StatelessElementHook, isNotEmptyArrayLike, translateArgumentsToObject,
     translateObjectToArguments

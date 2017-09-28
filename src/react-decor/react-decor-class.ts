@@ -1,5 +1,5 @@
 import {ClassDecorator} from "../class-decor/index";
-import {decorFunction} from "../function-decor";
+import {decorFunction} from "../functoin-decor/index";
 import * as React from "react";
 import {HTMLAttributes, ReactElement, Component, cloneElement} from "react";
 import {

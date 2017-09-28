@@ -5,7 +5,7 @@ import {
     unsafeMixerData
 } from "./mixer";
 import {Class, TypedPropertyDescriptorMap} from "../core/types";
-import {AfterHook, BeforeHook, MiddlewareHook} from "../function-decor";
+import {AfterHook, BeforeHook, MiddlewareHook} from "../functoin-decor/index";
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 

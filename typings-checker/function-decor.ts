@@ -34,12 +34,19 @@ describe(`after`, () => {
 })
 
 describe(`decorFunction`, () => {
-    // $ExpectType <T extends Function>(originalMethod: T) => T
+    // $ExpectType (text: string) => string
     decorFunction({
         middleware: [mwHook],
         before: [bHook],
         after: [aHook]
-    });
+    })(original);
+
+    // $ExpectType (text: "foo") => "bar"
+    decorFunction({
+        middleware: [mwHook],
+        before: [bHook],
+        after: [aHook]
+    })(subset);
 });
 
 
