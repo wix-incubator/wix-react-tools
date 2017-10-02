@@ -1,5 +1,6 @@
 import {RuntimeStylesheet, Stylesheet} from "stylable";
-import {decorateReactComponent, decorationReflection} from "../react-decor/index";
+import {decorateReactComponent} from "../react-decor/index";
+import {decorationReflection} from "../react-decor/react-decor-reflection";
 import {ElementArgs, StatelessElementHook} from "../react-decor/common";
 
 function eachElementHook(sheet: Stylesheet): StatelessElementHook<any> {

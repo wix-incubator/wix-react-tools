@@ -2,6 +2,8 @@ import { privateState } from "../core/private-state";
 
 declare const process: {env : {[k:string]: any}};
 
+export const decorationReflection = reflection('react-decor-reflection');
+
 export function reflection<T extends object = any>(id: string) {
     const decorationReflection = privateState<Array<any>, T>(id, (targetObj: T) => []);
 
