@@ -1,4 +1,4 @@
-import {stylable} from "../../src";
+import {stylable, isDecorated} from "../../src";
 import {createGenerator} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
@@ -11,12 +11,12 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
 
-    it('supports empty elements', () => {
-        const {fromCSS} = createGenerator();
-        const {runtime} = fromCSS(`
-            .SomeClass {}
-        `);
+    const {fromCSS} = createGenerator();
+    const {runtime} = fromCSS(`
+        .SomeClass {}
+    `);
 
+    it('supports empty elements', () => {
         @stylable(runtime)
         class Comp extends React.Component {
             render() {
@@ -35,11 +35,6 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
     });
 
     it('supports class names', () => {
-        const {fromCSS} = createGenerator();
-        const {runtime} = fromCSS(`
-            .SomeClass {}
-        `);
-
         @stylable(runtime)
         class Comp extends React.Component {
             render() {
@@ -101,6 +96,18 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
 
             const rootElement = simulateRender(Comp);
             expect(rootElement && rootElement.props).to.not.have.property('style-state');
+        });
+    });
+
+    describe('decoration', () => {
+        @stylable(runtime)
+        class Comp extends React.Component {
+            render() { return <div data-automation-id="Root" /> }
+        }
+
+        it('should return true when checking isDecorated on a component decorated with stylable', () => {
+            expect(isDecorated(Comp)).to.equal(true);
+            expect(isDecorated(Comp, stylable)).to.equal(true);
         });
     });
 });
