@@ -1,5 +1,5 @@
 import {RuntimeStylesheet, Stylesheet} from "stylable";
-import {decorateReactComponent} from "../react-decor/index";
+import {decorateReactComponent, decorationReflection} from "../react-decor/index";
 import {ElementArgs, StatelessElementHook} from "../react-decor/common";
 
 function eachElementHook(sheet: Stylesheet): StatelessElementHook<any> {
@@ -30,7 +30,15 @@ function rootElementHook(sheet: Stylesheet) {
     }
 }
 
-export const stylable = (sheet: RuntimeStylesheet) => decorateReactComponent({
-    onEachElement: [eachElementHook(sheet.$stylesheet)],
-    onRootElement: [rootElementHook(sheet.$stylesheet)]
-});
+export const stylable = (sheet: RuntimeStylesheet) => {
+    const wrapper = decorateReactComponent({
+        onEachElement: [eachElementHook(sheet.$stylesheet)],
+        onRootElement: [rootElementHook(sheet.$stylesheet)]
+    });
+
+    return (Comp: any) => {
+        const Wrapped = wrapper(Comp);
+        decorationReflection.registerDecorator(Comp, Wrapped, stylable);
+        return Wrapped;
+    }
+};
