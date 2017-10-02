@@ -2,7 +2,7 @@ export {decorReactClass} from "./react-decor-class";
 export {DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook, StatelessElementHook, Wrapper, ElementArgs} from "./common";
 
 import {Component, ComponentType} from "react";
-import {reflection} from "./react-decor-reflection";
+import {reflection, decorationReflection} from "./react-decor-reflection";
 import {decorReactClass} from "./react-decor-class";
 import {
     DecorReactHooks, isReactClassComponent, StatefulElementHook, StatelessDecorReactHooks, StatelessElementHook,
@@ -10,7 +10,6 @@ import {
 } from "./common";
 import {decorReactFunc} from "./react-decor-function";
 
-const decorationReflection = reflection('react-decor-reflection');
 export const {isDecorated} = decorationReflection;
 
 export function decorateReactComponent<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): Wrapper<P> {
@@ -26,6 +25,7 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
         } else if (typeof Comp === 'function') {
             Wrapped = functionalDecorator(Comp as any) as T1;
         }
+
         decorationReflection.registerDecorator(Comp, Wrapped, wrapper);
         return Wrapped;
     }
