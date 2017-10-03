@@ -1,8 +1,15 @@
 export {decorReactClass} from "./react-decor-class";
-export {DecorReactHooks, StatelessDecorReactHooks, StatefulElementHook, StatelessElementHook, Wrapper, ElementArgs} from "./common";
+export {
+    DecorReactHooks,
+    StatelessDecorReactHooks,
+    StatefulElementHook,
+    StatelessElementHook,
+    Wrapper,
+    ElementArgs
+} from "./common";
 
 import {Component, ComponentType} from "react";
-import {reflection, decorationReflection} from "./react-decor-reflection";
+import {decorationReflection} from "./react-decor-reflection";
 import {decorReactClass} from "./react-decor-class";
 import {
     DecorReactHooks, isReactClassComponent, StatefulElementHook, StatelessDecorReactHooks, StatelessElementHook,
@@ -34,17 +41,9 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
 }
 
 export function onRootElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): Wrapper<P> {
-    if (classHook) {
-        return decorateReactComponent({onRootElement: [statelessHook]}, {onRootElement: [classHook]});
-    } else {
-        return decorateReactComponent({onRootElement: [statelessHook]});
-    }
+    return decorateReactComponent({onRootElement: [statelessHook]}, classHook ? {onRootElement: [classHook]} : undefined);
 }
 
 export function onEachElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): Wrapper<P> {
-    if (classHook) {
-        return decorateReactComponent({onEachElement: [statelessHook]}, {onEachElement: [classHook]});
-    } else {
-        return decorateReactComponent({onEachElement: [statelessHook]});
-    }
+    return decorateReactComponent({onEachElement: [statelessHook]}, classHook ? {onEachElement: [classHook]} : undefined);
 }
