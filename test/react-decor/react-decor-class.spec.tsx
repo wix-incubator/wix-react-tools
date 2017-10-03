@@ -4,6 +4,7 @@ import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 import {devMode, runInContext, ElementArgs} from "../../src";
 import {HTMLAttributes} from "react";
+import {resetReactCreateElement} from "../../src/react-decor/common";
 
 declare const process: any;
 function inProduction() {
@@ -97,6 +98,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
     });
 
     describe('onEachElement hooks', () => {
+        beforeEach(resetReactCreateElement)
+
         it('throws when hook returns undefined', () => {
             @decorReactClass({onEachElement:[(() => {}) as any]})
             class MyComp extends React.Component {

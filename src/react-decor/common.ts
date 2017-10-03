@@ -13,6 +13,7 @@ import {
     ReactSVG,
     SFC
 } from "react";
+import * as React from "react";
 import { Instance } from '../core/types';
 
 export function isNotEmptyArrayLike(arr: Array<any> | undefined): arr is Array<any> {
@@ -76,4 +77,10 @@ export interface StatelessDecorReactHooks<P extends object> {
 export interface DecorReactHooks<P extends object, T extends Component<P> = Component<P>> {
     onRootElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
     onEachElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
+}
+
+export const originalReactCreateElement: typeof React.createElement = React.createElement;
+
+export function resetReactCreateElement(){
+    (React as any).createElement = originalReactCreateElement;
 }

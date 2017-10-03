@@ -3,22 +3,21 @@ import {decorFunction} from "../functoin-decor/index";
 import * as React from "react";
 import {HTMLAttributes, ReactElement, Component, cloneElement} from "react";
 import {
-    DecorReactHooks, ElementArgs, ElementArgsTuple, StatefulElementHook, translateArgumentsToObject
+    DecorReactHooks, ElementArgs, ElementArgsTuple, StatefulElementHook, translateArgumentsToObject,
+    resetReactCreateElement, originalReactCreateElement
 } from "./common";
 import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
 import {Class, GlobalConfig, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 import {getGlobalConfig, runInContext} from "../core/config";
 
-import ReactCurrentOwner = require('react/lib/ReactCurrentOwner');
-
-declare const process: {env : {[k:string]: any}};
+declare const process: { env: { [k: string]: any } };
 
 // TODO: make union based of all different overloaded signatures of createElement
 // also consider <P extends HTMLAttributes<HTMLElement>>
 // export type ElementHook<T extends Component<any>> = <P = object>(instance: T, args: ElementArgs<P>) => ElementArgs<P>;
 
-const original: typeof React.createElement = React.createElement;
+
 // for root replication use React.cloneElement()
 
 function preRenderHook<T extends Component<any>>(this: Instance<T>, args: never[]) {
@@ -31,7 +30,7 @@ function preRenderHook<T extends Component<any>>(this: Instance<T>, args: never[
 
 function postRenderHook<T extends Component<any>>(this: Instance<T>, methodResult: ReactElement<any>) {
     // clean up createElement function
-    (React as any).createElement = original;
+    resetReactCreateElement();
     // find the lowest ReactDecorData attached to the instance
     let currentReactDecorData = reactMixData.unsafe.inherited(this.constructor);
     return currentReactDecorData.handleRoot(methodResult);
@@ -72,7 +71,7 @@ class ReactDecorData<P extends object, T extends Component<P> = Component<P>> {
     createElementProxy = decorFunction({
         before: [this.beforeCreateElementHook.bind(this)],
         after: [this.afterCreateElementHook.bind(this)]
-    })(original);
+    })(originalReactCreateElement);
     lastRendering: T;
     originalArgs = new Map<ReactElement<any>, ElementArgsTuple<any>>();
     currentArgs: ElementArgsTuple<any> | null = null;
@@ -116,20 +115,15 @@ class ReactDecorData<P extends object, T extends Component<P> = Component<P>> {
 
     beforeCreateElementHook<E extends HTMLAttributes<HTMLElement>>(functionArgs: ElementArgsTuple<E>) {
         // check if original render is over, then clean up and call original
-        if ((ReactCurrentOwner.current && ReactCurrentOwner.current._instance === this.lastRendering) || getGlobalConfig<Config>().simulateReactDecor) {
-            let args: ElementArgs<E> = translateArgumentsToObject(functionArgs);
-            this.onEachElementHooks.collect().forEach((hook: StatefulElementHook<P, T>) => {
-                args = hook.call(this.lastRendering, this.lastRendering.props, args);
-                if (args === undefined) {
-                    throw new Error('Error: onEachElement hook returned undefined');
-                }
-            });
-            this.currentArgs = functionArgs;
-            return [args.type, args.elementProps, ...args.children];
-        } else {
-            (React as any).createElement = original;
-            return functionArgs;
-        }
+        let args: ElementArgs<E> = translateArgumentsToObject(functionArgs);
+        this.onEachElementHooks.collect().forEach((hook: StatefulElementHook<P, T>) => {
+            args = hook.call(this.lastRendering, this.lastRendering.props, args);
+            if (args === undefined) {
+                throw new Error('Error: onEachElement hook returned undefined');
+            }
+        });
+        this.currentArgs = functionArgs;
+        return [args.type, args.elementProps, ...args.children];
     };
 
     afterCreateElementHook(methodResult: ReactElement<any>) {
@@ -161,7 +155,7 @@ export function decorReactClass<P extends object, T extends Component<any>>(hook
             mixData.onRootElementHooks.add(h);
         });
 
-        if(process.env.NODE_ENV !== 'production') {
+        if (process.env.NODE_ENV !== 'production') {
             if (!mixed.displayName && componentClazz.name) {
                 mixed.displayName = componentClazz.name;
             }

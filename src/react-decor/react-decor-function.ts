@@ -3,54 +3,52 @@ import {Attributes, cloneElement, ReactElement, ReactNode, ReactType, SFC} from 
 import {decorFunction, middleware} from "../functoin-decor/index";
 import {
     DecorReactHooks, ElementArgs, StatelessElementHook, isNotEmptyArrayLike, translateArgumentsToObject,
-    translateObjectToArguments
+    translateObjectToArguments, resetReactCreateElement, originalReactCreateElement
 } from "./common";
 
-declare const process: {env : {[k:string]: any}};
+declare const process: { env: { [k: string]: any } };
 
 export type CreateElementArgsTuple<P extends {}> = [ReactType, undefined | (Attributes & Partial<P>), ReactNode];
 export type SFCDecorator<T extends object> = <T1 extends T>(comp: SFC<T1>) => SFC<T1>;
+
 export interface HookContext<T extends object> {
     hooks: DecorReactHooks<T>;
     componentProps: T;
     createArgsMap: Map<object, ElementArgs<any>>;
 }
 
-type ReactCreateElement = typeof React.createElement;
-const originalCreateElement = React.createElement;
-
 function getHooksReducer<T extends object>(componentProps: T) {
     return <P extends {}>(res: ElementArgs<P>, hook: StatelessElementHook<T>) => hook(componentProps, res);
 }
 
-const translateName = middleware((next:(args:[React.SFC])=>React.SFC, args:[React.SFC]) => {
-    const result : React.SFC = next(args);
-    if (!result.displayName && args[0].name){
+const translateName = middleware((next: (args: [React.SFC]) => React.SFC, args: [React.SFC]) => {
+    const result: React.SFC = next(args);
+    if (!result.displayName && args[0].name) {
         result.displayName = args[0].name;
     }
     return result;
 });
 const emptyObj = Object.freeze({});
 const context = {
-    hooks : emptyObj,
+    hooks: emptyObj,
     componentProps: emptyObj,
     createArgsMap: new Map()
 } as HookContext<object>; // componentProps will be overwritten before render
 const wrappedCreateElement = makeCustomCreateElement(context);
 
-const replaceCreateElement = (hooks : DecorReactHooks<object>) => (args: [object, any]): [object, any] => {
-    if (React.createElement !== wrappedCreateElement) {
-        context.createArgsMap.clear();
-        context.hooks = hooks;
-        context.componentProps = args[0]; // [0] for props in a functional react component
-        React.createElement = wrappedCreateElement;
-    }
-    return args;
-};
-
 export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
 
-    const applyRootHooks = <P extends {}>(renderResult: ReactElement<P>): ReactElement<P> => {
+    function replaceCreateElement(args: [object, any]): [object, any] {
+        if (React.createElement !== wrappedCreateElement) {
+            context.createArgsMap.clear();
+            context.hooks = hooks;
+            context.componentProps = args[0]; // [0] for props in a functional react component
+            React.createElement = wrappedCreateElement;
+        }
+        return args;
+    }
+
+    function applyRootHooks<P extends {}>(renderResult: ReactElement<P>): ReactElement<P> {
         if (renderResult && isNotEmptyArrayLike(hooks.onRootElement)) {
             let rootElementArgs = context.createArgsMap.get(renderResult);
 
@@ -62,12 +60,12 @@ export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDeco
                 console.warn('unexpected root node : ', renderResult);
             }
         }
-        React.createElement = originalCreateElement as ReactCreateElement;
+        resetReactCreateElement();
         return renderResult;
-    };
+    }
 
     const decorator = decorFunction({
-        before: [replaceCreateElement(hooks)],
+        before: [replaceCreateElement],
         after: [applyRootHooks]
     });
 
@@ -97,5 +95,5 @@ function makeCustomCreateElement<P extends {}>(context: HookContext<P>): typeof 
     return decorFunction({
         before: [applyHooksOnArguments],
         after: [saveCreateElementArguments]
-    })(originalCreateElement);
+    })(originalReactCreateElement);
 }
