@@ -5,7 +5,7 @@ import {
     MixerData
 } from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
-import {functionDecor, FunctionHooks} from "../functoin-decor";
+import {functionDecor, FunctionMetaData} from "../functoin-decor";
 
 declare const process: { env: { [k: string]: any } };
 
@@ -21,7 +21,7 @@ function notIfExists(hook: Function & { ifExists?: boolean }) {
     return !hook.ifExists;
 }
 
-function shouldCreateMethod(hooks: FunctionHooks): boolean {
+function shouldCreateMethod(hooks: FunctionMetaData): boolean {
     return Boolean((hooks.before && hooks.before.some(notIfExists)) ||
         (hooks.after && hooks.after.some(notIfExists)) ||
         (hooks.middleware && hooks.middleware.some(notIfExists)));

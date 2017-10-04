@@ -1,12 +1,12 @@
 import {
-    AfterHook, BeforeHook, FunctionHooks,
+    AfterHook, BeforeHook, FunctionMetaData,
     MiddlewareHook
 } from "./common";
 import {Wrapper, WrapApi} from "../wrappers/index";
-import {funcDecorMetadataMerge, funcDecorWrapper, FunctionMetaData} from "./wrapper";
+import {funcDecorMetadataMerge, funcDecorWrapper} from "./logic";
 
 export  {
-    AfterHook, BeforeHook, FunctionHooks, MiddlewareHook
+    AfterHook, BeforeHook, MiddlewareHook, FunctionMetaData
 } from "./common";
 
 export const functionDecor = new WrapApi<Partial<FunctionMetaData>, Function>('function-decor', funcDecorWrapper, funcDecorMetadataMerge);
@@ -23,6 +23,6 @@ export function middleware(hook: MiddlewareHook<any>): Wrapper<Function> {
     return functionDecor.makeWrapper({middleware:[hook]});
 }
 
-export function decorFunction(hooks: Partial<FunctionHooks>): Wrapper<Function> {
+export function decorFunction(hooks: Partial<FunctionMetaData>): Wrapper<Function> {
     return functionDecor.makeWrapper(hooks);
 }

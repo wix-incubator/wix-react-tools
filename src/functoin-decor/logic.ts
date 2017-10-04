@@ -1,20 +1,4 @@
-import {FunctionHooks, MiddlewareHook} from "./common";
-
-export type FunctionMetaData = FunctionHooks & {
-    name: string;
-}
-
-function mergeOptionalArrays<T>(h1: T[] | null, h2: T[] | null): T[] | null {
-    if (h1 && h1.length) {
-        if (h2 && h2.length) {
-            return h1.concat(h2);
-        } else {
-            return h1;
-        }
-    } else {
-        return h2;
-    }
-}
+import {FunctionMetaData, isArrayLikeObject, mergeOptionalArrays, MiddlewareHook} from "./common";
 
 export function funcDecorMetadataMerge(md1: FunctionMetaData, md2: FunctionMetaData): FunctionMetaData {
     return {
@@ -25,9 +9,6 @@ export function funcDecorMetadataMerge(md1: FunctionMetaData, md2: FunctionMetaD
     };
 }
 
-function isArrayLikeObject(value: any): value is Array<any> {
-    return value != null && typeof value == 'object' && typeof value.length == 'number' && value.length > -1;
-}
 
 function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
     let serialized = '(unSerializable)';
