@@ -113,20 +113,6 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
             ).to.throw(Error, /(?=.*onEachElement.*)(?=.*hook.*)(?=.*undefined.*)/);
         });
 
-        it('cleans up hook even if render throws', () => {
-            @decorReactClass({onEachElement:[(() => {
-                throw new Error('weeeeeee!!');
-            }) as any]})
-            class MyComp extends React.Component {
-                render() {
-                    return <div/>
-                }
-            }
-            // expect the error to have a message with these two strings: `@onChildElement` , `undefined`
-            expect(() => clientRenderer.render(<MyComp/>), 'render MyComp').to.throw(Error, 'weeeeeee');
-            expect(() => clientRenderer.render(<div/>), 'render after MyComp').not.to.throw(Error);
-        });
-
         it('multiple hooks work together', () => {
             function FooHook<P extends { ['data-foo']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
                 args.elementProps['data-foo'] = 'foo';

@@ -17,7 +17,7 @@ import {
 } from "./common";
 import {decorReactFunc} from "./react-decor-function";
 
-export const {isDecorated} = decorationReflection;
+export const {isDecorated, getDecorated} = decorationReflection;
 
 export function decorateReactComponent<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): Wrapper<P> {
     const classDecorator = decorReactClass(classHooks || statelessHooks);

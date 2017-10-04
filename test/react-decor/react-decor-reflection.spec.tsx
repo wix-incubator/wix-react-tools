@@ -1,7 +1,7 @@
 import * as React from "react";
 import {expect, sinon} from "test-drive-react";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
-import {runInContext, decorateReactComponent, isDecorated, StatelessElementHook, devMode, ElementArgs} from "../../src";
+import {runInContext, decorateReactComponent, isDecorated, StatelessElementHook, getDecorated, devMode, ElementArgs} from "../../src";
 
 type PropsWithName = { name: string };
 
@@ -72,6 +72,26 @@ describe("react-decorator-reflection", () => {
             })
         }
 
+        testWithBothComponentTypes(SFComp, suite);
+    });
+
+    describe("getDecorated", () => {
+        function suite(Comp: any) {
+            const WrappedComp = wrapper(Comp);
+
+            it("should return null on an undecorated component", () => {
+                expect(getDecorated(Comp)).to.equal(null);
+            });
+
+            it("should return original component for a wrapped component", () => {
+                expect(getDecorated(WrappedComp)).to.equal(Comp);
+            });
+
+            it("should return original component for a component wrapped by multiple specific decorators", () => {
+                const WrappedComp2 = wrapper2(WrappedComp);
+                expect(getDecorated(WrappedComp2)).to.equal(Comp);
+            });
+        }
         testWithBothComponentTypes(SFComp, suite);
     });
 });
