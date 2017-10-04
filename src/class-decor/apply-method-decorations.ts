@@ -5,8 +5,7 @@ import {
     MixerData
 } from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
-import {innerDecorateFunction} from "../functoin-decor/decorate";
-import {functionDecorMetadata, FunctionHooks} from "../functoin-decor";
+import {functionDecor, FunctionHooks} from "../functoin-decor";
 
 declare const process: { env: { [k: string]: any } };
 
@@ -28,11 +27,6 @@ function shouldCreateMethod(hooks: FunctionHooks): boolean {
         (hooks.middleware && hooks.middleware.some(notIfExists)));
 }
 
-export function unwrapFunction(func: Function): Function {
-    const functionMetaData = functionDecorMetadata(func);
-    return (functionMetaData) ? functionMetaData.original : func;
-}
-
 export class EdgeClassData<T extends object = object> {
 
     mixerData: MixerData<Partial<T>> = inheritedMixerData.unsafe(this.clazz);
@@ -47,9 +41,9 @@ export class EdgeClassData<T extends object = object> {
                 if (methodData) {
                     // TODO check if target[methodName] === Object.getPrototypeOf(target)[methodName]
                     if (this.clazz.prototype[methodName]) {
-                        this.clazz.prototype[methodName] = innerDecorateFunction(methodData.before, methodData.middleware, methodData.after, unwrapFunction(this.clazz.prototype[methodName]), methodName);
+                        this.clazz.prototype[methodName] = functionDecor.wrap(methodData, [], functionDecor.normalize(this.clazz.prototype[methodName]));
                     } else if (shouldCreateMethod(methodData)) {
-                        this.clazz.prototype[methodName] = innerDecorateFunction(methodData.before, methodData.middleware, methodData.after, emptyMethod, methodName);
+                        this.clazz.prototype[methodName] = functionDecor.wrap(methodData, [], emptyMethod);
                     }
                 }
             });

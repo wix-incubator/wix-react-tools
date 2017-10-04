@@ -1,29 +1,28 @@
-import {innerDecorateFunction} from "./decorate";
-
 import {
     AfterHook, BeforeHook, FunctionHooks,
     MiddlewareHook
 } from "./common";
+import {Wrapper, WrapApi} from "../wrappers/index";
+import {funcDecorMetadataMerge, funcDecorWrapper, FunctionMetaData} from "./wrapper";
 
 export  {
     AfterHook, BeforeHook, FunctionHooks, MiddlewareHook
 } from "./common";
-export {functionDecorMetadata} from "./reflection"
 
-export type FunctionWrapper = <F extends Function>(func: F) => F
+export const functionDecor = new WrapApi<Partial<FunctionMetaData>, Function>('function-decor', funcDecorWrapper, funcDecorMetadataMerge);
 
-export function before(preMethod: BeforeHook): FunctionWrapper {
-    return innerDecorateFunction.bind(null, [preMethod], null, null);
+export function before(preMethod: BeforeHook): Wrapper<Function> {
+    return functionDecor.makeWrapper({before:[preMethod]});
 }
 
-export function after(postMethod: AfterHook<any>): FunctionWrapper {
-    return innerDecorateFunction.bind(null, null, null, [postMethod]);
+export function after(postMethod: AfterHook<any>): Wrapper<Function> {
+    return functionDecor.makeWrapper({after:[postMethod]});
 }
 
-export function middleware(hook: MiddlewareHook<any>): FunctionWrapper {
-    return innerDecorateFunction.bind(null, null, [hook], null);
+export function middleware(hook: MiddlewareHook<any>): Wrapper<Function> {
+    return functionDecor.makeWrapper({middleware:[hook]});
 }
 
-export function decorFunction(wrappers: Partial<FunctionHooks>): FunctionWrapper {
-    return innerDecorateFunction.bind(null, wrappers.before || null, wrappers.middleware || null, wrappers.after || null);
+export function decorFunction(hooks: Partial<FunctionHooks>): Wrapper<Function> {
+    return functionDecor.makeWrapper(hooks);
 }
