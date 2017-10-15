@@ -27,7 +27,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
     afterEach("cleanup and reset console.log", () => {
         resetAll(console);
-        clientRenderer.cleanup();
+        runInContext(devMode.OFF,() => clientRenderer.cleanup());
     });
 
     const statelessHook1: StatelessElementHook<PropsWithName> = function(_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {

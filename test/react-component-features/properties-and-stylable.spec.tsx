@@ -4,6 +4,8 @@ import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
 import {makeClassComponent, testWithBothComponentTypes} from "../test-drivers/test-tools";
+import {runInContext} from "../../src/core/config";
+import {devMode} from "../../src/core/dev-mode";
 
 /**
  * this suite serves two purposes:
@@ -17,7 +19,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @properties (r
         `);
 
     const clientRenderer = new ClientRenderer();
-    afterEach(() => clientRenderer.cleanup());
+    afterEach(() => runInContext(devMode.OFF,() => clientRenderer.cleanup()));
 
     const comp: React.SFC<properties.Props> = (p: properties.Props) => (<div />);
 

@@ -4,12 +4,14 @@ import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
 import {simulateRender} from "../../src/react-decor/react-decor-class";
+import {runInContext} from "../../src/core/config";
+import {devMode} from "../../src/core/dev-mode";
 
 
 describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
 
     const clientRenderer = new ClientRenderer();
-    afterEach(() => clientRenderer.cleanup());
+    afterEach(() => runInContext(devMode.OFF,() => clientRenderer.cleanup()));
 
     const {fromCSS} = createGenerator();
     const {runtime} = fromCSS(`

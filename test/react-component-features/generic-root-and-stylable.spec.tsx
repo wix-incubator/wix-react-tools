@@ -5,7 +5,7 @@ import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {ElementArgs} from "../../src/react-decor/common";
-import {overrideGlobalConfig} from "../../src/core/config";
+import {overrideGlobalConfig, runInContext} from "../../src/core/config";
 import {devMode} from "../../src/core/dev-mode";
 
 /**
@@ -23,7 +23,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
         overrideGlobalConfig(devMode.ON);
     });
     const clientRenderer = new ClientRenderer();
-    afterEach(() => clientRenderer.cleanup());
+    afterEach(() => runInContext(devMode.OFF,() => clientRenderer.cleanup()));
 
     type Props = {
         byDecorator?: boolean,

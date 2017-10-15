@@ -2,6 +2,8 @@ import * as React from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {disposable, Disposers} from "../../src";
 import {inBrowser} from "mocha-plugin-env/dist/src";
+import {runInContext} from "../../src/core/config";
+import {devMode} from "../../src/core/dev-mode";
 
 interface Props {
     hook: Function
@@ -24,7 +26,7 @@ class DisposableComp extends React.Component<Props, any> implements disposable.T
 
 describe.assuming(inBrowser(), 'only in browser')("disposable decorator", () => {
     const clientRenderer = new ClientRenderer();
-    afterEach(() => clientRenderer.cleanup());
+    afterEach(() => runInContext(devMode.OFF,() => clientRenderer.cleanup()));
 
     it('called on unmount', () => {
         let sinonSpy = sinon.spy();
