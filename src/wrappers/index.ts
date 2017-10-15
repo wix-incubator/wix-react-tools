@@ -3,7 +3,7 @@ import {privateState, StateProvider} from "../core/private-state";
 export type Merge<T> = (argsA: T, argsB: T) => T;
 
 export interface Metadata<A, T extends object> {
-    wrappers: Function[]; // TODO: Set<Function>?
+    wrappers: Function[]; // TODO: Set<Function>? , also better name - taggedWith?
     original: T;
     wrapperArgs: A;
 }
@@ -12,6 +12,9 @@ export type InternalWrapper<A, T extends object> = <T1 extends T>(target: T1, ar
 
 export type Wrapper<T extends object> = <T1 extends T>(func: T1) => T1
 
+/**
+ * an instance of this class is a wrapping API for a specific domain
+ */
 export class WrapApi<A, T extends object> {
     private readonly metadataProvider: StateProvider<Metadata<A, T>, T>;
 
@@ -43,7 +46,7 @@ export class WrapApi<A, T extends object> {
                 // de-dupe wrappers array
                 wrappers = Array.from(new Set(wrappers));
             }
-            // TODO: if wrappers (and / or wrapperArgs?) are same as before, return subj (it's already wrapped correctly)
+            // TODO: if wrappers (and / or wrapperArgs?) are same as before, return subj (it's already wrapped correctly). opt out (force unique wrapping) with metadata flag.
         }
         const wrapped = this.wrapper(subj, wrapperArgs);
         const metadata = this.metadataProvider(wrapped);

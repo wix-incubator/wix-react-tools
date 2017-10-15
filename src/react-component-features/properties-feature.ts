@@ -1,15 +1,13 @@
 import {ComponentProps, rootProps} from "./root-props";
 import {ElementArgs} from "../react-decor/common";
-import {decorateReactComponent, Wrapper} from "../react-decor/index";
+import {decorateReactComponent, elementHooks, Wrapper} from "../react-decor/index";
 
 
 function makeDecorator(blacklist?: Array<string>): Wrapper<ComponentProps> {
-    return decorateReactComponent({
-        onRootElement: [(props: any, args: ElementArgs<any>) => {
+    return decorateReactComponent(elementHooks([(props: any, args: ElementArgs<any>) => {
             args.elementProps = rootProps(props, args.elementProps, blacklist);
             return args;
-        }]
-    });
+        }], null ));
 }
 
 function without(blacklist: Array<string>) {

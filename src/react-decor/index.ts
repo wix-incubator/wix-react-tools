@@ -1,3 +1,13 @@
+import {Component, ComponentType} from "react";
+import {decorationReflection} from "./react-decor-reflection";
+import {decorReactClass} from "./react-decor-class";
+import {
+    Stateful,
+    DecorReactHooks, ElementHook, isReactClassComponent, StatefulElementHook, StatelessDecorReactHooks, StatelessElementHook,
+    Wrapper
+} from "./common";
+import {decorReactFunc} from "./react-decor-function";
+
 export {decorReactClass} from "./react-decor-class";
 export {
     DecorReactHooks,
@@ -7,15 +17,6 @@ export {
     Wrapper,
     ElementArgs
 } from "./common";
-
-import {Component, ComponentType} from "react";
-import {decorationReflection} from "./react-decor-reflection";
-import {decorReactClass} from "./react-decor-class";
-import {
-    DecorReactHooks, isReactClassComponent, StatefulElementHook, StatelessDecorReactHooks, StatelessElementHook,
-    Wrapper
-} from "./common";
-import {decorReactFunc} from "./react-decor-function";
 
 export const {isDecorated, getDecorated} = decorationReflection;
 
@@ -40,10 +41,14 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
     return wrapper;
 }
 
+export function elementHooks<S extends Stateful, P extends object>(onRootElement: Array<ElementHook<S,P>> | null, onEachElement: Array<ElementHook<S,P>> | null){
+    return {onRootElement, onEachElement};
+}
+
 export function onRootElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): Wrapper<P> {
-    return decorateReactComponent({onRootElement: [statelessHook]}, classHook ? {onRootElement: [classHook]} : undefined);
+    return decorateReactComponent(elementHooks([statelessHook],  null), classHook ? elementHooks( [classHook],  null) : undefined);
 }
 
 export function onEachElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): Wrapper<P> {
-    return decorateReactComponent({onEachElement: [statelessHook]}, classHook ? {onEachElement: [classHook]} : undefined);
+    return decorateReactComponent(elementHooks(null, [statelessHook]) , classHook ? elementHooks( null, [classHook]) : undefined);
 }

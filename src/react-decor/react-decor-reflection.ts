@@ -39,16 +39,23 @@ export function reflection<T extends object = any>(id: string) {
             metadata.decorators.push(decoratorId);
         },
         isDecorated(Comp: T, decoratorId?: any): boolean {
-            const decorators = decorationReflection(Comp);
-            if (!decoratorId) {
-                return decorationReflection(Comp).decorators.length > 0;
+            if (decorationReflection.hasState(Comp)) {
+                const decorators = decorationReflection(Comp);
+                if (!decoratorId) {
+                    return decorationReflection(Comp).decorators.length > 0;
+                } else {
+                    return decorators.decorators.some(decorator => decorator === decoratorId);
+                }
             } else {
-                return decorators.decorators.some(decorator => decorator === decoratorId);
+                return false;
             }
         },
         getDecorated(Comp: T): T | null {
-            if (decorationReflection.hasState(Comp)){
-                return decorationReflection(Comp).original as T;
+            if (decorationReflection.hasState(Comp)) {
+                while (decorationReflection.hasState(Comp)) {
+                    Comp = decorationReflection(Comp).original as T;
+                }
+                return Comp;
             }
             return null;
         }

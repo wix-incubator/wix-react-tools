@@ -5,6 +5,7 @@ import {inBrowser} from "mocha-plugin-env/dist/src";
 import {devMode, runInContext, ElementArgs} from "../../src";
 import {HTMLAttributes} from "react";
 import {resetReactCreateElement} from "../../src/react-decor/common";
+import {elementHooks} from "../../src/react-decor/index";
 
 declare const process: any;
 function inProduction() {
@@ -56,7 +57,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
             return args;
         }
 
-        @decorReactClass({onEachElement:[justAHook]})
+        @decorReactClass(elementHooks(null, [justAHook]))
         class MyComp extends React.Component {
             render() {
                 return result;
@@ -78,7 +79,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
         });
         it('does not warn on unknown root if null', () => {
             runInContext(devMode.ON, () => {
-                @decorReactClass({onEachElement:[justAHook]})
+                @decorReactClass(elementHooks(null, [justAHook]))
                 class MyComp2 extends React.Component {
                     render() {
                         return null;
@@ -101,7 +102,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
         beforeEach(resetReactCreateElement)
 
         it('throws when hook returns undefined', () => {
-            @decorReactClass({onEachElement:[(() => {}) as any]})
+            @decorReactClass(elementHooks(null, [(() => {}) as any]))
             class MyComp extends React.Component {
                 render() {
                     return <div/>
@@ -124,8 +125,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
                 return args;
             }
 
-            @decorReactClass({onEachElement:[FooHook]})
-            @decorReactClass({onEachElement:[BarHook]})
+            @decorReactClass(elementHooks(null, [FooHook]))
+            @decorReactClass(elementHooks(null, [BarHook]))
             class MyComp extends React.Component {
                 render() {
                     return <div data-automation-id="1"/>
@@ -147,12 +148,13 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
                 return args;
             }
 
-            @decorReactClass({onEachElement:[FooHook]})
+
+            @decorReactClass(elementHooks(null, [FooHook]))
             class BaseComp extends React.Component {
 
             }
 
-            @decorReactClass({onEachElement:[BarHook]})
+            @decorReactClass(elementHooks(null, [BarHook]))
             class MyComp extends BaseComp {
                 render() {
                     return <div data-automation-id="1"/>

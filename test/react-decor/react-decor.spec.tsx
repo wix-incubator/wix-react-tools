@@ -14,6 +14,7 @@ import {
     onRootElement,
     onEachElement
 } from "../../src";
+import {elementHooks} from "../../src/react-decor/index";
 
 const _console = console;
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
@@ -161,7 +162,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
     describe(`decorate react component with stateless hooks`, () => {
         function testReactClassAndFunctionDecoration(Comp: any) {
             it('should wrap a react component, without any hooks', () => {
-                const wrap = decorateReactComponent<PropsWithName, Component<any>>({});
+                const wrap = decorateReactComponent<PropsWithName, Component<any>>(elementHooks(null, null));
                 const WrappedComp = wrap(Comp);
 
                 const {select} = clientRenderer.render(<WrappedComp name="Jon"/>); // todo: maybe fix currently client only
@@ -173,7 +174,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
             describe('onEachElement hooks', () => {
                 it('should allow adding a single node hook (which prints every type of node rendered) to a react component', () => {
-                    const wrap = decorateReactComponent({onEachElement: [statelessHook1]});
+                    const wrap = decorateReactComponent(elementHooks(null, [statelessHook1]));
                     const WrappedComp = wrap(Comp);
 
                     clientRenderer.render(<WrappedComp name="Jon" />);
@@ -182,7 +183,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 });
 
                 it('should allow adding multiple nodes hooks to a react component', () => {
-                    const wrap = decorateReactComponent({onEachElement: [statelessHook1, statelessHook2]});
+                    const wrap = decorateReactComponent(elementHooks(null,  [statelessHook1, statelessHook2]));
                     const WrappedComp = wrap(Comp);
 
                     clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -201,7 +202,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                         return args;
                     }
 
-                    const wrap = decorateReactComponent({onEachElement: [multiActionElementHook]});
+                    const wrap = decorateReactComponent(elementHooks(null, [multiActionElementHook]));
                     const WrappedComp = wrap(Comp);
 
                     const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -217,7 +218,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
             describe('onRootElement hooks', () => {
                 it('should allow adding a single root hook to a component that will add/remove/change the root elements props', () => {
-                    const wrap = decorateReactComponent({onRootElement: [addChangeRemoveHook]});
+                    const wrap = decorateReactComponent(elementHooks([addChangeRemoveHook], null));
                     const WrappedComp = wrap(Comp);
 
                     const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -265,7 +266,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
         function testReactFields(Comp: any, type: 'SFC' | 'Class Component') {
             it(`should copy react fields - ${type}`, () => {
-                const wrap = decorateReactComponent<PropsWithName>({});
+                const wrap = decorateReactComponent<PropsWithName>(elementHooks(null, null));
                 const WrappedComp = wrap(Comp);
 
                 expect(WrappedComp.propTypes).to.equal(Comp.propTypes);
@@ -289,7 +290,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         function testDefaultDisplayName(Comp: any, type: 'SFC' | 'Class Component') {
             it(`should copy name to displayName if original comp has no displayName - ${type}`, () => {
                 runInContext(devMode.ON, () => {
-                    const wrap = decorateReactComponent<PropsWithName>({});
+                    const wrap = decorateReactComponent<PropsWithName>(elementHooks(null, null));
                     const WrappedComp = wrap(Comp);
 
                     expect(WrappedComp.displayName).to.equal(Comp.name);
@@ -310,7 +311,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         };
 
         it('should allow adding a stateful onRootElement hook to a class component', () => {
-            const wrap = decorateReactComponent({}, {onRootElement: [statefulHook]});
+            const wrap = decorateReactComponent(elementHooks(null, null), elementHooks([statefulHook], null));
             const WrappedComp = wrap(ClassComp);
 
             const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -319,7 +320,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         });
 
         it('should allow adding a stateful onEachElement hook to a class component', () => {
-            const wrap = decorateReactComponent({}, {onEachElement: [statefulHook]});
+            const wrap = decorateReactComponent(elementHooks(null, null), elementHooks(null, [statefulHook]));
             const WrappedComp = wrap(ClassComp);
 
             const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -345,7 +346,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         function nullTest(Comp: any) {
             it('does not warn on unknown root if null', () => {
                 runInContext(devMode.ON, () => {
-                    const wrap = decorateReactComponent({onRootElement: [addChangeRemoveHook]});
+                    const wrap = decorateReactComponent(elementHooks( [addChangeRemoveHook], null));
                     const WrappedComp = wrap(Comp);
                     clientRenderer.render(<WrappedComp name=""/>);
                     expect(_console.warn).to.have.callCount(0);
@@ -356,7 +357,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         testWithBothComponentTypes(CompReturnsNull, nullTest);
 
         function suite(Comp: any) {
-            const wrap = decorateReactComponent({onRootElement: [addChangeRemoveHook]});
+            const wrap = decorateReactComponent(elementHooks( [addChangeRemoveHook], null));
             const WrappedComp = wrap(Comp);
             it('warns on unknown root in dev mode', () => {
                 runInContext(devMode.ON, () => {
@@ -414,7 +415,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
             function suite(Comp: any) {
                 it('multiple children with no changes', () => {
-                    const wrapper = decorateReactComponent({ onRootElement: [statelessHook1, statelessHook2] });
+                    const wrapper = decorateReactComponent(elementHooks([statelessHook1, statelessHook2], null));
                     const WrappedComp = wrapper(Comp);
 
                     const { select } = clientRenderer.render(<WrappedComp renderChild={true} />);
@@ -433,7 +434,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                         return args;
                     };
 
-                    const wrapper = decorateReactComponent({ onRootElement: [statelessHook1, statelessHook2, statelessHook3] });
+                    const wrapper = decorateReactComponent(elementHooks([statelessHook1, statelessHook2, statelessHook3], null));
                     const WrappedComp = wrapper(Comp);
 
                     const { select } = clientRenderer.render(<WrappedComp renderChild={true} />);

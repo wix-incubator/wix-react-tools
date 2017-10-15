@@ -16,7 +16,7 @@ import {
 import * as React from "react";
 import { Instance } from '../core/types';
 
-export function isNotEmptyArrayLike(arr: Array<any> | undefined): arr is Array<any> {
+export function isNotEmptyArrayLike(arr: Array<any> | undefined | null): arr is Array<any> {
     return !!(arr && (arr.length > 0));
 }
 
@@ -57,10 +57,6 @@ export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): 
 
 export type Wrapper<P extends object> = <T extends ComponentType<P>>(comp: T) => T
 
-export interface ElementHook<P extends object, T extends Component<P> = Component<P>> {
-    <E = object>(this: Instance<T>|undefined, props: P, args: ElementArgs<E>): ElementArgs<E>
-}
-
 export interface StatefulElementHook<P extends object, T extends Component<P> = Component<P>> {
     <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>): ElementArgs<E>
 }
@@ -70,14 +66,21 @@ export interface StatelessElementHook<P extends object> {
 }
 
 export interface StatelessDecorReactHooks<P extends object> {
-    onRootElement?: Array<StatelessElementHook<P>>;
-    onEachElement?: Array<StatelessElementHook<P>>;
+    onRootElement: Array<StatelessElementHook<P>> | null;
+    onEachElement: Array<StatelessElementHook<P>> | null;
 }
 
 export interface DecorReactHooks<P extends object, T extends Component<P> = Component<P>> {
-    onRootElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
-    onEachElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
+    onRootElement: Array<StatefulElementHook<P, T> | StatelessElementHook<P>> | null;
+    onEachElement: Array<StatefulElementHook<P, T> | StatelessElementHook<P>> | null;
 }
+
+export type Stateful = 'T' | 'F';
+export type ElementHook<S extends Stateful, P extends object> = {
+    T : StatefulElementHook<P>;
+    F : StatelessElementHook<P>;
+}[S];
+
 
 export const originalReactCreateElement: typeof React.createElement = React.createElement;
 

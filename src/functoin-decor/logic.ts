@@ -35,29 +35,12 @@ const dummyTracker = {
     }
 };
 
-function runMiddlewareHooksAndOrigin(context: any, hooks: Array<MiddlewareHook>, originalMethod: Function, methodName: string, methodArgs: any[]) {
-    //keep track of last middleware running by ID to determine chain breakage:
-    let tracker: MiddlewareTracker = (process.env.NODE_ENV === 'production') ? dummyTracker : new MiddlewareTracker();
-    //Run middleware:
-    const retVal = hooks[0].call(context, createNextForMiddlewareHook(context, originalMethod, hooks, 1, tracker), methodArgs);
-    if (process.env.NODE_ENV !== 'production') {
-        if (tracker.lastMiddlewareRunning < hooks.length) {
-            if (context) {
-                console.warn(`@middleware ${hooks[tracker.lastMiddlewareRunning].name} for ${context.constructor.name}.${methodName}() did not call next`);
-            } else {
-                console.warn(`@middleware ${hooks[tracker.lastMiddlewareRunning].name} for ${methodName}() did not call next`);
-            }
-        }
-    }
-    return retVal;
-}
-
-function createNextForMiddlewareHook(context: any, originalMethod: Function, middlewareHooks: Array<MiddlewareHook>, idx: number, tracker: MiddlewareTracker) {
+function createNextForMiddlewareHook(context: any, originalFunction: Function, middlewareHooks: Array<MiddlewareHook>, idx: number, tracker: MiddlewareTracker, wrappedFunction:Function) {
     return (args: any[]) => {
         tracker.reportNextMiddleware(idx);
         return middlewareHooks.length <= idx ?
-            (originalMethod && originalMethod.apply(context, args)) :
-            middlewareHooks[idx].call(context, createNextForMiddlewareHook(context, originalMethod, middlewareHooks, idx + 1, tracker), args as any);
+            (originalFunction && originalFunction.apply(context, args)) :
+            middlewareHooks[idx].call(context, createNextForMiddlewareHook(context, originalFunction, middlewareHooks, idx + 1, tracker, wrappedFunction), args, wrappedFunction);
     };
 }
 
@@ -66,7 +49,7 @@ export function funcDecorWrapper<T extends Function>(target: T, args: FunctionMe
         let methodArgs: any[] = Array.prototype.slice.call(arguments);
         if (args.before) {
             for (let i = 0; i < args.before.length; i++) {
-                methodArgs = args.before[i].call(this, methodArgs);
+                methodArgs = args.before[i].call(this, methodArgs, wrappedFunction);
                 if (!isArrayLikeObject(methodArgs)) {
                     errorBeforeDidNotReturnedArray(methodArgs);
                 }
@@ -74,13 +57,26 @@ export function funcDecorWrapper<T extends Function>(target: T, args: FunctionMe
         }
         let methodResult;
         if (args.middleware) {
-            methodResult = runMiddlewareHooksAndOrigin(this, args.middleware, target, args.name, methodArgs);
+            //keep track of last middleware running by ID to determine chain breakage:
+            const tracker = (process.env.NODE_ENV === 'production') ? dummyTracker : new MiddlewareTracker();
+            //Run middleware:
+            const next = createNextForMiddlewareHook(this, target, args.middleware, 1, tracker, wrappedFunction);
+            methodResult = args.middleware[0].call(this, next, methodArgs, wrappedFunction);
+            if (process.env.NODE_ENV !== 'production') {
+                if (tracker.lastMiddlewareRunning < args.middleware.length) {
+                    if (context) {
+                        console.warn(`@middleware ${args.middleware[tracker.lastMiddlewareRunning].name} for ${context.constructor.name}.${args.name}() did not call next`);
+                    } else {
+                        console.warn(`@middleware ${args.middleware[tracker.lastMiddlewareRunning].name} for ${args.name}() did not call next`);
+                    }
+                }
+            }
         } else {
             methodResult = target.apply(this, methodArgs)
         }
         if (args.after) {
             for (let i = 0; i < args.after.length; i++) {
-                const hookMethodResult = args.after[i].call(this, methodResult);
+                const hookMethodResult = args.after[i].call(this, methodResult, wrappedFunction);
                 if (process.env.NODE_ENV !== 'production') {
                     if (methodResult !== undefined && hookMethodResult === undefined) {
                         console.warn(`@after ${args.name} Did you forget to return a value?`);

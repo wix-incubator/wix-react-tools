@@ -1,6 +1,6 @@
-export type BeforeHook<T = any> = (this: T, methodArguments: any) => any;
-export type AfterHook<R = void, T = any> = (this: T, methodResult: R) => R;
-export type MiddlewareHook<R = void, T = any> = (this: T, next: (methodArguments: any) => R, methodArguments: any) => R;
+export type BeforeHook<T = any> = (this: T, methodArguments: any, wrappedFunction: Function) => any;
+export type AfterHook<R = void, T = any> = (this: T, methodResult: R, wrappedFunction: Function) => R;
+export type MiddlewareHook<R = void, T = any> = (this: T, next: (methodArguments: any) => R, methodArguments: any, wrappedFunction: Function) => R;
 
 export type FunctionMetaData<R = any> = {
     name: string;

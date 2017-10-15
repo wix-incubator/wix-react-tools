@@ -2,6 +2,7 @@ import * as React from "react";
 import {expect, sinon} from "test-drive-react";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {runInContext, decorateReactComponent, isDecorated, StatelessElementHook, getDecorated, devMode, ElementArgs} from "../../src";
+import {elementHooks} from "../../src/react-decor/index";
 
 type PropsWithName = { name: string };
 
@@ -12,8 +13,8 @@ const SFComp: React.SFC<PropsWithName> = ({name}) => (
 const hook: StatelessElementHook<PropsWithName> = (_p: PropsWithName, args: ElementArgs<any>): ElementArgs<any> => {
     return args;
 };
-const wrapper = decorateReactComponent({onEachElement: [hook]});
-const wrapper2 = decorateReactComponent({onEachElement: [hook]});
+const wrapper =  decorateReactComponent(elementHooks(null, [hook]));
+const wrapper2 = decorateReactComponent(elementHooks(null, [hook]));
 
 describe("react-decorator-reflection", () => {
     describe("isDecorated", () => {

@@ -17,11 +17,11 @@ export interface HookContext<T extends object> {
     createArgsMap: Map<object, ElementArgs<any>>;
 }
 
-function getHooksReducer<T extends object>(componentProps: T) {
+export function getHooksReducer<T extends object>(componentProps: T) {
     return <P extends {}>(res: ElementArgs<P>, hook: StatelessElementHook<T>) => hook(componentProps, res);
 }
 
-const translateName = middleware((next: (args: [React.SFC]) => React.SFC, args: [React.SFC]) => {
+export const translateName = middleware((next: (args: [React.SFC]) => React.SFC, args: [React.SFC]) => {
     const result: React.SFC = next(args);
     if (!result.displayName && args[0].name) {
         result.displayName = args[0].name;
@@ -29,12 +29,12 @@ const translateName = middleware((next: (args: [React.SFC]) => React.SFC, args: 
     return result;
 });
 const emptyObj = Object.freeze({});
-const context = {
+export const context = {
     hooks: emptyObj,
     componentProps: emptyObj,
     createArgsMap: new Map()
 } as HookContext<object>; // componentProps will be overwritten before render
-const wrappedCreateElement = makeCustomCreateElement(context);
+const wrappedCreateElement = makeCustomCreateElement();
 
 export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDecorator<T> {
 
@@ -73,7 +73,7 @@ export function decorReactFunc<T extends {}>(hooks: DecorReactHooks<T>): SFCDeco
 }
 
 // create a custom react create element function that applies the given hooks
-function makeCustomCreateElement<P extends {}>(context: HookContext<P>): typeof React.createElement {
+export function makeCustomCreateElement<P extends {}>(): typeof React.createElement {
     let createElementArgsObject: ElementArgs<P>;
 
     const applyHooksOnArguments = (createElementArgsTuple: CreateElementArgsTuple<P>): CreateElementArgsTuple<P> => {
