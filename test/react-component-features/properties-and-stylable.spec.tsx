@@ -37,8 +37,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @properties (r
         it('supports class names', () => {
             const Comp = stylable(runtime)(properties(component));
 
-            const {select, container} = clientRenderer.render(<Comp data-automation-id="Root"
-                                                                    className="SomeClass External"> </Comp>);
+            const {select, container} = clientRenderer.render(<Comp data-automation-id="Root" className="SomeClass External"> </Comp>);
 
             expect(select('Root')).to.have.class(runtime.root);
             expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
@@ -48,6 +47,5 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @properties (r
         });
     }
 
-    xdescribe('fix me (currently fails on SFC)', () => testWithBothComponentTypes(comp, suite));
-    suite(makeClassComponent(comp))
+    testWithBothComponentTypes(comp, suite);
 });

@@ -1,4 +1,4 @@
-import {stylable, isDecorated} from "../../src";
+import {stylable, reactDecor} from "../../src";
 import {createGenerator} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
@@ -108,8 +108,8 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         }
 
         it('should return true when checking isDecorated on a component decorated with stylable', () => {
-            expect(isDecorated(Comp)).to.equal(true);
-            expect(isDecorated(Comp, stylable)).to.equal(true);
+            expect(reactDecor.isWrapped(Comp)).to.equal(true);
+            expect(reactDecor.isWrapped(Comp, stylable)).to.equal(true);
         });
     });
 });

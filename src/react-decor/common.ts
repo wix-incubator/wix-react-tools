@@ -75,6 +75,12 @@ export interface DecorReactHooks<P extends object, T extends Component<P> = Comp
     onEachElement: Array<StatefulElementHook<P, T> | StatelessElementHook<P>> | null;
 }
 
+export interface DecorReacWrapArguments<P extends object, T extends Component<P> = Component<P>> {
+    normalized?: true;
+    statelessHooks: StatelessDecorReactHooks<P>;
+    classHooks: DecorReactHooks<P, T>;
+}
+
 export type Stateful = 'T' | 'F';
 export type ElementHook<S extends Stateful, P extends object> = {
     T : StatefulElementHook<P>;

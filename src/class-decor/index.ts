@@ -9,11 +9,10 @@ import {AfterHook, BeforeHook, MiddlewareHook} from "../functoin-decor/index";
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 
-
-function chain2<T extends object>(f: ClassDecorator<T>, g: ClassDecorator<T>): ClassDecorator<T> {
-    return <T1 extends T>(cls: Class<T1>) => g(f(cls));
+function chain2<T extends object>(f: ClassDecorator<T>, g: ClassDecorator<T> | undefined): ClassDecorator<T> {
+    return g ? <T1 extends T>(cls: Class<T1>) => g(f(cls)) : f;
 }
-export function chain<T extends object>(...fns: ClassDecorator<T>[]): ClassDecorator<T> {
+export function chain<T extends object>(...fns: (ClassDecorator<T>)[]): ClassDecorator<T> {
     return fns.reduce(chain2);
 }
 

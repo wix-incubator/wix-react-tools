@@ -1,5 +1,5 @@
 import React = require('react');
-import {Attributes, cloneElement, ReactElement, ReactNode, ReactType, SFC} from "react";
+import {Attributes, cloneElement, Component, ReactElement, ReactNode, ReactType, SFC} from "react";
 import {decorFunction, middleware} from "../functoin-decor/index";
 import {
     DecorReactHooks, ElementArgs, StatelessElementHook, isNotEmptyArrayLike, translateArgumentsToObject,
@@ -12,6 +12,7 @@ export type CreateElementArgsTuple<P extends {}> = [ReactType, undefined | (Attr
 export type SFCDecorator<T extends object> = <T1 extends T>(comp: SFC<T1>) => SFC<T1>;
 
 export interface HookContext<T extends object> {
+    componentInstance : undefined | Component<T>
     hooks: DecorReactHooks<T>;
     componentProps: T;
     createArgsMap: Map<object, ElementArgs<any>>;
@@ -21,8 +22,8 @@ export function getHooksReducer<T extends object>(componentProps: T) {
     return <P extends {}>(res: ElementArgs<P>, hook: StatelessElementHook<T>) => hook(componentProps, res);
 }
 
-export const translateName = middleware((next: (args: [React.SFC]) => React.SFC, args: [React.SFC]) => {
-    const result: React.SFC = next(args);
+export const translateName = middleware((next: (args: [React.ComponentType]) => React.ComponentType, args: [React.ComponentType]) => {
+    const result: React.ComponentType = next(args);
     if (!result.displayName && args[0].name) {
         result.displayName = args[0].name;
     }
@@ -30,6 +31,7 @@ export const translateName = middleware((next: (args: [React.SFC]) => React.SFC,
 });
 const emptyObj = Object.freeze({});
 export const context = {
+    componentInstance : undefined,
     hooks: emptyObj,
     componentProps: emptyObj,
     createArgsMap: new Map()
@@ -78,8 +80,10 @@ export function makeCustomCreateElement<P extends {}>(): typeof React.createElem
 
     const applyHooksOnArguments = (createElementArgsTuple: CreateElementArgsTuple<P>): CreateElementArgsTuple<P> => {
         createElementArgsObject = translateArgumentsToObject(createElementArgsTuple);
-        if (isNotEmptyArrayLike(context.hooks.onEachElement)) {
-            createElementArgsObject = context.hooks.onEachElement.reduce(getHooksReducer(context.componentProps), createElementArgsObject);
+        if (context.hooks.onEachElement) {
+            for (let i = 0; i < context.hooks.onEachElement.length; i++) {
+                createElementArgsObject = context.hooks.onEachElement[i].call(context.componentInstance, context.componentProps, createElementArgsObject)
+            }
             return translateObjectToArguments(createElementArgsObject);
         }
         return createElementArgsTuple;
