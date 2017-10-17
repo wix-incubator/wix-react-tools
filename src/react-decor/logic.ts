@@ -1,29 +1,19 @@
 import {cloneElement, Component, ComponentType, ReactElement, SFC} from "react";
-import {DecorReacWrapArguments, isReactClassComponent, resetReactCreateElement} from "./common";
-import {mergeOptionalArrays} from "../functoin-decor/common";
+import {DecorReacWrapArguments, isReactClassComponent, resetReactCreateElement, translateName} from "./common";
 import {WrapApi} from "../wrappers/index";
-import {context, makeCustomCreateElement, translateName} from "./react-decor-function";
+import {context, wrappedCreateElement} from "./monkey-patches";
 import {decorFunction} from "../functoin-decor/index";
 import {after, before, chain} from "../class-decor/index";
 import React = require('react');
 
 export function reactDecorMetadataMerge(md1: DecorReacWrapArguments<any>, md2: DecorReacWrapArguments<any>): DecorReacWrapArguments<any> {
-    normalizeWrapArgs(md1);
-    normalizeWrapArgs(md2);
     return {
-        normalized: true,
-        statelessHooks: {
-            onRootElement: mergeOptionalArrays(md1.statelessHooks.onRootElement, md2.statelessHooks.onRootElement),
-            onEachElement: mergeOptionalArrays(md1.statelessHooks.onEachElement, md2.statelessHooks.onEachElement)
-        },
-        classHooks: {
-            onRootElement: mergeOptionalArrays(md1.classHooks.onRootElement, md2.classHooks.onRootElement),
-            onEachElement: mergeOptionalArrays(md1.classHooks.onEachElement, md2.classHooks.onEachElement)
-        }
+        statelessHooks: md1.statelessHooks.concat(md2.statelessHooks),
+        classHooks: md1.classHooks.concat(md2.classHooks),
     };
 }
 
-export function reactDecorWrapper<T extends ComponentType>(target: T, args: DecorReacWrapArguments<any>): T {
+export function reactDecorWrapper<T extends ComponentType>(target: T, _args: DecorReacWrapArguments<any>): T {
     let Wrapped = target;
     if (isReactClassComponent(target)) {
         Wrapped = classDecorator(target as any) as T;
@@ -33,36 +23,7 @@ export function reactDecorWrapper<T extends ComponentType>(target: T, args: Deco
     return Wrapped;
 }
 
-function normalizeWrapArgs(wrapperArgs: DecorReacWrapArguments<any>){
-    console.log('remove normalization!')
-    if (!wrapperArgs.normalized) {
-        if (wrapperArgs.statelessHooks.onEachElement && wrapperArgs.statelessHooks.onRootElement) {
-            wrapperArgs.statelessHooks.onRootElement = wrapperArgs.statelessHooks.onEachElement.concat(wrapperArgs.statelessHooks.onRootElement);
-        }
-        if (wrapperArgs.classHooks.onEachElement && wrapperArgs.classHooks.onRootElement) {
-            wrapperArgs.classHooks.onRootElement = wrapperArgs.classHooks.onEachElement.concat(wrapperArgs.classHooks.onRootElement);
-        }
-        wrapperArgs.normalized = true;
-    }
-}
-
-class ReactWrapApi extends WrapApi<DecorReacWrapArguments<any>, ComponentType> {
-    constructor(){
-        super('react-decor', reactDecorWrapper, reactDecorMetadataMerge);
-    }
-
-    wrap<T extends ComponentType>(wrapperArgs: DecorReacWrapArguments<T>, wrapperSymbols: Function[], subj: T) : T {
-        if (!wrapperArgs.normalized) {
-            normalizeWrapArgs(wrapperArgs);
-        }
-        return super.wrap(wrapperArgs, wrapperSymbols, subj);
-    }
-}
-
-export const reactDecor = new ReactWrapApi() as WrapApi<DecorReacWrapArguments<any>, ComponentType>;
-
-
-const wrappedCreateElement = makeCustomCreateElement();
+export const reactDecor = new WrapApi<DecorReacWrapArguments<any>, ComponentType>('react-decor', reactDecorWrapper, reactDecorMetadataMerge);
 
 function beforeRender(this: any, args: [object, any], wrappedRender: Function): [object, any] {
     if (React.createElement !== wrappedCreateElement) {
@@ -84,19 +45,16 @@ function beforeRender(this: any, args: [object, any], wrappedRender: Function): 
 function afterRender<P extends {}>(this: any, renderResult: ReactElement<P>, wrappedRender: SFC): ReactElement<P> {
     const isClass = this && this.render === wrappedRender;
     const metadata = reactDecor.getMetadata(isClass ? this.constructor : wrappedRender);
-    if (metadata) {
-        const hooks = isClass ? metadata.wrapperArgs.classHooks : metadata.wrapperArgs.statelessHooks;
-        if (metadata && renderResult && context.hooks.onRootElement) {
-            let rootElementArgs = context.createArgsMap.get(renderResult);
-            if (rootElementArgs) {
-                for (let i = 0; i < context.hooks.onRootElement.length; i++) {
-                    rootElementArgs = context.hooks.onRootElement[i].call(context.componentInstance, context.componentProps, rootElementArgs)
-                }
-                renderResult = cloneElement(renderResult, (rootElementArgs!).elementProps, ...rootElementArgs!.children);
-                context.createArgsMap.set(renderResult, rootElementArgs!);
-            } else if (process.env.NODE_ENV !== 'production') {
-                console.warn('unexpected root node : ', renderResult);
+    if (metadata && renderResult && context.hooks) {
+        let rootElementArgs = context.createArgsMap.get(renderResult);
+        if (rootElementArgs) {
+            for (let i = 0; i < context.hooks.length; i++) {
+                rootElementArgs = context.hooks[i].call(context.componentInstance, context.componentProps, rootElementArgs, true);
             }
+            renderResult = cloneElement(renderResult, (rootElementArgs!).elementProps, ...rootElementArgs!.children);
+            context.createArgsMap.set(renderResult, rootElementArgs!);
+        } else if (process.env.NODE_ENV !== 'production') {
+            console.warn('unexpected root node : ', renderResult);
         }
     }
     resetReactCreateElement();

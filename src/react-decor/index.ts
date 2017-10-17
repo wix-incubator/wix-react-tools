@@ -1,19 +1,17 @@
-import {Component, ComponentType} from "react";
-import {decorationReflection} from "./react-decor-reflection";
-import {decorReactClass} from "./react-decor-class";
+import {Component} from "react";
 import {
     DecorReactHooks,
     DecorReacWrapArguments,
+    ElementArgs,
     ElementHook,
-    isReactClassComponent,
     Stateful,
     StatefulElementHook,
     StatelessDecorReactHooks,
     StatelessElementHook,
     Wrapper
 } from "./common";
-import {decorReactFunc} from "./react-decor-function";
 import {reactDecor} from "./logic";
+import {cloneFunction} from "../functoin-decor/index";
 
 export {reactDecor} from "./logic";
 
@@ -38,14 +36,38 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
     return reactDecor.makeWrapper(makeDecorReacWrapArguments(statelessHooks, classHooks));
 }
 
-export function elementHooks<S extends Stateful, P extends object>(onRootElement: Array<ElementHook<S, P>> | null, onEachElement: Array<ElementHook<S, P>> | null) {
-    return {onRootElement, onEachElement};
+// TODO: remove
+export function elementHooks<S extends Stateful, P extends object>(onRootElement: Array<ElementHook<S, P>> | null, onEachElement: Array<ElementHook<S, P>> | null): Array<ElementHook<S, P>> {
+    console.info('DEPRECATED________')
+    if (onRootElement) {
+        onRootElement = onRootElement.map(asRootOnly);
+        if (onEachElement) {
+            return onRootElement.concat(onEachElement);
+        }
+        return onRootElement;
+    } else {
+        return onEachElement!;
+    }
 }
 
+export function asRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
+    return hook.rootOnly ? hook : makeRootOnly(cloneFunction(hook));
+}
+
+export function makeRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
+    if (hook.name === 'addChangeRemoveHook') {
+        debugger;
+    }
+    hook.rootOnly = true;
+    return hook;
+}
+
+// TODO: remove ?
 export function onRootElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): Wrapper<P> {
-    return decorateReactComponent(elementHooks([statelessHook], null), classHook ? elementHooks([classHook], null) : undefined);
+    return decorateReactComponent([asRootOnly(statelessHook)], classHook ? [asRootOnly(classHook)] : undefined);
 }
 
+// TODO: remove ?
 export function onEachElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): Wrapper<P> {
-    return decorateReactComponent(elementHooks(null, [statelessHook]), classHook ? elementHooks(null, [classHook]) : undefined);
+    return decorateReactComponent([statelessHook], classHook ? [classHook] : undefined);
 }

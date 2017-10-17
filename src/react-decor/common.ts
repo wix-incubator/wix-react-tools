@@ -15,6 +15,7 @@ import {
 } from "react";
 import * as React from "react";
 import { Instance } from '../core/types';
+import {middleware} from "../functoin-decor/index";
 
 export function isNotEmptyArrayLike(arr: Array<any> | undefined | null): arr is Array<any> {
     return !!(arr && (arr.length > 0));
@@ -58,27 +59,19 @@ export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): 
 export type Wrapper<P extends object> = <T extends ComponentType<P>>(comp: T) => T
 
 export interface StatefulElementHook<P extends object, T extends Component<P> = Component<P>> {
-    <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>): ElementArgs<E>
+    rootOnly?:boolean;
+    <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>, isRoot:boolean): ElementArgs<E>
 }
 
-export interface StatelessElementHook<P extends object> {
-    <E = object>(props: P, args: ElementArgs<E>): ElementArgs<E>
-}
+export type StatelessElementHook<P extends object> = StatefulElementHook<P, any>;
 
-export interface StatelessDecorReactHooks<P extends object> {
-    onRootElement: Array<StatelessElementHook<P>> | null;
-    onEachElement: Array<StatelessElementHook<P>> | null;
-}
+export type StatelessDecorReactHooks<P extends object> = Array<StatelessElementHook<P>>;
 
-export interface DecorReactHooks<P extends object, T extends Component<P> = Component<P>> {
-    onRootElement: Array<StatefulElementHook<P, T> | StatelessElementHook<P>> | null;
-    onEachElement: Array<StatefulElementHook<P, T> | StatelessElementHook<P>> | null;
-}
+export type DecorReactHooks<P extends object, T extends Component<P> = Component<P>> =  Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
 
 export interface DecorReacWrapArguments<P extends object, T extends Component<P> = Component<P>> {
-    normalized?: true;
-    statelessHooks: StatelessDecorReactHooks<P>;
-    classHooks: DecorReactHooks<P, T>;
+    statelessHooks: Array<StatelessElementHook<P>>;
+    classHooks: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
 }
 
 export type Stateful = 'T' | 'F';
@@ -93,3 +86,12 @@ export const originalReactCreateElement: typeof React.createElement = React.crea
 export function resetReactCreateElement(){
     (React as any).createElement = originalReactCreateElement;
 }
+
+
+export const translateName = middleware((next: (args: [React.ComponentType]) => React.ComponentType, args: [React.ComponentType]) => {
+    const result: React.ComponentType = next(args);
+    if (!result.displayName && args[0].name) {
+        result.displayName = args[0].name;
+    }
+    return result;
+});

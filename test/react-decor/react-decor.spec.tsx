@@ -14,7 +14,7 @@ import {
     onRootElement,
     onEachElement
 } from "../../src";
-import {elementHooks} from "../../src/react-decor/index";
+import {asRootOnly, elementHooks} from "../../src/react-decor/index";
 
 const _console = console;
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
@@ -40,7 +40,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         return args;
     };
 
-    const addChangeRemoveHook = function rootHook(componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+    function addChangeRemoveHook(componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
         args.elementProps['data-add-me'] = componentProps.name;
         args.elementProps['data-change-me'] = componentProps.name;
         args.elementProps['data-delete-me'] = undefined;
@@ -51,7 +51,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
     const SFComp: React.SFC<PropsWithName> = ({ name }) => (
         <div data-automation-id="root" data-delete-me="TBDeleted" data-change-me="TBChanged">
-            <span data-automation-id="content">
+            <span data-automation-id="content" data-delete-me="TBDeleted" data-change-me="TBChanged">
                 {name}
             </span>
         </div>
@@ -106,11 +106,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
     });
 
     describe(`.onEachElement`, () => {
+        // TODO testWithBothComponentTypes?
         describe(`with two different hooks`, () => {
-            const statefulHook: StatefulElementHook<PropsWithName> = function (this: Instance<Component<PropsWithName>>, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
+            function statefulHook(this: Instance<Component<PropsWithName>>, componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
                 expect(this.props).to.equal(componentProps);
                 return args;
-            };
+            }
 
             it('should allow adding a stateful onEachElement hook to a class component', () => {
                 const wrap = onEachElement(addChangeRemoveHook, statefulHook);
@@ -120,26 +121,10 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
                 expect(select('content')).to.be.ok;
             });
-
-            it('should allow adding a child hook to a component that will add/remove/change the root elements props', () => {
-                const wrapWithRootHook = onEachElement(addChangeRemoveHook);
-
-                const WrappedComp = wrapWithRootHook(SFComp);
-
-                const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
-
-                expect(select('root')).to.not.have.attribute('data-delete-me');
-                expect(select('root')).to.have.attribute('data-add-me', 'Jon');
-                expect(select('root')).to.have.attribute('data-change-me', 'Jon');
-                expect(select('content')).to.be.ok;
-                expect(select('content')).to.not.have.attribute('data-delete-me');
-                expect(select('content')).to.have.attribute('data-add-me', 'Jon');
-                expect(select('content')).to.have.attribute('data-change-me', 'Jon');
-            });
         });
 
-        function testOnRootElementDecoration(Comp: any) {
-            it('should allow adding a root hook to a component that will add/remove/change the root elements props', () => {
+        function testOnEachElementDecoration(Comp: any) {
+            it('should allow adding a hook to a component that will add/remove/change props of each element', () => {
                 const wrapWithRootHook = onEachElement(addChangeRemoveHook);
 
                 const WrappedComp = wrapWithRootHook(Comp);
@@ -156,7 +141,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
             });
         }
 
-        testWithBothComponentTypes(SFComp, testOnRootElementDecoration);
+        testWithBothComponentTypes(SFComp, testOnEachElementDecoration);
     });
 
     describe(`decorate react component with stateless hooks`, () => {
@@ -229,9 +214,11 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                     expect(select('content')).to.be.ok;
                 });
                 it('recognise cloned elements', () => {
-                    const wrap = decorateReactComponent({
-                        onRootElement: [(_props, args)=>({...args, elementProps:{ ...(args.elementProps as object) }}), addChangeRemoveHook],
-                        onEachElement: [statelessHook1]});
+                    const wrap = decorateReactComponent(
+                        [
+                            (_props:any, args:ElementArgs<any>)=>({...args, elementProps:{ ...(args.elementProps as object) }}),
+                            addChangeRemoveHook
+                        ].map(asRootOnly).concat([statelessHook1]));
                     const WrappedComp = wrap(Comp);
 
                     const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
@@ -388,10 +375,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                     return args;
                 });
 
-                const wrap = decorateReactComponent<PropsWithName, Component<any>>({
-                    onRootElement: [hook],
-                    onEachElement: [hook]
-                });
+                const wrap = decorateReactComponent<PropsWithName, Component<any>>([hook]);
                 const WrappedComp = wrap(Comp);
 
                 clientRenderer.render(<WrappedComp />);

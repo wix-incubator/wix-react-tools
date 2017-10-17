@@ -15,22 +15,10 @@ describe('React Decorator', () => {
     decorateReactComponent(elementHooks(null, null), elementHooks(null, null));
 
     // $ExpectType Wrapper<PropsWithName>
-    decorateReactComponent(
-        {
-            onEachElement: [hook],
-            onRootElement: [hook]
-        });
+    decorateReactComponent([hook]);
 
     // $ExpectType Wrapper<PropsWithName>
-    decorateReactComponent(
-        {
-            onEachElement: [hook],
-            onRootElement: [hook]
-        },
-        {
-            onEachElement: [hook],
-            onRootElement: [hook]
-        });
+    decorateReactComponent([hook],[hook]);
 
     // $ExpectType StatelessComponent<PropsWithName>
     decorateReactComponent(elementHooks(null, null), elementHooks(null, null))(SFComp);

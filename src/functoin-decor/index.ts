@@ -11,6 +11,8 @@ export  {
 
 export const functionDecor = new WrapApi<Partial<FunctionMetaData>, Function>('function-decor', funcDecorWrapper, funcDecorMetadataMerge);
 
+export const cloneFunction: Wrapper<Function> = functionDecor.makeWrapper({});
+
 export function before(preMethod: BeforeHook): Wrapper<Function> {
     return functionDecor.makeWrapper({before:[preMethod]});
 }

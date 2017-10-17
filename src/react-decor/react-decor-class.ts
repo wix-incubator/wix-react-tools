@@ -7,9 +7,9 @@ import {
     resetReactCreateElement, originalReactCreateElement
 } from "./common";
 import {List, mix, MixerData, unsafeMixerData} from "../class-decor/mixer";
-import {Class, GlobalConfig, Instance} from "../core/types";
+import {Class, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
-import {getGlobalConfig, runInContext} from "../core/config";
+import {runInContext} from "../core/config";
 
 declare const process: { env: { [k: string]: any } };
 
@@ -147,12 +147,11 @@ export function decorReactClass<P extends object, T extends Component<any>>(hook
     return function reactClassDecorator<C extends Class<T> & React.ComponentClass>(componentClazz: C): C {
         let mixed = mix(componentClazz);
         const mixData = reactMixData(mixed);
-        hooks.onEachElement && hooks.onEachElement.forEach(h => {
+        hooks.forEach(h => {
             mixData.onRootElementHooks.add(h);
-            mixData.onEachElementHooks.add(h);
-        });
-        hooks.onRootElement && hooks.onRootElement.forEach(h => {
-            mixData.onRootElementHooks.add(h);
+            if (!h.rootOnly) {
+                mixData.onEachElementHooks.add(h);
+            }
         });
 
         if (process.env.NODE_ENV !== 'production') {
