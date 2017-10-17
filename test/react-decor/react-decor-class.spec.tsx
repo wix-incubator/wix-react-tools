@@ -3,6 +3,7 @@ import {HTMLAttributes} from "react";
 import {ClientRenderer, expect} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 import {ElementArgs, onEachElement} from "../../src";
+import {reactDecor} from "../../src/react-decor/logic";
 
 declare const process: any;
 
@@ -23,25 +24,30 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
     const clientRenderer = new ClientRenderer();
     afterEach(() => clientRenderer.cleanup());
 
+
+    function fooHook<P extends { ['data-foo']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
+        args.elementProps['data-foo'] = 'foo';
+        return args;
+    }
+
+    function barHook<P extends { ['data-bar']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
+        args.elementProps['data-bar'] = 'bar';
+        return args;
+    }
+    const fooDecorator = onEachElement(fooHook);
+    const barDecorator = onEachElement(barHook);
+
     it('multiple hooks work together', () => {
-        function FooHook<P extends { ['data-foo']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-            args.elementProps['data-foo'] = 'foo';
-            return args;
-        }
-
-        function BarHook<P extends { ['data-bar']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-            args.elementProps['data-bar'] = 'bar';
-            return args;
-        }
-
-        @onEachElement(FooHook)
-        @onEachElement(BarHook)
+        @fooDecorator
+        @barDecorator
         class MyComp extends React.Component {
             render() {
                 return <div data-automation-id="1"/>
             }
         }
-
+        expect(reactDecor.isWrapped(MyComp)).to.eql(true);
+        expect(reactDecor.isWrapped(MyComp, fooDecorator)).to.eql(true);
+        expect(reactDecor.isWrapped(MyComp, barDecorator)).to.eql(true);
         const {select} = clientRenderer.render(<MyComp/>);
         expect(select('1')).to.have.attribute('data-foo', 'foo');
         expect(select('1')).to.have.attribute('data-bar', 'bar');
@@ -49,18 +55,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
 
 
     it('inheritance works', () => {
-        function FooHook<P extends { ['data-foo']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-            args.elementProps['data-foo'] = 'foo';
-            return args;
-        }
-
-        function BarHook<P extends { ['data-bar']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-            args.elementProps['data-bar'] = 'bar';
-            return args;
-        }
-
-        @onEachElement(FooHook)
-        @onEachElement(BarHook)
+        @fooDecorator
+        @barDecorator
         class Parent extends React.Component {
             render() {
                 return <div data-automation-id="1"/>
@@ -71,35 +67,34 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
 
         }
 
+        expect(reactDecor.isWrapped(MyComp)).to.eql(true);
+        expect(reactDecor.isWrapped(MyComp, fooDecorator)).to.eql(true);
+        expect(reactDecor.isWrapped(MyComp, barDecorator)).to.eql(true);
         const {select} = clientRenderer.render(<MyComp/>);
         expect(select('1')).to.have.attribute('data-foo', 'foo');
         expect(select('1')).to.have.attribute('data-bar', 'bar');
     });
 
     it('multiple hooks work together on multiple levels', () => {
-        function FooHook<P extends { ['data-foo']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-            args.elementProps['data-foo'] = 'foo';
-            return args;
-        }
-
-        function BarHook<P extends { ['data-bar']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-            args.elementProps['data-bar'] = 'bar';
-            return args;
-        }
-
-
-        @onEachElement(FooHook)
-        class BaseComp extends React.Component {
+        @fooDecorator
+        class Parent extends React.Component {
 
         }
 
-        @onEachElement(BarHook)
-        class MyComp extends BaseComp {
+        @barDecorator
+        class MyComp extends Parent {
             render() {
                 return <div data-automation-id="1"/>
             }
         }
 
+        expect(reactDecor.isWrapped(Parent)).to.eql(true);
+        expect(reactDecor.isWrapped(Parent, fooDecorator)).to.eql(true);
+        expect(reactDecor.isWrapped(Parent, barDecorator)).to.eql(false);
+
+        expect(reactDecor.isWrapped(MyComp)).to.eql(true);
+        expect(reactDecor.isWrapped(MyComp, fooDecorator)).to.eql(true);
+        expect(reactDecor.isWrapped(MyComp, barDecorator)).to.eql(true);
         const {select} = clientRenderer.render(<MyComp/>);
         expect(select('1')).to.have.attribute('data-foo', 'foo');
         expect(select('1')).to.have.attribute('data-bar', 'bar');

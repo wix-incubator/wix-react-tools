@@ -72,8 +72,8 @@ export class WrapApi<A, T extends object> {
     }
 
     isWrapped(subj: T, wrapperSymbol?: any): boolean {
-        if (this.metadataProvider.hasState(subj)) {
-            const metadata = this.metadataProvider(subj);
+        const metadata = this.getMetadata(subj);
+        if (metadata) {
             if (!wrapperSymbol) {
                 return metadata.symbols.length > 0;
             } else {
@@ -88,15 +88,17 @@ export class WrapApi<A, T extends object> {
     }
 
     normalize(subj: T): T {
-        if (this.metadataProvider.hasState(subj)) {
-            return this.metadataProvider(subj).original;
+        const metadata = this.getMetadata(subj);
+        if (metadata) {
+            return metadata.original;
         }
         return subj;
     }
 
     getWrapped(subj: T): T | null {
-        if (this.metadataProvider.hasState(subj)) {
-            return this.metadataProvider(subj).original;
+        const metadata = this.getMetadata(subj);
+        if (metadata) {
+            return metadata.original;
         }
         return null;
     }
