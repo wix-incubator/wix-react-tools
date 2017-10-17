@@ -15,7 +15,6 @@ import {cloneFunction} from "../functoin-decor/index";
 
 export {reactDecor} from "./logic";
 
-export {decorReactClass} from "./react-decor-class";
 export {
     DecorReactHooks,
     StatelessDecorReactHooks,

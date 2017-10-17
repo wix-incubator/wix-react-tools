@@ -1,6 +1,7 @@
 import {privateState, StateProvider} from "../core/private-state";
-import {getInheritedState} from "../core/class-private-state";
 import {Class, isAnyClass} from "../core/types";
+import {getInheritedClassStateProvider} from "../index";
+import {InheritedClassStateProvider} from "../core/class-private-state";
 
 export type Merge<T> = (argsA: T, argsB: T) => T;
 
@@ -18,18 +19,18 @@ export type Wrapper<T extends object> = <T1 extends T>(func: T1) => T1
  * an instance of this class is a wrapping API for a specific domain
  */
 export class WrapApi<A, T extends object> {
-    private readonly metadataProvider: StateProvider<Metadata<A, T>, T>;
+    protected readonly metadataProvider: StateProvider<Metadata<A, T>, T>;
 
-    constructor(private id: string, private wrapper: InternalWrapper<A, T>, private merge: Merge<A>) {
-        this.metadataProvider = privateState<Metadata<A, T>, T>(id+'-metadata', (targetObj: T) => ({
+    constructor(private id: string, private wrapper: InternalWrapper<A, T>, protected merge: Merge<A>) {
+        this.metadataProvider = privateState<Metadata<A, T>, T>(id + '-metadata', (targetObj: T) => ({
             original: null as any,
             symbols: [],
             wrapperArgs: null as any
         }));
     }
 
-    makeWrapperFactory<C>(getWrapperArgs : (config:C) => A) : (config:C) => Wrapper<T>{
-        const factory = (config:C): Wrapper<T> => {
+    makeWrapperFactory<C>(getWrapperArgs: (config: C) => A): (config: C) => Wrapper<T> {
+        const factory = (config: C): Wrapper<T> => {
             const wrapperArgs = getWrapperArgs(config);
             const wrapper = <T1 extends T>(subj: T1): T1 => {
                 return this.wrap(wrapperArgs, wrappers, subj);
@@ -48,7 +49,7 @@ export class WrapApi<A, T extends object> {
         return wrapper;
     }
 
-    wrap<T1 extends T>(wrapperArgs: A, wrapperSymbols: Function[], subj: T1) : T1 {
+    wrap<T1 extends T>(wrapperArgs: A, wrapperSymbols: Function[], subj: T1): T1 {
         if (this.metadataProvider.hasState(subj)) {
             // subj is already a product of this wrapping API
             // deconstruct it, merge with arguments and re-wrap the original
@@ -56,7 +57,7 @@ export class WrapApi<A, T extends object> {
             wrapperArgs = this.merge(subjMetadata.wrapperArgs, wrapperArgs);
             subj = subjMetadata.original;
             wrapperSymbols = subjMetadata.symbols.concat(wrapperSymbols);
-            if (subjMetadata.symbols.length > 0 || wrapperSymbols.length > 0){
+            if (subjMetadata.symbols.length > 0 || wrapperSymbols.length > 0) {
                 // de-dupe wrapperSymbols array
                 wrapperSymbols = Array.from(new Set(wrapperSymbols));
             }
@@ -104,10 +105,30 @@ export class WrapApi<A, T extends object> {
         if (this.metadataProvider.hasState(subj)) {
             return this.metadataProvider(subj);
         }
-        if (isAnyClass(subj)){
-            throw new Error('I should happen!');
-           // return getInheritedState<Metadata<A, T>, T & Class<any>>(this.metadataProvider, subj);
-        }
         return null;
+    }
+}
+
+export class InheritedWrapApi<A, T extends object> extends WrapApi<A, T> {
+    protected readonly inheritedMetadataProvider : InheritedClassStateProvider<Metadata<A, T>, T & Class<any>> = getInheritedClassStateProvider<Metadata<A, T>, T & Class<any>>(this.metadataProvider);
+
+    wrap<T1 extends T>(wrapperArgs: A, wrapperSymbols: Function[], subj: T1): T1 {
+        if (isAnyClass(subj) && !this.metadataProvider.hasState(subj)) {
+            const prototypeOf = Object.getPrototypeOf(subj.prototype).constructor;
+            const ancestorMetaData = this.inheritedMetadataProvider(prototypeOf);
+            if (ancestorMetaData){
+                wrapperArgs = this.merge(ancestorMetaData.wrapperArgs, wrapperArgs);
+                wrapperSymbols = ancestorMetaData.symbols.concat(wrapperSymbols);
+            }
+        }
+        return super.wrap(wrapperArgs, wrapperSymbols, subj);
+    }
+
+    getMetadata(subj: T): Metadata<A, T> | null {
+        if (isAnyClass(subj)) {
+            return this.inheritedMetadataProvider(subj);
+        } else {
+            return super.getMetadata(subj);
+        }
     }
 }

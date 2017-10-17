@@ -1,6 +1,6 @@
 import {cloneElement, Component, ComponentType, ReactElement, SFC} from "react";
 import {DecorReacWrapArguments, isReactClassComponent, resetReactCreateElement, translateName} from "./common";
-import {WrapApi} from "../wrappers/index";
+import {InheritedWrapApi} from "../wrappers/index";
 import {context, wrappedCreateElement} from "./monkey-patches";
 import {decorFunction} from "../functoin-decor/index";
 import {after, before, chain} from "../class-decor/index";
@@ -23,7 +23,7 @@ export function reactDecorWrapper<T extends ComponentType>(target: T, _args: Dec
     return Wrapped;
 }
 
-export const reactDecor = new WrapApi<DecorReacWrapArguments<any>, ComponentType>('react-decor', reactDecorWrapper, reactDecorMetadataMerge);
+export const reactDecor = new InheritedWrapApi<DecorReacWrapArguments<any>, ComponentType>('react-decor', reactDecorWrapper, reactDecorMetadataMerge);
 
 function beforeRender(this: any, args: [object, any], wrappedRender: Function): [object, any] {
     if (React.createElement !== wrappedCreateElement) {

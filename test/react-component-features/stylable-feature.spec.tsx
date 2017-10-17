@@ -3,7 +3,6 @@ import {createGenerator} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
-import {simulateRender} from "../../src/react-decor/react-decor-class";
 import {runInContext} from "../../src/core/config";
 import {devMode} from "../../src/core/dev-mode";
 
@@ -95,8 +94,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
                     return <div style-state={rootState}/>
                 }
             }
-
-            const rootElement = simulateRender(Comp);
+            const rootElement = new Comp().render();
             expect(rootElement && rootElement.props).to.not.have.property('style-state');
         });
     });

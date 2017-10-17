@@ -25,7 +25,7 @@ export interface ClassStateProvider<P = any, T extends Class<object> = Class<obj
 
 export function classPrivateState<P = any, T extends Class<object> = Class<object>>(key: string, initializer: { (targetObj: T): P }): ClassStateProvider<P, T> {
     const result = privateState(key, initializer) as ClassStateProvider<P, T>;
-    result.inherited = inheritedState(key, result);
+    result.inherited = getInheritedClassStateProvider(result);
     result.unsafe.inherited = result.inherited.unsafe;
     return result;
 }
@@ -60,11 +60,11 @@ export function hasInheritedState<T extends Class<object>>(provider: StateProvid
     return false;
 }
 
-function inheritedState<P, T extends Class<object>>(key: string, provider: StateProvider<P, T>): ClassStateProvider<P, T>['inherited'] {
+export function getInheritedClassStateProvider<P, T extends Class<object>>(provider: StateProvider<P, T>): InheritedClassStateProvider<P, T> {
     const inherited = getInheritedState.bind(null, provider) as InheritedClassStateProvider<P, T>;
     inherited.origin = getOriginOfState.bind(null, provider) as StateProvider<T, T>;
     inherited.origin.hasState = inherited.hasState = hasInheritedState.bind(null, provider);
-    inherited.unsafe = unsafe(key, inherited) as InheritedClassStateProvider<P, T>['unsafe'];
-    inherited.unsafe.origin = inherited.origin.unsafe = unsafe(key, inherited.origin);
+    inherited.unsafe = unsafe(provider.stateId, inherited) as InheritedClassStateProvider<P, T>['unsafe'];
+    inherited.unsafe.origin = inherited.origin.unsafe = unsafe(provider.stateId, inherited.origin);
     return inherited
 }
