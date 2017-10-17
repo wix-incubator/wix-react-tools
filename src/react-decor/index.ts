@@ -35,20 +35,6 @@ export function decorateReactComponent<P extends object, T extends Component<P> 
     return reactDecor.makeWrapper(makeDecorReacWrapArguments(statelessHooks, classHooks));
 }
 
-// TODO: remove
-export function elementHooks<S extends Stateful, P extends object>(onRootElement: Array<ElementHook<S, P>> | null, onEachElement: Array<ElementHook<S, P>> | null): Array<ElementHook<S, P>> {
-    console.info('DEPRECATED________')
-    if (onRootElement) {
-        onRootElement = onRootElement.map(asRootOnly);
-        if (onEachElement) {
-            return onRootElement.concat(onEachElement);
-        }
-        return onRootElement;
-    } else {
-        return onEachElement!;
-    }
-}
-
 export function asRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
     return hook.rootOnly ? hook : makeRootOnly(cloneFunction(hook));
 }

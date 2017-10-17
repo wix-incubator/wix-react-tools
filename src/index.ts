@@ -44,12 +44,3 @@ function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc: F, cD
 export const before = mergeFuncAndClass(FDBefore, CDBefore);
 export const after = mergeFuncAndClass(FDAfter, CDAfter);
 export const middleware = mergeFuncAndClass(FDMiddleware, CDMiddleware);
-
-
-// TODO: remove backward compatible support
-export const root = function DEPRECATED(componentProps: any, propsArg: any, blacklist?: any[]): any {
-    console.warn(`
-    The 'root' namespace is deprecated. 
-    please use @properties decorator`);
-    return rootProps(componentProps, propsArg, blacklist);
-} as typeof rootProps;
