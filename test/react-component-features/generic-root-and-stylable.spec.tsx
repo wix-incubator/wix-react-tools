@@ -23,25 +23,26 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
         overrideGlobalConfig(devMode.ON);
     });
     const clientRenderer = new ClientRenderer();
-    afterEach(() => runInContext(devMode.OFF,() => clientRenderer.cleanup()));
+    afterEach(() => runInContext(devMode.OFF, () => clientRenderer.cleanup()));
 
     type Props = {
         byDecorator?: boolean,
         byRender?: boolean,
     }
 
-    const comp: React.SFC<Props> = (p: Props) => (<div data-automation-id="Root" style-state={p.byRender?{byRender:true}:{}}/>);
+    const comp: React.SFC<Props> = (p: Props) => (
+        <div data-automation-id="Root" style-state={p.byRender ? {byRender: true} : {}}/>);
 
-    function mergeStyleState(props: {['style-state'] : StateMap}, from: StateMap) {
+    function mergeStyleState(props: { ['style-state']: StateMap }, from: StateMap) {
         const to = props['style-state'] = props['style-state'] || {};
         Object.keys(from).forEach((stateName: string) => {
             to[stateName] = to[stateName] || from[stateName];
         });
     }
 
-    function stateSelector(sheet: Stylesheet, states: StateMap){
+    function stateSelector(sheet: Stylesheet, states: StateMap) {
         const stateAttrs = sheet.cssStates(states);
-        const selectWithState = Object.keys(stateAttrs).map((k)=>`[${k}=${stateAttrs[k]}]`).join('');
+        const selectWithState = Object.keys(stateAttrs).map((k) => `[${k}=${stateAttrs[k]}]`).join('');
         return selectWithState;
     }
 
@@ -76,7 +77,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
             expect(select('Root')).to.have.class(runtime.root);
             expect(select('Root')).to.have.attribute('class', runtime.root);
             expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byDecorator:true})}`)).to.have.length(1);
+            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byDecorator: true})}`)).to.have.length(1);
         });
 
         it('supports injecting style-state by component', () => {
@@ -87,7 +88,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
             expect(select('Root')).to.have.class(runtime.root);
             expect(select('Root')).to.have.attribute('class', runtime.root);
             expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byRender:true})}`)).to.have.length(1);
+            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byRender: true})}`)).to.have.length(1);
         });
 
         it('supports injecting style-state by onRootElement and component', () => {
@@ -98,7 +99,10 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
             expect(select('Root')).to.have.class(runtime.root);
             expect(select('Root')).to.have.attribute('class', runtime.root);
             expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byDecorator:true, byRender:true})}`)).to.have.length(1);
+            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {
+                byDecorator: true,
+                byRender: true
+            })}`)).to.have.length(1);
         });
     }
 

@@ -112,13 +112,13 @@ export class WrapApi<A, T extends object> {
 }
 
 export class InheritedWrapApi<A, T extends object> extends WrapApi<A, T> {
-    protected readonly inheritedMetadataProvider : InheritedClassStateProvider<Metadata<A, T>, T & Class<any>> = getInheritedClassStateProvider<Metadata<A, T>, T & Class<any>>(this.metadataProvider);
+    protected readonly inheritedMetadataProvider: InheritedClassStateProvider<Metadata<A, T>, T & Class<any>> = getInheritedClassStateProvider<Metadata<A, T>, T & Class<any>>(this.metadataProvider);
 
     wrap<T1 extends T>(wrapperArgs: A, wrapperSymbols: Function[], subj: T1): T1 {
         if (isAnyClass(subj) && !this.metadataProvider.hasState(subj)) {
             const prototypeOf = Object.getPrototypeOf(subj.prototype).constructor;
             const ancestorMetaData = this.inheritedMetadataProvider(prototypeOf);
-            if (ancestorMetaData){
+            if (ancestorMetaData) {
                 wrapperArgs = this.merge(ancestorMetaData.wrapperArgs, wrapperArgs);
                 wrapperSymbols = ancestorMetaData.symbols.concat(wrapperSymbols);
             }

@@ -35,7 +35,7 @@ const dummyTracker = {
     }
 };
 
-function createNextForMiddlewareHook(context: any, originalFunction: Function, middlewareHooks: Array<MiddlewareHook>, idx: number, tracker: MiddlewareTracker, wrappedFunction:Function) {
+function createNextForMiddlewareHook(context: any, originalFunction: Function, middlewareHooks: Array<MiddlewareHook>, idx: number, tracker: MiddlewareTracker, wrappedFunction: Function) {
     return (args: any[]) => {
         tracker.reportNextMiddleware(idx);
         return middlewareHooks.length <= idx ?
@@ -87,7 +87,7 @@ export function funcDecorWrapper<T extends Function>(target: T, args: FunctionMe
         }
         return methodResult;
     } as Function as T;
-    for (let k in target){
+    for (let k in target) {
         wrappedFunction[k] = target[k];
     }
     return wrappedFunction;

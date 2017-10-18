@@ -4,6 +4,7 @@ import {GlobalConfig} from "./types";
 export interface Dictionary {
     [index: string]: any;
 }
+
 let internalState: Dictionary = {};
 
 let dirty = true;
@@ -14,10 +15,10 @@ let publicState: Readonly<Dictionary> = {};
 type Listener = <T>(newVal: any) => void;
 let listeners: { [k: string]: Listener[] } = {};
 
-function callListeners(newConfig: any, replace:boolean) {
+function callListeners(newConfig: any, replace: boolean) {
     const newKeys = Object.keys(newConfig);
-    const propNames = replace? newKeys.concat(Object.keys(internalState)) : newKeys;
-    propNames.forEach(function (name:string) {
+    const propNames = replace ? newKeys.concat(Object.keys(internalState)) : newKeys;
+    propNames.forEach(function (name: string) {
         if ((internalState[name] !== newConfig[name]) && listeners[name]) {
             listeners[name].forEach(l => l(newConfig[name]));
         }

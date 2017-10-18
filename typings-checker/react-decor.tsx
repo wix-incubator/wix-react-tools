@@ -18,7 +18,7 @@ describe('React Decorator', () => {
     decorateReactComponent([hook]);
 
     // $ExpectType Wrapper<PropsWithName>
-    decorateReactComponent([hook],[hook]);
+    decorateReactComponent([hook], [hook]);
 
     // $ExpectType StatelessComponent<PropsWithName>
     decorateReactComponent([], [])(SFComp);

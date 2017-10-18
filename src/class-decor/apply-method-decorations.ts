@@ -1,9 +1,6 @@
 import {Class} from "../core/types";
 import "../core/dev-mode";
-import {
-    inheritedMixerData,
-    MixerData
-} from "./mixer";
+import {inheritedMixerData, MixerData} from "./mixer";
 import {classPrivateState} from "../core/class-private-state";
 import {functionDecor, FunctionMetaData} from "../functoin-decor";
 

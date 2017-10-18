@@ -26,7 +26,9 @@ export interface TypedPropertyDescriptor<T> {
     enumerable?: boolean;
     value?: T;
     writable?: boolean;
+
     get? (): T;
+
     set? (v: T): void;
 }
 

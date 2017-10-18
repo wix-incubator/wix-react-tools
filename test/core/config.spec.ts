@@ -1,5 +1,12 @@
 import {expect, sinon} from "test-drive-react";
-import {getGlobalConfig, overrideGlobalConfig, runInContext, setGlobalConfig, Dictionary, onGlobalConfig} from "../../src";
+import {
+    Dictionary,
+    getGlobalConfig,
+    onGlobalConfig,
+    overrideGlobalConfig,
+    runInContext,
+    setGlobalConfig
+} from "../../src";
 
 const sampleConfig = {
     foo: 'bar',

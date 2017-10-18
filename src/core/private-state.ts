@@ -1,6 +1,6 @@
 import {NotNull} from "./types";
 
-declare const process: {env : {[k:string]: any}};
+declare const process: { env: { [k: string]: any } };
 
 export const STATE_DEV_MODE_KEY = "$private-context";
 const privates = new WeakMap();
@@ -11,6 +11,7 @@ export interface OptionalStateProvider<P extends NotNull, T extends object = any
 
 export interface StateProvider<P = any, T extends object = any> {
     readonly stateId: string;
+
     /**
      * provides a private state for a supplied instance. initializes a new state if none exists.
      * @param targetObj object to which the private state is affiliated.

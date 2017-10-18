@@ -8,5 +8,5 @@ function chain<T extends Function>(first: T, last: T): T {
 }
 
 export type Chain = <T extends Function>(first: T, last: T) => T;
-export const chainFunctions =  chain as Chain & {cached : Chain};
+export const chainFunctions = chain as Chain & { cached: Chain };
 chainFunctions.cached = memoize(chain);

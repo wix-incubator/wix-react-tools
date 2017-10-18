@@ -2,8 +2,6 @@ import {expect, sinon} from "test-drive-react";
 import {after, before, chain, Class, ClassDecorator, middleware, onInstance} from "../../src";
 import {expectSpyChain, resetAll, spyAll} from "../test-drivers/test-tools";
 import {mix} from "../../src/class-decor/mixer";
-import _reduce = require('lodash/reduce');
-import _forEach = require('lodash/forEach');
 
 const ORIGIN_ARGUMENT = 111;
 const ORIGIN_RESULT = 222;
@@ -20,6 +18,7 @@ class Base {
     }
 
 }
+
 type Decorator = ClassDecorator<Base>;
 
 function makeBaseClass(spy?: sinon.SinonSpy): typeof Base {
@@ -55,11 +54,13 @@ describe("class decor inheritance", () => {
                     userConstructorSpy(this);
                 }
             }
+
             checkClass(UserClass, userConstructorSpy);
         });
         it('when applied on parent class, called on instance creation before user code constructor', () => {
 
             const decorate = chain(onInstance<Base>(first), onInstance<Base>(last));
+
             class UserClass extends decorate(makeBaseClass()) {
                 constructor(myNumber: number) {
                     super(myNumber);
@@ -103,18 +104,18 @@ describe("class decor inheritance", () => {
 
             function beforeAfterDecor<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
-                    before<T>(function(this: T, args: [number]){
+                    before<T>(function (this: T, args: [number]) {
                         SPIES.firstBefore(this, args);
                         return [args[0] + 1]
                     }, METHOD),
-                    after<T>(function(this: T, result: number){
+                    after<T>(function (this: T, result: number) {
                         SPIES.lastAfter(this, result);
                         return result + 1;
                     }, METHOD))(cls);
             }
 
             function middlewareDecor<T extends Base>(cls: Class<T>): Class<T> {
-                return middleware<T>(function(this: T, next: Function, args: [number]){
+                return middleware<T>(function (this: T, next: Function, args: [number]) {
                     SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.firstAfter(this, res);
@@ -134,11 +135,11 @@ describe("class decor inheritance", () => {
         describe("before and after", () => {
             function outer<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
-                    before<T>(function(this: T, args: [number]){
+                    before<T>(function (this: T, args: [number]) {
                         SPIES.firstBefore(this, args);
                         return [args[0] + 1]
                     }, METHOD),
-                    after<T>(function(this: T, result: number){
+                    after<T>(function (this: T, result: number) {
                         SPIES.lastAfter(this, result);
                         return result + 1;
                     }, METHOD))(cls);
@@ -146,11 +147,11 @@ describe("class decor inheritance", () => {
 
             function inner<T extends Base>(cls: Class<T>): Class<T> {
                 return chain(
-                    before<T>(function(this: T, args: [number]){
+                    before<T>(function (this: T, args: [number]) {
                         SPIES.lastBefore(this, args);
                         return [args[0] + 1]
                     }, METHOD),
-                    after<T>(function(this: T, result: number){
+                    after<T>(function (this: T, result: number) {
                         SPIES.firstAfter(this, result);
                         return result + 1;
                     }, METHOD))(cls);
@@ -162,7 +163,7 @@ describe("class decor inheritance", () => {
 
         describe("middleware", () => {
             function outer<T extends Base>(cls: Class<T>): Class<T> {
-                return middleware<T>(function(this: T, next: Function, args: [number]){
+                return middleware<T>(function (this: T, next: Function, args: [number]) {
                     SPIES.firstBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.lastAfter(this, res);
@@ -171,7 +172,7 @@ describe("class decor inheritance", () => {
             }
 
             function inner<T extends Base>(cls: Class<T>): Class<T> {
-                return middleware<T>(function(this: T, next: Function, args: [number]) {
+                return middleware<T>(function (this: T, next: Function, args: [number]) {
                     SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.firstAfter(this, res);
@@ -189,12 +190,14 @@ describe("class decor inheritance", () => {
             describe('when applied on parent', () => {
                 beforeEach('define classes', () => {
                     const Parent = second(first(makeBaseClass(SPIES.superClassFunction)));
+
                     class _UserClass extends Parent {
                         myMethod(foo: number): number {
                             SPIES.childFunction(this, foo);
                             return ORIGIN_RESULT;
                         }
                     }
+
                     UserClass = _UserClass;
                 });
                 checkClass(sampleTest);
@@ -203,12 +206,14 @@ describe("class decor inheritance", () => {
             describe('when applied on parent of child with other decorations', () => {
                 beforeEach('define classes', () => {
                     const Parent = second(first(makeBaseClass(SPIES.superClassFunction)));
+
                     class _UserClass extends Parent {
                         myMethod(foo: number): number {
                             SPIES.childFunction(this, foo);
                             return ORIGIN_RESULT;
                         }
                     }
+
                     // mix simulates other decorators creating another subclass with no reference to myMethod
                     UserClass = mix(_UserClass);
                 });
@@ -218,6 +223,7 @@ describe("class decor inheritance", () => {
             describe('when apply on child', () => {
                 beforeEach('define classes', () => {
                     const Parent = makeBaseClass(SPIES.superClassFunction);
+
                     @second
                     @first
                     class _UserClass extends Parent {
@@ -226,6 +232,7 @@ describe("class decor inheritance", () => {
                             return ORIGIN_RESULT;
                         }
                     }
+
                     UserClass = _UserClass;
                 });
                 checkClass(sampleTest);
@@ -235,6 +242,7 @@ describe("class decor inheritance", () => {
             describe('when apply on both parent and child', () => {
                 beforeEach('define classes', () => {
                     const Parent = first(makeBaseClass(SPIES.superClassFunction));
+
                     @second
                     class _UserClass extends Parent {
                         myMethod(foo: number): number {
@@ -242,6 +250,7 @@ describe("class decor inheritance", () => {
                             return ORIGIN_RESULT;
                         }
                     }
+
                     UserClass = _UserClass;
                 });
                 checkClass(sampleTest);
@@ -251,10 +260,13 @@ describe("class decor inheritance", () => {
             describe('when apply on both parent and child, 2 generations apart', () => {
                 beforeEach('define classes', () => {
                     const Parent = first(makeBaseClass(SPIES.superClassFunction));
+
                     class P1 extends Parent {
                     }
+
                     class P2 extends P1 {
                     }
+
                     @second
                     class _UserClass extends P2 {
                         myMethod(foo: number): number {
@@ -262,6 +274,7 @@ describe("class decor inheritance", () => {
                             return ORIGIN_RESULT;
                         }
                     }
+
                     UserClass = _UserClass;
                 });
                 checkClass(sampleTest);

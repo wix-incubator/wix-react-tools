@@ -8,6 +8,7 @@ class Foo {
     myMethod() {
     }
 }
+
 describe("class decor side-effect", () => {
     const decorate = chain<Foo>(
         onInstance<Foo>(() => undefined),
@@ -20,11 +21,14 @@ describe("class decor side-effect", () => {
     @decorate @decorate @decorate
     class Bar extends Foo {
     }
+
     @decorate @decorate @decorate
     class Biz extends Bar {
     }
+
     class Baz extends Biz {
     }
+
     const NUM_USER_CLASSES = 3; // [Bar, Biz, Baz].length
 
     it("only add one class to heritage per decorated level (2 total)", () => {
@@ -55,6 +59,7 @@ describe("class decor side-effect", () => {
             @after<any>(hooks.spySuper, METHOD)
             class _Super {
             }
+
             Super = _Super;
         });
 
@@ -63,6 +68,7 @@ describe("class decor side-effect", () => {
             class Child1 extends Super {
 
             }
+
             new Super();
             const c1Inst = new Child1();
 
@@ -76,11 +82,13 @@ describe("class decor side-effect", () => {
                     hooks.spy1();
                 }
             }
+
             class Child2 extends Super implements Foo {
                 myMethod() {
                     hooks.spy2();
                 }
             }
+
             const c1Inst = new Child1();
             c1Inst.myMethod();
             expect(hooks.spySuper, 'after c1Inst.myMethod()').to.have.callCount(1);

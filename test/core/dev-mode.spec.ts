@@ -1,5 +1,5 @@
 import {expect} from "test-drive";
-import {devMode, getGlobalConfig, runInContext, overrideGlobalConfig} from "../../src";
+import {devMode, getGlobalConfig, overrideGlobalConfig, runInContext} from "../../src";
 
 declare const process: { env: any };
 

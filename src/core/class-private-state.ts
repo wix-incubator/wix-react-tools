@@ -2,9 +2,11 @@ import {Class} from "./types";
 import {OptionalStateProvider, privateState, StateProvider, unsafe} from "./private-state";
 
 export interface UnsafeClassStateProvider<P = any, T extends Class<object> = Class<object>> extends StateProvider<P, T> {
-    (targetObj: T): P;
-    inherited(targetObj: T): P;
     origin: StateProvider<T, T>;
+
+    (targetObj: T): P;
+
+    inherited(targetObj: T): P;
 }
 
 export interface InheritedClassStateProvider<P, T extends Class<object> = Class<object>> extends OptionalStateProvider<P, T> {
@@ -14,6 +16,7 @@ export interface InheritedClassStateProvider<P, T extends Class<object> = Class<
         origin(targetObj: T): T;
     }
 }
+
 /**
  * provides a private state for a supplied class. initializes a new state if none exists.
  * @param targetObj object to which the private state is affiliated.
@@ -30,7 +33,7 @@ export function classPrivateState<P = any, T extends Class<object> = Class<objec
     return result;
 }
 
-export function getInheritedState<P, T extends Class<object>>(provider: StateProvider<P, T>, clazz: T): P | null{
+export function getInheritedState<P, T extends Class<object>>(provider: StateProvider<P, T>, clazz: T): P | null {
     while (clazz as Class<object> !== Object) {
         if (provider.hasState(clazz)) {
             return provider(clazz);

@@ -7,6 +7,7 @@ describe('middleware, before, after', () => {
     afterEach("reset console.warn", () => {
         spy.reset();
     });
+
     function middlewareHook(this: any, next: (...args: any[]) => any, methodArguments: any[]) {
         spy();
         return next(...methodArguments);
@@ -28,6 +29,7 @@ describe('middleware, before, after', () => {
             class Logger {
                 myMethod: () => void;
             }
+
             const logger = new Logger();
             logger.myMethod();
             expect(spy).to.have.callCount(1);
@@ -37,6 +39,7 @@ describe('middleware, before, after', () => {
             class Logger {
                 myMethod: () => void;
             }
+
             const logger = new Logger();
             logger.myMethod();
             expect(spy).to.have.callCount(1);
@@ -46,6 +49,7 @@ describe('middleware, before, after', () => {
             class Logger {
                 myMethod: () => void;
             }
+
             const logger = new Logger();
             logger.myMethod();
             expect(spy).to.have.callCount(1);
@@ -58,6 +62,7 @@ describe('middleware, before, after', () => {
             class Logger {
                 myMethod: () => void;
             }
+
             const logger = new Logger();
             expect(logger.myMethod).to.equal(undefined);
         });
@@ -66,6 +71,7 @@ describe('middleware, before, after', () => {
             class Logger {
                 myMethod: () => void;
             }
+
             const logger = new Logger();
             expect(logger.myMethod).to.equal(undefined);
         });
@@ -74,6 +80,7 @@ describe('middleware, before, after', () => {
             class Logger {
                 myMethod: () => void;
             }
+
             const logger = new Logger();
             expect(logger.myMethod).to.equal(undefined);
         });
@@ -86,6 +93,7 @@ describe('middleware, before, after', () => {
                 myMethod() {
                 };
             }
+
             const logger = new Logger();
             logger.myMethod();
             expect(spy).to.have.callCount(1);
@@ -96,6 +104,7 @@ describe('middleware, before, after', () => {
                 myMethod() {
                 };
             }
+
             const logger = new Logger();
             logger.myMethod();
             expect(spy).to.have.callCount(1);
@@ -106,6 +115,7 @@ describe('middleware, before, after', () => {
                 myMethod() {
                 };
             }
+
             const logger = new Logger();
             logger.myMethod();
             expect(spy).to.have.callCount(1);

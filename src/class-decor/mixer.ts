@@ -1,7 +1,7 @@
 import {Class, Instance} from "../core/types";
 import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
 import {initEdgeClass} from "./apply-method-decorations";
-import {AfterHook, BeforeHook, MiddlewareHook, FunctionMetaData} from "../functoin-decor/index";
+import {AfterHook, BeforeHook, FunctionMetaData, MiddlewareHook} from "../functoin-decor/index";
 
 type DumbClass = new(...args: any[]) => object;
 
@@ -34,6 +34,7 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C {
         // https://github.com/wix/react-bases/issues/10
         return clazz;
     }
+
     class Extended extends (clazz as any as DumbClass) {
         static isMixed: boolean = true;
         static readonly $mixerData: MixerData<T>;
@@ -44,6 +45,7 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C {
                 .visitConstructorHooks((cb: ConstructorHook<Instance<T>>) => cb.call(this as any as T, args));
         }
     }
+
     // initialize mixer data on Extended
     getMixerData(Extended);
     return Extended as any;
@@ -53,10 +55,6 @@ export class List<T> {
     private items: T[] = [];
 
     constructor(protected superList: List<T> | null) {
-    }
-
-    private has(hook: T): boolean {
-        return Boolean(~this.items.indexOf(hook) || (this.superList && this.superList.has(hook)));
     }
 
     add(hook: T) {
@@ -69,6 +67,10 @@ export class List<T> {
         const result: T[] = [];
         this.collectInternal(result);
         return result;
+    }
+
+    private has(hook: T): boolean {
+        return Boolean(~this.items.indexOf(hook) || (this.superList && this.superList.has(hook)));
     }
 
     private collectInternal(collector: T[]) {
@@ -95,6 +97,7 @@ type Hooks = {
 function onClassInit(this: object) {
     initEdgeClass(this.constructor as Class<object>);
 }
+
 export class MixerData<T extends object> {
     private superData: MixerData<Partial<T>> | null;
     private constructorHooks: ConstructorHook<T>[] = [];
@@ -109,6 +112,46 @@ export class MixerData<T extends object> {
             // if this is the first class in the hierarchy to be mixed
             this.addConstructorHook(onClassInit);
         }
+    }
+
+    hookedMethodNames(): Array<keyof T> {
+        return this.methodNames.collect();
+    }
+
+    getMethodHooks(methodName: keyof T): FunctionMetaData | null {
+        const before = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].before);
+        const after = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].after);
+        const middleware = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].middleware);
+        if (before || after || middleware) {
+            return {
+                name: methodName,
+                before: before && before.collect(),
+                after: after && after.collect().reverse(),
+                middleware: middleware && middleware.collect()
+            }
+        } else {
+            return null;
+        }
+    }
+
+    addConstructorHook(hook: ConstructorHook<T>) {
+        this.constructorHooks.push(hook);
+    }
+
+    visitConstructorHooks(visitor: (value: ConstructorHook<T>) => void) {
+        this.constructorHooks && this.constructorHooks.forEach(visitor);
+    }
+
+    addBeforeHook(hook: BeforeHook<T>, methodName: keyof T) {
+        this.addToList('before', methodName, hook);
+    }
+
+    addAfterHook(hook: AfterHook<any, T>, methodName: keyof T) {
+        this.addToList('after', methodName, hook);
+    }
+
+    addMiddlewareHook(hook: MiddlewareHook<any, T>, methodName: keyof T) {
+        this.addToList('middleware', methodName, hook);
     }
 
     /**
@@ -137,45 +180,5 @@ export class MixerData<T extends object> {
             this.functions[key][name] = result as any;
         }
         result.add(hook);
-    }
-
-    hookedMethodNames(): Array<keyof T> {
-        return this.methodNames.collect();
-    }
-
-    getMethodHooks(methodName: keyof T): FunctionMetaData | null {
-        const before = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].before);
-        const after = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].after);
-        const middleware = this.getInherited((toCheck: MixerData<any>) => toCheck.functions[methodName] && toCheck.functions[methodName].middleware);
-        if (before || after || middleware) {
-            return {
-                name : methodName,
-                before: before && before.collect(),
-                after: after && after.collect().reverse(),
-                middleware: middleware && middleware.collect()
-            }
-        } else {
-            return null;
-        }
-    }
-
-    addConstructorHook(hook: ConstructorHook<T>) {
-        this.constructorHooks.push(hook);
-    }
-
-    visitConstructorHooks(visitor: (value: ConstructorHook<T>) => void) {
-        this.constructorHooks && this.constructorHooks.forEach(visitor);
-    }
-
-    addBeforeHook(hook: BeforeHook<T>, methodName: keyof T) {
-        this.addToList('before', methodName, hook);
-    }
-
-    addAfterHook(hook: AfterHook<any, T>, methodName: keyof T) {
-        this.addToList('after', methodName, hook);
-    }
-
-    addMiddlewareHook(hook: MiddlewareHook<any, T>, methodName: keyof T) {
-        this.addToList('middleware', methodName, hook);
     }
 }

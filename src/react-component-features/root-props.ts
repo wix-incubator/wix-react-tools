@@ -12,7 +12,8 @@ export interface ComponentProps {
 export interface JSComponentProps extends ComponentProps {
     [k: string]: any;
 }
-const copyAttributes : {[k:string]:any}= {
+
+const copyAttributes: { [k: string]: any } = {
     'aria-label': true,
     'aria-labelledby': true,
     'aria-describedby': true

@@ -34,6 +34,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
         args.elementProps['data-bar'] = 'bar';
         return args;
     }
+
     const fooDecorator = onEachElement(fooHook);
     const barDecorator = onEachElement(barHook);
 
@@ -45,6 +46,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
                 return <div data-automation-id="1"/>
             }
         }
+
         expect(reactDecor.isWrapped(MyComp)).to.eql(true);
         expect(reactDecor.isWrapped(MyComp, fooDecorator)).to.eql(true);
         expect(reactDecor.isWrapped(MyComp, barDecorator)).to.eql(true);

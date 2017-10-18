@@ -3,7 +3,7 @@ import {createGenerator} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
-import {makeClassComponent, testWithBothComponentTypes} from "../test-drivers/test-tools";
+import {testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {runInContext} from "../../src/core/config";
 import {devMode} from "../../src/core/dev-mode";
 
@@ -19,9 +19,9 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @properties (r
         `);
 
     const clientRenderer = new ClientRenderer();
-    afterEach(() => runInContext(devMode.OFF,() => clientRenderer.cleanup()));
+    afterEach(() => runInContext(devMode.OFF, () => clientRenderer.cleanup()));
 
-    const comp: React.SFC<properties.Props> = (p: properties.Props) => (<div />);
+    const comp: React.SFC<properties.Props> = (p: properties.Props) => (<div/>);
 
     function suite(component: React.ComponentType<properties.Props>) {
         it('supports empty elements', () => {
@@ -37,7 +37,8 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @properties (r
         it('supports class names', () => {
             const Comp = stylable(runtime)(properties(component));
 
-            const {select, container} = clientRenderer.render(<Comp data-automation-id="Root" className="SomeClass External"> </Comp>);
+            const {select, container} = clientRenderer.render(<Comp data-automation-id="Root"
+                                                                    className="SomeClass External"> </Comp>);
 
             expect(select('Root')).to.have.class(runtime.root);
             expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);

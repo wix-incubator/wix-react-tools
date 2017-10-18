@@ -2,7 +2,7 @@ import {onGlobalConfig, setGlobalConfig} from "./config";
 
 declare const global: any;
 declare const window: any;
-declare let process: {env : {[k:string]: any}};
+declare let process: { env: { [k: string]: any } };
 
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global['global'] === global && global) || window;
@@ -30,7 +30,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // set process.env.NODE_ENV according to global config's devMode flag
 onGlobalConfig('devMode', (newVal: any) => {
-    if (newVal === false){
+    if (newVal === false) {
         process.env.NODE_ENV = 'production';
     } else {
         process.env.NODE_ENV = 'development';

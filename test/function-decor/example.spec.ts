@@ -153,11 +153,11 @@ describe('function-decor documentation examples', () => {
             });
 
             it('copies fields of the function', () => {
-                const func : any = function (){
+                const func: any = function () {
                 };
                 func.foo = 'bar';
 
-                const wrapped : any = decorFunction({})(func);
+                const wrapped: any = decorFunction({})(func);
 
                 expect(wrapped.foo).to.eql(func.foo);
             });

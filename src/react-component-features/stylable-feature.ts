@@ -8,7 +8,7 @@ export const stylable = reactDecor.makeWrapperFactory((sheet: RuntimeStylesheet)
         return sheet.$stylesheet.get(name) || name;
     }
 
-    function stylableElementHook(_props: any, args: ElementArgs<any>, isRoot:boolean): ElementArgs<any> {
+    function stylableElementHook(_props: any, args: ElementArgs<any>, isRoot: boolean): ElementArgs<any> {
         if (typeof args.elementProps.className === 'string') {
             args.elementProps.className = args.elementProps.className.split(' ').map(classNameMapper).join(' ');
         }
@@ -16,7 +16,7 @@ export const stylable = reactDecor.makeWrapperFactory((sheet: RuntimeStylesheet)
         if (cssStates) {
             args.elementProps = {...rest, ...sheet.$stylesheet.cssStates(cssStates)};
         }
-        if (isRoot){
+        if (isRoot) {
             if (args.elementProps.className) {
                 args.elementProps.className = sheet.$stylesheet.get(sheet.$stylesheet.root) + ' ' + args.elementProps.className;
             } else {

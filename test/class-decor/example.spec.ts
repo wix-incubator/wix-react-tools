@@ -44,6 +44,7 @@ describe('class-decor documentation examples', () => {
                     console.log('inited logger: ' + name);
                 }
             }
+
             const logger = new Logger('MyLogger');
             expectUnorderedLog(
                 `inited logger: MyLogger`,
@@ -69,6 +70,7 @@ describe('class-decor documentation examples', () => {
                     return 'message printed: ' + text;
                 }
             }
+
             const logger = new Logger();
             const result = logger.printMessage('hello');
             expectLog(
@@ -94,6 +96,7 @@ describe('class-decor documentation examples', () => {
                     return 'message printed: ' + text;
                 }
             }
+
             const logger = new Logger();
             const result = logger.printMessage('hello');
             expectLog(
@@ -140,6 +143,7 @@ describe('class-decor documentation examples', () => {
             class Logger {
                 printMessage: (text: string) => string;
             }
+
             const logger = new Logger();
             const result = logger.printMessage('hello');
             expectLog(
@@ -162,8 +166,9 @@ describe('class-decor documentation examples', () => {
                 }
             })
             class Logger {
-                printMessage : string;
+                printMessage: string;
             }
+
             const logger = new Logger();
             logger.printMessage = 'hello';
             expectLog(

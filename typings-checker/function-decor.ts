@@ -1,4 +1,4 @@
-import {before, middleware, after, decorFunction} from "../dist/src/index";
+import {after, before, decorFunction, middleware} from "../dist/src/index";
 
 declare function original(text: string): string;
 

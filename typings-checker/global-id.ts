@@ -1,7 +1,6 @@
-import * as React from "react";
-import { globalId } from "../dist/src/index";
+import {globalId} from "../dist/src/index";
 
-const { getRootId, getLocalId } = globalId;
+const {getRootId, getLocalId} = globalId;
 
 describe('Global ID', () => {
     describe('getRootId', () => {
@@ -15,10 +14,10 @@ describe('Global ID', () => {
 
         it('throws an error when passed a props object without id', () => {
 // $ExpectError Argument of type '{}' is not assignable to parameter of type 'Identifiable'.
-           getRootId({});
+            getRootId({});
 
 // $ExpectError Argument of type 'never[]' is not assignable to parameter of type 'Identifiable'.
-           getRootId([]);
+            getRootId([]);
         });
     });
 

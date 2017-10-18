@@ -68,6 +68,7 @@ export function makeClassComponent<P>(sfc: React.SFC<P>) {
 }
 
 export type StateAgnosticTestSuite = (Comp: React.ComponentType) => void;
+
 export function testWithBothComponentTypes(sfc: React.SFC, suite: StateAgnosticTestSuite) {
     describe('SFC', () => {
         suite(sfc);

@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {after, GlobalConfig, middleware, runInContext, devMode} from "../../src";
+import {after, devMode, middleware, runInContext} from "../../src";
 
 
 // TODO: change tests to function-decor style (instead of class decor) and make them pass
@@ -21,6 +21,7 @@ describe("class-decor dev mode warnings", () => {
                     return {};
                 }
             }
+
             const inst = new Foo();
 
             const res = inst.returnsValue();
@@ -50,6 +51,7 @@ describe("class-decor dev mode warnings", () => {
             class Duck {
                 duckWillQuack: () => void;
             }
+
             let duck = new Duck();
 
             runInContext(devMode.ON, () => {
@@ -68,6 +70,7 @@ describe("class-decor dev mode warnings", () => {
             class Duck {
                 duckWillQuack: () => void;
             }
+
             let duck = new Duck();
 
             runInContext(devMode.ON, () => {
@@ -83,6 +86,7 @@ describe("class-decor dev mode warnings", () => {
             class Duck {
                 duckWillQuack: () => void;
             }
+
             let duck = new Duck();
 
             runInContext(devMode.OFF, () => {

@@ -1,4 +1,4 @@
-import {chainFunctions, Chain} from "../../src";
+import {chainFunctions} from "../../src";
 import {expect, sinon} from "test-drive-react";
 
 // make a new function

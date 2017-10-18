@@ -6,7 +6,7 @@ import {privateState, StateProvider} from "../core/private-state";
  * designed for internal use of other features.
  * do not use without disposable feature otherwise disposers will not be cleaned up.
  */
-export const privateDisposers: StateProvider<Disposers> = privateState('disposers', ()=> new Disposers());
+export const privateDisposers: StateProvider<Disposers> = privateState('disposers', () => new Disposers());
 
 export namespace disposable {
     /**
@@ -18,8 +18,8 @@ export namespace disposable {
 }
 
 export const disposable = chain<disposable.This>(
-    after<disposable.This>(function( methodReturn){
-        if (privateDisposers.hasState(this)){
+    after<disposable.This>(function (methodReturn) {
+        if (privateDisposers.hasState(this)) {
             privateDisposers(this).disposeAll();
         }
         return methodReturn;
