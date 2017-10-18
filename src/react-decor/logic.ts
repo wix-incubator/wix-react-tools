@@ -23,7 +23,7 @@ export function reactDecorWrapper<T extends ComponentType>(target: T, _args: Dec
     return Wrapped;
 }
 
-export const reactDecor = new InheritedWrapApi<DecorReacWrapArguments<any>, ComponentType>('react-decor', reactDecorWrapper, reactDecorMetadataMerge);
+export const reactDecor = new InheritedWrapApi<DecorReacWrapArguments<any>, ComponentType<any>>('react-decor', reactDecorWrapper, reactDecorMetadataMerge);
 
 function beforeRender(this: any, args: [object, any], wrappedRender: Function): [object, any] {
     if (React.createElement !== wrappedCreateElement) {
