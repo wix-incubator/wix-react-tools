@@ -1,4 +1,4 @@
-import {chainFunctions} from "../../src";
+import {serialize} from "../../src";
 import {expect, sinon} from "test-drive-react";
 
 // make a new function
@@ -10,12 +10,12 @@ function func() {
 
 const ARGS = [1, 2, 3];
 
-describe("chainFunctions", () => {
+describe("serialize", () => {
 
     it('calls the two handlers with the arguments provided', () => {
         const spy1 = sinon.spy();
         const spy2 = sinon.spy();
-        const merged = chainFunctions(spy1, spy2);
+        const merged = serialize(spy1, spy2);
 
         // not call handlers in merging phase
         expect(spy1).to.have.callCount(0);
@@ -33,14 +33,14 @@ describe("chainFunctions", () => {
         const f1 = func();
         const f2 = func();
 
-        expect(chainFunctions(f1, f2)).to.not.equal(chainFunctions(f1, f2)); // notice the use of .equal and *not* .eql
+        expect(serialize(f1, f2)).to.not.equal(serialize(f1, f2)); // notice the use of .equal and *not* .eql
     });
 
     describe(".cached", () => {
         it('calls the two handlers with the arguments provided', () => {
             const spy1 = sinon.spy();
             const spy2 = sinon.spy();
-            const merged = chainFunctions.cached(spy1, spy2);
+            const merged = serialize.cached(spy1, spy2);
 
             // not call handlers in merging phase
             expect(spy1).to.have.callCount(0);
@@ -57,18 +57,18 @@ describe("chainFunctions", () => {
             const f1 = func();
             const f2 = func();
 
-            expect(chainFunctions.cached(f1, f2)).to.equal(chainFunctions.cached(f1, f2)); // notice the use of .equal and *not* .eql
+            expect(serialize.cached(f1, f2)).to.equal(serialize.cached(f1, f2)); // notice the use of .equal and *not* .eql
         });
 
         it('not use cache for different order of same arguments', () => {
             const f1 = func();
             const f2 = func();
 
-            expect(chainFunctions.cached(f1, f2)).to.not.equal(chainFunctions.cached(f2, f1)); // notice the use of .equal and *not* .eql
+            expect(serialize.cached(f1, f2)).to.not.equal(serialize.cached(f2, f1)); // notice the use of .equal and *not* .eql
         });
 
         it('not use cache for different arguments', () => {
-            expect(chainFunctions.cached(func(), func())).to.not.equal(chainFunctions.cached(func(), func())); // notice the use of .equal and *not* .eql
+            expect(serialize.cached(func(), func())).to.not.equal(serialize.cached(func(), func())); // notice the use of .equal and *not* .eql
         });
     });
 });

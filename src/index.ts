@@ -21,6 +21,7 @@ export * from './react-decor/index';
 export {disposable} from './react-component-features/disposable-feature';
 export * from './react-component-features/properties-feature';
 export * from './react-component-features/stylable-feature';
+export {chain} from "./core/functional";
 // customized exports:
 import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./functoin-decor/index";
 import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./class-decor/index";

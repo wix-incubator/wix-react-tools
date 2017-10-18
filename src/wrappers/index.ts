@@ -13,7 +13,7 @@ export interface Metadata<A, T extends object> {
 
 export type InternalWrapper<A, T extends object> = <T1 extends T>(target: T1, args: A) => T1;
 
-export type Wrapper<T extends object> = <T1 extends T>(func: T1) => T1
+export type Wrapper<T extends object> = <T1 extends T>(subj: T1) => T1
 
 /**
  * an instance of this class is a wrapping API for a specific domain

@@ -1,6 +1,7 @@
 import {Disposers} from "../core/disposers";
-import {after, chain, defineProperties} from "../class-decor";
+import {after, defineProperties} from "../class-decor";
 import {privateState, StateProvider} from "../core/private-state";
+import {chain} from "../core/functional";
 
 /**
  * designed for internal use of other features.

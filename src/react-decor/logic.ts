@@ -3,8 +3,9 @@ import {DecorReacWrapArguments, isReactClassComponent, resetReactCreateElement, 
 import {InheritedWrapApi} from "../wrappers/index";
 import {context, wrappedCreateElement} from "./monkey-patches";
 import {decorFunction} from "../functoin-decor/index";
-import {after, before, chain} from "../class-decor/index";
+import {after, before} from "../class-decor/index";
 import React = require('react');
+import {chain} from "../core/functional";
 
 export function reactDecorMetadataMerge(md1: DecorReacWrapArguments<any>, md2: DecorReacWrapArguments<any>): DecorReacWrapArguments<any> {
     return {
