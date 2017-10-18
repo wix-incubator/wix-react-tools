@@ -56,7 +56,9 @@ export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): 
     return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
 }
 
-export type Wrapper<P extends object> = <T extends ComponentType<P>>(comp: T) => T
+export type Wrapper<P extends object> = {
+    <T extends ComponentType<P>>(comp: T):T;
+}
 
 export interface StatefulElementHook<P extends object, T extends Component<P> = Component<P>> {
     rootOnly?:boolean;
