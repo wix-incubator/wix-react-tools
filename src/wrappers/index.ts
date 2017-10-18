@@ -64,6 +64,7 @@ export class WrapApi<A, T extends object> {
             // TODO: if wrapperSymbols (and / or wrapperArgs?) are same as before, return subj (it's already wrapped correctly). opt out (force unique wrapping) with metadata flag.
         }
         const wrapped = this.wrapper(subj, wrapperArgs);
+        // TODO if wrapped === subj, continue? should be declarative configurable?
         const metadata = this.metadataProvider(wrapped);
         metadata.original = subj;
         metadata.symbols = wrapperSymbols;
