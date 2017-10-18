@@ -29,24 +29,22 @@ export const reactDecor = new InheritedWrapApi<DecorReacWrapArguments<any>, Comp
 function beforeRender(this: any, args: [object, any], wrappedRender: Function): [object, any] {
     if (React.createElement !== wrappedCreateElement) {
         const isClass = this && this.render === wrappedRender;
-        const metadata = reactDecor.getMetadata(isClass ? this.constructor : wrappedRender);
-        if (metadata) {
+        const wrapperArgs = reactDecor.getWrapperArgs(isClass ? this.constructor : wrappedRender);
+        if (wrapperArgs) {
             context.componentInstance = this;
             context.createArgsMap.clear();
-            context.hooks = isClass ? metadata.wrapperArgs.classHooks : metadata.wrapperArgs.statelessHooks;
+            context.hooks = isClass ? wrapperArgs.classHooks : wrapperArgs.statelessHooks;
             context.componentProps = args[0] || this.props; // args[0] for props in a functional react component
             React.createElement = wrappedCreateElement;
         } else {
-            throw new Error('how comes no metadata?');
+            throw new Error('how comes no wrapperArgs?');
         }
     }
     return args;
 }
 
-function afterRender<P extends {}>(this: any, renderResult: ReactElement<P>, wrappedRender: SFC): ReactElement<P> {
-    const isClass = this && this.render === wrappedRender;
-    const metadata = reactDecor.getMetadata(isClass ? this.constructor : wrappedRender);
-    if (metadata && renderResult && context.hooks) {
+function afterRender<P extends {}>(this: any, renderResult: ReactElement<P>): ReactElement<P> {
+    if (renderResult && context.hooks) {
         let rootElementArgs = context.createArgsMap.get(renderResult);
         if (rootElementArgs) {
             for (let i = 0; i < context.hooks.length; i++) {

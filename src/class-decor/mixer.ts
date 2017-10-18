@@ -21,6 +21,7 @@ function getSuper<T extends object, C extends T = T>(c: Class<C>): Class<T> {
 }
 
 const getMixerData = classPrivateState<MixerData<Instance<object>>>('mixer data', <T extends Instance<object>>(c: Class<T>) => {
+    // one time per wrapping class
     const superClass = getSuper<T>(c);
     return new MixerData<T>(superClass);
 }) as MixerDataProvider;
@@ -36,13 +37,9 @@ export function mix<T extends object, C extends Class<T>>(clazz: C): C {
     }
 
     class Extended extends (clazz as any as DumbClass) {
-        static isMixed: boolean = true;
-        static readonly $mixerData: MixerData<T>;
-
         constructor(...args: any[]) {
             super(...args);
-            getMixerData(Extended)
-                .visitConstructorHooks((cb: ConstructorHook<Instance<T>>) => cb.call(this as any as T, args));
+            getMixerData(Extended).visitConstructorHooks((cb: ConstructorHook<Instance<T>>) => cb.call(this as any as T, args));
         }
     }
 

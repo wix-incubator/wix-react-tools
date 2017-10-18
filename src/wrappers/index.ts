@@ -103,7 +103,15 @@ export class WrapApi<A, T extends object> {
         return null;
     }
 
-    getMetadata(subj: T): Metadata<A, T> | null {
+    getWrapperArgs(subj: T): A | null {
+        const metadata = this.getMetadata(subj);
+        if (metadata) {
+            return metadata.wrapperArgs;
+        }
+        return null;
+    }
+
+    protected getMetadata(subj: T): Metadata<A, T> | null {
         if (this.metadataProvider.hasState(subj)) {
             return this.metadataProvider(subj);
         }
@@ -126,7 +134,7 @@ export class InheritedWrapApi<A, T extends object> extends WrapApi<A, T> {
         return super.wrap(wrapperArgs, wrapperSymbols, subj);
     }
 
-    getMetadata(subj: T): Metadata<A, T> | null {
+    protected getMetadata(subj: T): Metadata<A, T> | null {
         if (isAnyClass(subj)) {
             return this.inheritedMetadataProvider(subj);
         } else {
