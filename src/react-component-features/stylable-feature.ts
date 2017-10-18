@@ -1,7 +1,7 @@
 import {RuntimeStylesheet, Stylesheet} from "stylable";
 import {decorateReactComponent} from "../react-decor/index";
 import {decorationReflection} from "../react-decor/react-decor-reflection";
-import {ElementArgs, StatelessElementHook} from "../react-decor/common";
+import {ElementArgs, StatelessElementHook, Wrapper} from "../react-decor/common";
 
 function eachElementHook(sheet: Stylesheet): StatelessElementHook<any> {
     function classNameMapper(name: string) {
@@ -31,7 +31,7 @@ function rootElementHook(sheet: Stylesheet) {
     }
 }
 
-export const stylable = (sheet: RuntimeStylesheet) => {
+export const stylable = (sheet: RuntimeStylesheet):Wrapper<any> => {
     const wrapper = decorateReactComponent({
         onEachElement: [eachElementHook(sheet.$stylesheet)],
         onRootElement: [rootElementHook(sheet.$stylesheet)]
