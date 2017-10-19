@@ -11,7 +11,7 @@ export * from './core/disposers';
 export * from './react-util/global-id';
 
 // js decor
-export * from './class-decor/index';
+export {classDecor, ClassDecorator} from './class-decor/index';
 export * from "./functoin-decor/index";
 
 // react decor
@@ -22,23 +22,3 @@ export {disposable} from './react-component-features/disposable-feature';
 export * from './react-component-features/properties-feature';
 export * from './react-component-features/stylable-feature';
 export {chain} from "./core/functional";
-// customized exports:
-import {after as FDAfter, before as FDBefore, middleware as FDMiddleware} from "./functoin-decor/index";
-import {after as CDAfter, before as CDBefore, middleware as CDMiddleware} from "./class-decor/index";
-
-function mergeFuncAndClass<F extends Function, C extends Function>(fDFunc: F, cDFunc: C): F & C {
-    function ApiHook() {
-        if (arguments.length > 1) {
-            return cDFunc.apply(null, arguments);
-        } else {
-            return fDFunc.apply(null, arguments);
-        }
-    }
-
-    Object.setPrototypeOf(ApiHook, cDFunc);
-    return ApiHook as any as F & C;
-}
-
-export const before = mergeFuncAndClass(FDBefore, CDBefore);
-export const after = mergeFuncAndClass(FDAfter, CDAfter);
-export const middleware = mergeFuncAndClass(FDMiddleware, CDMiddleware);

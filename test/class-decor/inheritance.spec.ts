@@ -1,7 +1,6 @@
 import {expect, sinon} from "test-drive-react";
-import {after, before, chain, Class, ClassDecorator, middleware, onInstance} from "../../src";
+import {after, before, chain, Class, classDecor, ClassDecorator, middleware} from "../../src";
 import {expectSpyChain, resetAll, spyAll} from "../test-drivers/test-tools";
-import {mix} from "../../src/class-decor/mixer";
 
 const ORIGIN_ARGUMENT = 111;
 const ORIGIN_RESULT = 222;
@@ -44,8 +43,8 @@ describe("class decor inheritance", () => {
 
         it('called on instance creation (direct apply on class)', () => {
 
-            @onInstance<Base>(last)
-            @onInstance<Base>(first)
+            @classDecor.onInstance<Base>(last)
+            @classDecor.onInstance<Base>(first)
             class UserClass extends makeBaseClass() {
                 constructor(myNumber: number) {
                     expect(first).to.have.callCount(0);
@@ -59,7 +58,7 @@ describe("class decor inheritance", () => {
         });
         it('when applied on parent class, called on instance creation before user code constructor', () => {
 
-            const decorate = chain(onInstance<Base>(first), onInstance<Base>(last));
+            const decorate = chain(classDecor.onInstance<Base>(first), classDecor.onInstance<Base>(last));
 
             class UserClass extends decorate(makeBaseClass()) {
                 constructor(myNumber: number) {
@@ -103,24 +102,23 @@ describe("class decor inheritance", () => {
         describe("priority", () => {
 
             function beforeAfterDecor<T extends Base>(cls: Class<T>): Class<T> {
-                return chain(
-                    before<T>(function (this: T, args: [number]) {
+                return classDecor.method<T>(METHOD, before(function (this: T, args: [number]) {
                         SPIES.firstBefore(this, args);
                         return [args[0] + 1]
-                    }, METHOD),
-                    after<T>(function (this: T, result: number) {
+                    }),
+                    after(function (this: T, result: number) {
                         SPIES.lastAfter(this, result);
                         return result + 1;
-                    }, METHOD))(cls);
+                    }))(cls);
             }
 
             function middlewareDecor<T extends Base>(cls: Class<T>): Class<T> {
-                return middleware<T>(function (this: T, next: Function, args: [number]) {
+                return classDecor.method<T>(METHOD, middleware(function (this: T, next: Function, args: [number]) {
                     SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.firstAfter(this, res);
                     return res + 1;
-                }, METHOD, cls);
+                }))(cls);
             }
 
             describe("before & after wraps middleware when applied first", () => {
@@ -133,52 +131,94 @@ describe("class decor inheritance", () => {
         });
 
         describe("before and after", () => {
+
             function outer<T extends Base>(cls: Class<T>): Class<T> {
-                return chain(
-                    before<T>(function (this: T, args: [number]) {
+                return classDecor.method<T>(METHOD, before(function (this: T, args: [number]) {
                         SPIES.firstBefore(this, args);
                         return [args[0] + 1]
-                    }, METHOD),
-                    after<T>(function (this: T, result: number) {
+                    }),
+                    after(function (this: T, result: number) {
                         SPIES.lastAfter(this, result);
                         return result + 1;
-                    }, METHOD))(cls);
+                    }))(cls);
             }
 
             function inner<T extends Base>(cls: Class<T>): Class<T> {
-                return chain(
-                    before<T>(function (this: T, args: [number]) {
+                return classDecor.method<T>(METHOD, before(function (this: T, args: [number]) {
                         SPIES.lastBefore(this, args);
                         return [args[0] + 1]
-                    }, METHOD),
-                    after<T>(function (this: T, result: number) {
+                    }),
+                    after(function (this: T, result: number) {
                         SPIES.firstAfter(this, result);
                         return result + 1;
-                    }, METHOD))(cls);
+                    }))(cls);
             }
+
+            //
+            // function outer<T extends Base>(cls: Class<T>): Class<T> {
+            //     return chain(
+            //         before<T>(function (this: T, args: [number]) {
+            //             SPIES.firstBefore(this, args);
+            //             return [args[0] + 1]
+            //         }, METHOD),
+            //         after<T>(function (this: T, result: number) {
+            //             SPIES.lastAfter(this, result);
+            //             return result + 1;
+            //         }, METHOD))(cls);
+            // }
+            // function inner<T extends Base>(cls: Class<T>): Class<T> {
+            //     return chain(
+            //         before<T>(function (this: T, args: [number]) {
+            //             SPIES.lastBefore(this, args);
+            //             return [args[0] + 1]
+            //         }, METHOD),
+            //         after<T>(function (this: T, result: number) {
+            //             SPIES.firstAfter(this, result);
+            //             return result + 1;
+            //         }, METHOD))(cls);
+            // }
 
             // first is outer, last is inner
             checkDecorationStyles(outer, inner);
         });
 
         describe("middleware", () => {
+
             function outer<T extends Base>(cls: Class<T>): Class<T> {
-                return middleware<T>(function (this: T, next: Function, args: [number]) {
+                return classDecor.method<T>(METHOD, middleware(function (this: T, next: Function, args: [number]) {
                     SPIES.firstBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.lastAfter(this, res);
                     return res + 1;
-                }, METHOD, cls);
+                }))(cls);
             }
 
             function inner<T extends Base>(cls: Class<T>): Class<T> {
-                return middleware<T>(function (this: T, next: Function, args: [number]) {
+                return classDecor.method<T>(METHOD, middleware(function (this: T, next: Function, args: [number]) {
                     SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.firstAfter(this, res);
                     return res + 1;
-                }, METHOD, cls);
+                }))(cls);
             }
+            //
+            // function outer<T extends Base>(cls: Class<T>): Class<T> {
+            //     return middleware<T>(function (this: T, next: Function, args: [number]) {
+            //         SPIES.firstBefore(this, args);
+            //         const res = next([args[0] + 1]);
+            //         SPIES.lastAfter(this, res);
+            //         return res + 1;
+            //     }, METHOD, cls);
+            // }
+            //
+            // function inner<T extends Base>(cls: Class<T>): Class<T> {
+            //     return middleware<T>(function (this: T, next: Function, args: [number]) {
+            //         SPIES.lastBefore(this, args);
+            //         const res = next([args[0] + 1]);
+            //         SPIES.firstAfter(this, res);
+            //         return res + 1;
+            //     }, METHOD, cls);
+            // }
 
             // first  is outer, last is inner
             checkDecorationStyles(outer, inner);
@@ -214,8 +254,8 @@ describe("class decor inheritance", () => {
                         }
                     }
 
-                    // mix simulates other decorators creating another subclass with no reference to myMethod
-                    UserClass = mix(_UserClass);
+                    // simulate other decorators with no reference to myMethod
+                    UserClass = classDecor.onInstance(()=>{})(_UserClass);
                 });
                 checkClass(sampleTest);
             });

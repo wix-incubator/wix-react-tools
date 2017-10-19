@@ -1,8 +1,8 @@
-import {Class} from "../core/types";
-import "../core/dev-mode";
+import {Class} from "../../core/types";
+import "../../core/dev-mode";
 import {inheritedMixerData, MixerData} from "./mixer";
-import {classPrivateState} from "../core/class-private-state";
-import {functionDecor, FunctionMetaData} from "../functoin-decor";
+import {classPrivateState} from "../../core/class-private-state";
+import {functionDecor, FunctionMetaData} from "../../functoin-decor";
 
 declare const process: { env: { [k: string]: any } };
 

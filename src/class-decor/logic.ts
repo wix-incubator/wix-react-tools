@@ -1,9 +1,11 @@
-import {InheritedWrapApi, Wrapper} from "../wrappers/index";
-import {ConstructorHook} from "./mixer";
+import {Wrapper} from "../wrappers/index";
 import {Class, TypedPropertyDescriptorMap} from "../core/types";
 import {mergeOptionalArrays} from "../functoin-decor/common";
+import {ClassDecor} from "./index";
 
 export type MethodWrapper = Wrapper<Function>;
+
+export type ConstructorHook<T extends object> = (this: T, constructorArguments: any[]) => void;
 
 export function forceMethod(...wrappers: MethodWrapper[]): MethodWrappers {
     const result: MethodWrappers = wrappers;
@@ -87,11 +89,11 @@ function initializeClass(wrapperArgs: Partial<ClassMetaData>, clazz: Class<any>)
     }
 }
 
-export function classDecorWrapper<T extends Class<object>>(target: T, args: Partial<ClassMetaData>): T {
-    if (classDecor.isWrapped(target)) {
+export function classDecorWrapper<T extends Class<object>>(this : ClassDecor, target: T): T {
+    if (this.isThisWrapped(target)) {
         return target;
     }
-
+    const classDecor = this;
     let initialized = false; // TODO measure if having a flag in parent scope is faster than private-state of `true`
 
     class Extended extends (target as any as DumbClass) {
@@ -119,37 +121,3 @@ export function classDecorWrapper<T extends Class<object>>(target: T, args: Part
     return Extended as any;
 }
 
-
-export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
-
-export class ClassDecor extends InheritedWrapApi<Partial<ClassMetaData>, Class<object>> {
-
-    static readonly instance = new ClassDecor();
-
-    // singleton
-    private constructor(){
-        if (ClassDecor.instance){
-            return ClassDecor.instance;
-        }
-        super('class-decor', classDecorWrapper, mergeClassDecorMetadata);
-    }
-
-    onInstance<T extends object>(hook: ConstructorHook<T>): ClassDecorator<T> {
-        return this.makeWrapper(makeClassDecorMetadata([hook], null, null));
-    }
-
-    method<T extends object, N extends keyof T>(methodName: keyof T, functionDecorator: Wrapper<T[N]>): ClassDecorator<T> {
-        return this.makeWrapper(makeClassDecorMetadata(null, {[methodName] : [functionDecorator]}, null));
-    }
-
-    forceMethod<T extends object, N extends keyof T>(methodName: keyof T, functionDecorator: Wrapper<T[N]>): ClassDecorator<T> {
-        return this.makeWrapper(makeClassDecorMetadata(null, {[methodName] : forceMethod(functionDecorator)}, null));
-    }
-
-    defineProperties<T extends object>(properties: TypedPropertyDescriptorMap<T>): ClassDecorator<T> {
-        return this.makeWrapper(makeClassDecorMetadata(null, null, properties));
-    }
-}
-
-
-export const classDecor = ClassDecor.instance;

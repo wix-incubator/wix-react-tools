@@ -1,84 +1,44 @@
-import {ConstructorHook, inheritedMixerData, mix, unsafeMixerData} from "./mixer";
 import {Class, TypedPropertyDescriptorMap} from "../core/types";
-import {AfterHook, BeforeHook, MiddlewareHook} from "../functoin-decor/index";
+import {InheritedWrapApi, Wrapper} from "../wrappers/index";
+import {
+    classDecorWrapper, ClassMetaData, ConstructorHook, forceMethod, makeClassDecorMetadata,
+    mergeClassDecorMetadata
+} from "./logic";
 
 export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
 
+export class ClassDecor extends InheritedWrapApi<Partial<ClassMetaData>, Class<object>> {
 
-export function onInstance<T extends object>(hook: ConstructorHook<T>): ClassDecorator<T>;
-export function onInstance<T extends object>(hook: ConstructorHook<T>, target: Class<T>): Class<T>;
-export function onInstance<T extends object>(hook: ConstructorHook<T>, target?: Class<T>): Class<T> | ClassDecorator<T> {
-    function curried<T1 extends T>(t: Class<T1>) {
-        const mixed = mix(t);
-        unsafeMixerData(mixed).addConstructorHook(hook);
-        return mixed;
+    static readonly instance = new ClassDecor();
+
+    // singleton
+    private constructor(){
+        if (ClassDecor.instance){
+            return ClassDecor.instance;
+        }
+        super('class-decor', classDecorWrapper, mergeClassDecorMetadata);
     }
 
-    return target ? curried(target) : curried;
+    onInstance<T extends object>(hook: ConstructorHook<T>): ClassDecorator<T> {
+        return this.makeWrapper(makeClassDecorMetadata([hook], null, null));
+    }
+
+    method<T extends object , N extends keyof T = any>(methodName: N, ...functionDecorators: Array<Wrapper<T[N]>>): ClassDecorator<T> {
+        return this.makeWrapper(makeClassDecorMetadata(null, {[methodName] : functionDecorators}, null));
+    }
+
+    forceMethod<T extends object, N extends keyof T = any>(methodName: N, ...functionDecorators: Array<Wrapper<T[N]>>): ClassDecorator<T> {
+        return this.makeWrapper(makeClassDecorMetadata(null, {[methodName] : forceMethod(...functionDecorators)}, null));
+    }
+
+    defineProperty<T extends object, N extends keyof T = any>(propName: N, property: TypedPropertyDescriptor<T[N]>): ClassDecorator<T> {
+        return this.makeWrapper(makeClassDecorMetadata(null, null, {[propName] : property}));
+    }
+
+    defineProperties<T extends object>(properties: TypedPropertyDescriptorMap<T>): ClassDecorator<T> {
+        return this.makeWrapper(makeClassDecorMetadata(null, null, properties));
+    }
 }
 
-export function defineProperties<T extends object>(properties: TypedPropertyDescriptorMap<T>): ClassDecorator<T>;
-export function defineProperties<T extends object, T1 extends T>(properties: TypedPropertyDescriptorMap<T>, target: Class<T1>): Class<T1>;
-export function defineProperties<T extends object, T1 extends T>(properties: TypedPropertyDescriptorMap<T>, target?: Class<T1>): Class<T1> | ClassDecorator<T> {
-    function curried<T1 extends T>(t: Class<T1>) {
-        const mixed = mix(t);
-        Object.defineProperties(mixed.prototype, properties);
-        return mixed;
-    }
+export const classDecor = ClassDecor.instance;
 
-    return target ? curried(target) : curried;
-}
-
-export type MethodDecoratorApi<T extends Function> = T & {
-    ifExists: T;
-}
-
-// This method assumes originDecorator accepts the hook as first argument
-function addIfExists<T extends Function>(originDecorator: T): MethodDecoratorApi<T> {
-    const result = originDecorator as MethodDecoratorApi<T>;
-    result.ifExists = function ifExists(...args: any[]) {
-        const hook = args[0];
-        hook.ifExists = true;
-        return originDecorator(...args);
-    } as Function as  T;
-    return result;
-}
-
-export const middleware = addIfExists(function middleware<T extends object>(hook: MiddlewareHook<any, T>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
-    function curried<T1 extends T>(t: Class<T1>) {
-        const mixed = mix<T1, Class<T1>>(t);
-        inheritedMixerData.unsafe(mixed).addMiddlewareHook(hook, methodName);
-        return mixed;
-    }
-
-    return target ? curried(target) : curried;
-} as MethodDecoratorApi<{
-    <T extends object>(hook: MiddlewareHook<any, T>, methodName: keyof T): ClassDecorator<T>;
-    <T extends object>(hook: MiddlewareHook<any, T>, methodName: keyof T, target: Class<T>): Class<T>;
-}>);
-
-export const before = addIfExists(function before<T extends object>(hook: BeforeHook<T>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
-    function curried<T1 extends T>(t: Class<T1>): Class<T1> {
-        const mixed = mix<T1, Class<T1>>(t);
-        inheritedMixerData.unsafe(mixed).addBeforeHook(hook, methodName);
-        return mixed;
-    }
-
-    return target ? curried(target) : curried;
-} as MethodDecoratorApi<{
-    <T extends object>(hook: BeforeHook<T>, methodName: keyof T): ClassDecorator<T>;
-    <T extends object>(hook: BeforeHook<T>, methodName: keyof T, target: Class<T>): Class<T>;
-}>);
-
-export const after = addIfExists(function after<T extends object>(hook: AfterHook<any, T>, methodName: keyof T, target?: Class<T>): Class<T> | ClassDecorator<T> {
-    function curried<T1 extends T>(t: Class<T1>) {
-        const mixed = mix<T1, Class<T1>>(t);
-        inheritedMixerData.unsafe(mixed).addAfterHook(hook, methodName);
-        return mixed;
-    }
-
-    return target ? curried(target) : curried;
-} as MethodDecoratorApi<{
-    <T extends object>(hook: AfterHook<any, T>, methodName: keyof T): ClassDecorator<T>;
-    <T extends object>(hook: AfterHook<any, T>, methodName: keyof T, target: Class<T>): Class<T>;
-}>);

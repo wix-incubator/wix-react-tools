@@ -2,8 +2,8 @@ import {cloneElement, Component, ComponentType, ReactElement} from "react";
 import {DecorReacWrapArguments, isReactClassComponent, resetReactCreateElement, translateName} from "./common";
 import {InheritedWrapApi} from "../wrappers/index";
 import {context, wrappedCreateElement} from "./monkey-patches";
-import {decorFunction} from "../functoin-decor/index";
-import {after, before} from "../class-decor/index";
+import {decorFunction, before, after} from "../functoin-decor/index";
+import {classDecor} from "../class-decor/index";
 import {chain} from "../core/functional";
 import React = require('react');
 
@@ -64,10 +64,7 @@ const rawRenderDecorator = decorFunction({
     before: [beforeRender],
     after: [afterRender]
 });
-// TODO class decor should accept a function wrapper
-const rawCompClassDecorator = chain<Component>(
-    before<Component>(beforeRender, 'render'),
-    after<Component>(afterRender, 'render')
-);
+const rawCompClassDecorator = classDecor.method<Component>('render', rawRenderDecorator);
+
 const renderDecorator = process.env.NODE_ENV === 'production' ? rawRenderDecorator : translateName(rawRenderDecorator);
 const classDecorator = process.env.NODE_ENV === 'production' ? rawCompClassDecorator : translateName(rawCompClassDecorator);

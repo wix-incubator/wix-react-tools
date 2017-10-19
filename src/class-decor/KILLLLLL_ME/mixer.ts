@@ -1,7 +1,7 @@
-import {Class, Instance} from "../core/types";
-import {classPrivateState, ClassStateProvider} from "../core/class-private-state";
+import {Class, Instance} from "../../core/types";
+import {classPrivateState, ClassStateProvider} from "../../core/class-private-state";
 import {initEdgeClass} from "./apply-method-decorations";
-import {AfterHook, BeforeHook, FunctionMetaData, MiddlewareHook} from "../functoin-decor/index";
+import {AfterHook, BeforeHook, FunctionMetaData, MiddlewareHook} from "../../functoin-decor/index";
 
 type DumbClass = new(...args: any[]) => object;
 

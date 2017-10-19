@@ -1,6 +1,7 @@
 import {resetAll, spyAll} from "../test-drivers/test-tools";
-import {after, before, defineProperties, middleware, onInstance} from "../../src";
+import {middleware} from "../../src";
 import {expect} from "test-drive";
+import {classDecor} from "../../src";
 
 describe('class-decor documentation examples', () => {
     let log: string[] = [];
@@ -17,7 +18,7 @@ describe('class-decor documentation examples', () => {
         resetAll(console);
     });
 
-    function expectLog(...lines: Array<string>) {
+    function expectLog(...lines: Array<any>) {
         expect(JSON.stringify(log)).to.eql(JSON.stringify(lines));
         expect(console.log).to.have.callCount(lines.length);
         lines.forEach((val: string, idx: number) => {
@@ -38,7 +39,7 @@ describe('class-decor documentation examples', () => {
                 console.log('called on constructor with "' + constructorArguments[0] + '"');
             }
 
-            @onInstance(init)
+            @classDecor.onInstance(init)
             class Logger {
                 constructor(name: string) {
                     console.log('inited logger: ' + name);
@@ -54,96 +55,63 @@ describe('class-decor documentation examples', () => {
         });
     });
 
-    describe('middleware', () => {
-        it('directly on class', () => {
-            function logMW(this: Logger, next: (n: [string]) => string, methodArguments: [string]) {
-                console.log('called on method with ' + methodArguments[0]);
-                const result: string = next(['goodbye']);
-                console.log(result);
-                return 'wrapped=> ' + result
-            }
+    describe('method', () => {
+        let context: any;
 
-            @middleware<Logger>(logMW, 'printMessage')
+        function logMW(this: any, next: (n: [string]) => string, methodArguments: [string]) {
+            context = this;
+            console.log('called on method with ' + methodArguments[0]);
+            next(['goodbye']);
+        }
+
+        const hook = middleware(logMW);
+
+        it('wraps existing method', () => {
+            @classDecor.method<Logger>('printMessage', hook)
             class Logger {
                 printMessage(text: string) {
                     console.log(text);
-                    return 'message printed: ' + text;
                 }
             }
 
             const logger = new Logger();
-            const result = logger.printMessage('hello');
+            logger.printMessage('hello');
+            expect(context).to.equal(logger);
             expectLog(
                 `called on method with hello`,
-                `goodbye`,
-                `message printed: goodbye`
-            );
-            expect(result).to.eql('wrapped=> message printed: goodbye');
-        });
-    });
-
-    describe('before', () => {
-        it('directly on class', () => {
-            function preMethod(this: Logger, methodArguments: [string]) {
-                console.log('called before method with ' + methodArguments[0]);
-                return ['goodbye'];
-            }
-
-            @before<Logger>(preMethod, 'printMessage')
-            class Logger {
-                printMessage(text: string) {
-                    console.log(text);
-                    return 'message printed: ' + text;
-                }
-            }
-
-            const logger = new Logger();
-            const result = logger.printMessage('hello');
-            expectLog(
-                `called before method with hello`,
                 `goodbye`
             );
-            expect(result).to.eql('message printed: goodbye');
         });
-    });
 
-    describe('after', () => {
-        it('directly on class', () => {
-            function postMethod(this: Logger, methodReturn: string) {
-                console.log(methodReturn);
-                return 'wrapped=> ' + methodReturn;
+        it('with no method (no force)', () => {
+            @classDecor.method<Logger>('printMessage', hook)
+            class Logger {
             }
 
-            @after<Logger>(postMethod, 'printMessage')
+            expect((new Logger() as any).printMessage).to.equal(undefined);
+        });
+
+        it('with no method (force)', () => {
+            @classDecor.forceMethod<Logger>('printMessage', hook)
             class Logger {
-                printMessage(text: string) {
-                    console.log(text);
-                    return 'message printed: ' + text;
-                }
+                // merely define the method in the type system, do not create it
+                printMessage: (text: string) => string;
             }
 
             const logger = new Logger();
-            const result = logger.printMessage('hello');
-            expectLog(
-                `hello`,
-                `message printed: hello`
-            );
-            expect(result).to.eql('wrapped=> message printed: hello');
+            logger.printMessage('hello');
+            expect(context).to.equal(logger);
+            expectLog(`called on method with hello`);
         });
     });
 
-    describe('defineProperties', () => {
+    describe('define properties', () => {
         it('directly on class', () => {
             function printMessage(text: string) {
                 console.log(text);
-                return 'message printed: ' + text;
             }
 
-            @defineProperties({
-                printMessage: {
-                    set: printMessage,
-                }
-            })
+            @classDecor.defineProperty<Logger>('printMessage', {set: printMessage})
             class Logger {
                 printMessage: string;
             }

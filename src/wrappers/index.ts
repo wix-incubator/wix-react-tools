@@ -48,7 +48,7 @@ export class WrapApi<A, T extends object> {
         const wrappers = [wrapper];
         return wrapper;
     }
-
+// todo protected
     wrap<T1 extends T>(wrapperArgs: A, wrapperSymbols: Function[], subj: T1): T1 {
         if (this.metadataProvider.hasState(subj)) {
             // subj is already a product of this wrapping API
@@ -123,6 +123,7 @@ export class WrapApi<A, T extends object> {
 export class InheritedWrapApi<A, T extends object> extends WrapApi<A, T> {
     protected readonly inheritedMetadataProvider: InheritedClassStateProvider<Metadata<A, T>, T & Class<any>> = getInheritedClassStateProvider<Metadata<A, T>, T & Class<any>>(this.metadataProvider);
 
+// todo protected
     wrap<T1 extends T>(wrapperArgs: A, wrapperSymbols: Function[], subj: T1): T1 {
         if (isAnyClass(subj) && !this.metadataProvider.hasState(subj)) {
             const prototypeOf = Object.getPrototypeOf(subj.prototype).constructor;
@@ -141,5 +142,11 @@ export class InheritedWrapApi<A, T extends object> extends WrapApi<A, T> {
         } else {
             return super.getMetadata(subj);
         }
+    }
+
+    // TODO protected
+    isThisWrapped(subj: T): boolean {
+        const metadata = super.getMetadata(subj);
+        return !!(metadata && metadata.symbols.length > 0);
     }
 }

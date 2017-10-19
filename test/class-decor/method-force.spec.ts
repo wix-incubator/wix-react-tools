@@ -1,7 +1,7 @@
-import {after, before, middleware} from "../../src";
+import {after, before, middleware, classDecor} from "../../src";
 import {expect, sinon} from "test-drive";
 
-describe('middleware, before, after', () => {
+describe('method forcing', () => {
     const spy = sinon.spy();
 
     afterEach("reset console.warn", () => {
@@ -23,9 +23,40 @@ describe('middleware, before, after', () => {
         return methodResult;
     }
 
-    describe('by default creates a method if none previously exists', () => {
+    describe('.method does not create a method if none previously exists', () => {
         it('before', () => {
-            @before<Logger>(beforeHook, 'myMethod')
+            @classDecor.method<Logger>('myMethod', before(beforeHook))
+            class Logger {
+                myMethod: () => void;
+            }
+
+            const logger = new Logger();
+            expect(logger.myMethod).to.equal(undefined);
+        });
+        it('after', () => {
+
+            @classDecor.method<Logger>('myMethod', after(afterHook))
+            class Logger {
+                myMethod: () => void;
+            }
+
+            const logger = new Logger();
+            expect(logger.myMethod).to.equal(undefined);
+        });
+        it('middleware', () => {
+            @classDecor.method<Logger>('myMethod', middleware(middlewareHook))
+            class Logger {
+                myMethod: () => void;
+            }
+
+            const logger = new Logger();
+            expect(logger.myMethod).to.equal(undefined);
+        });
+    });
+
+    describe('.forceMethod creates a method if none previously exists', () => {
+        it('before', () => {
+            @classDecor.forceMethod<Logger>('myMethod', before(beforeHook))
             class Logger {
                 myMethod: () => void;
             }
@@ -35,7 +66,8 @@ describe('middleware, before, after', () => {
             expect(spy).to.have.callCount(1);
         });
         it('after', () => {
-            @after<Logger>(afterHook, 'myMethod')
+
+            @classDecor.forceMethod<Logger>('myMethod', after(afterHook))
             class Logger {
                 myMethod: () => void;
             }
@@ -45,7 +77,7 @@ describe('middleware, before, after', () => {
             expect(spy).to.have.callCount(1);
         });
         it('middleware', () => {
-            @middleware<Logger>(middlewareHook, 'myMethod')
+            @classDecor.forceMethod<Logger>('myMethod', middleware(middlewareHook))
             class Logger {
                 myMethod: () => void;
             }
@@ -56,39 +88,9 @@ describe('middleware, before, after', () => {
         });
     });
 
-    describe('with .ifExists, does not create a method if none previously exists', () => {
+    describe('.forceMethod wraps a method if it previously exists', () => {
         it('before', () => {
-            @before.ifExists<Logger>(beforeHook, 'myMethod')
-            class Logger {
-                myMethod: () => void;
-            }
-
-            const logger = new Logger();
-            expect(logger.myMethod).to.equal(undefined);
-        });
-        it('after', () => {
-            @after.ifExists<Logger>(afterHook, 'myMethod')
-            class Logger {
-                myMethod: () => void;
-            }
-
-            const logger = new Logger();
-            expect(logger.myMethod).to.equal(undefined);
-        });
-        it('middleware', () => {
-            @middleware.ifExists<Logger>(middlewareHook, 'myMethod')
-            class Logger {
-                myMethod: () => void;
-            }
-
-            const logger = new Logger();
-            expect(logger.myMethod).to.equal(undefined);
-        });
-    });
-
-    describe('with .ifExists, wraps a method if it previously exists', () => {
-        it('before', () => {
-            @before.ifExists<Logger>(beforeHook, 'myMethod')
+            @classDecor.forceMethod<Logger>('myMethod', before(beforeHook))
             class Logger {
                 myMethod() {
                 };
@@ -99,7 +101,7 @@ describe('middleware, before, after', () => {
             expect(spy).to.have.callCount(1);
         });
         it('after', () => {
-            @after.ifExists<Logger>(afterHook, 'myMethod')
+            @classDecor.forceMethod<Logger>('myMethod', after(afterHook))
             class Logger {
                 myMethod() {
                 };
@@ -110,7 +112,7 @@ describe('middleware, before, after', () => {
             expect(spy).to.have.callCount(1);
         });
         it('middleware', () => {
-            @middleware.ifExists<Logger>(middlewareHook, 'myMethod')
+            @classDecor.forceMethod<Logger>('myMethod', middleware(middlewareHook))
             class Logger {
                 myMethod() {
                 };

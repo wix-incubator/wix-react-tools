@@ -1,7 +1,9 @@
 import {Disposers} from "../core/disposers";
-import {after, defineProperties} from "../class-decor";
+import {after} from "../functoin-decor";
+import {classDecor} from "../class-decor";
 import {privateState, StateProvider} from "../core/private-state";
 import {chain} from "../core/functional";
+import * as React from "react";
 
 /**
  * designed for internal use of other features.
@@ -18,18 +20,20 @@ export namespace disposable {
     }
 }
 
-export const disposable = chain<disposable.This>(
-    after<disposable.This>(function (methodReturn) {
+const hookUnmount = classDecor.method<React.Component>("componentWillUnmount",
+    after(function (methodReturn) {
         if (privateDisposers.hasState(this)) {
             privateDisposers(this).disposeAll();
         }
         return methodReturn;
-    }, "componentWillUnmount"),
-    defineProperties<any>({
-        disposer: {
-            get: function getDisposer(this: disposable.This) {
-                return privateDisposers(this);
-            }
+    }));
+
+const addDisposerGetter = classDecor.defineProperties<any>({
+    disposer: {
+        get: function getDisposer(this: disposable.This) {
+            return privateDisposers(this);
         }
-    })
-);
+    }
+});
+
+export const disposable = chain<disposable.This>(hookUnmount, addDisposerGetter);

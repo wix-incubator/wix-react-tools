@@ -1,6 +1,6 @@
 import {expect, sinon} from "test-drive-react";
 import {getHeritage, resetAll, spyAll} from "../test-drivers/test-tools";
-import {after, before, chain, Class, middleware, onInstance} from "../../src";
+import {before, after, chain, Class, classDecor, middleware} from "../../src";
 
 const METHOD = "myMethod";
 
@@ -11,10 +11,10 @@ class Foo {
 
 describe("class decor side-effect", () => {
     const decorate = chain<Foo>(
-        onInstance<Foo>(() => undefined),
-        before<Foo>(() => undefined, METHOD),
-        after<Foo>(() => undefined, METHOD),
-        middleware<Foo>(() => undefined, METHOD)
+        classDecor.onInstance<Foo>(() => undefined),
+        classDecor.method<Foo>(METHOD, before(() => undefined)),
+        classDecor.method<Foo>(METHOD, after(() => undefined)),
+        classDecor.method<Foo>(METHOD, middleware(() => undefined))
     );
 
     // fixture class tree
@@ -31,14 +31,15 @@ describe("class decor side-effect", () => {
 
     const NUM_USER_CLASSES = 3; // [Bar, Biz, Baz].length
 
-    it("only add one class to heritage per decorated level (2 total)", () => {
-        expect(getHeritage(Baz).length, 'getHeritage(Baz).length').to.eql(getHeritage(Foo).length + NUM_USER_CLASSES + 2);
+    it("reflects decoration well", () => {
+        expect(classDecor.isWrapped(Foo), 'Foo').to.equal(false);
+        expect(classDecor.isWrapped(Bar), 'Bar').to.equal(true);
+        expect(classDecor.isWrapped(Biz), 'Biz').to.equal(true);
+        expect(classDecor.isWrapped(Baz), 'Baz').to.equal(true);
     });
 
-    xit("does not change constructor name(s)", () => {
-        expect(new Bar().constructor.name, "new Bar().constructor.name").to.equal("Bar");
-        expect(new Biz().constructor.name, "new Biz().constructor.name").to.equal("Biz");
-        expect(new Baz().constructor.name, "new Baz().constructor.name").to.equal("Baz");
+    it("only add one class to heritage per decorated level (2 total)", () => {
+        expect(getHeritage(Baz).length, 'getHeritage(Baz).length').to.eql(getHeritage(Foo).length + NUM_USER_CLASSES + 2);
     });
 
     describe('heritage boundaries', () => {
@@ -56,7 +57,7 @@ describe("class decor side-effect", () => {
         });
 
         beforeEach('init classes', () => {
-            @after<any>(hooks.spySuper, METHOD)
+            @classDecor.method<any>(METHOD, after(hooks.spySuper))
             class _Super {
             }
 
@@ -64,7 +65,7 @@ describe("class decor side-effect", () => {
         });
 
         it("init of parent class do not leak to children", () => {
-            @after<any>(hooks.spy1, METHOD)
+            @classDecor.method<any>(METHOD, after(hooks.spy1))
             class Child1 extends Super {
 
             }
@@ -105,11 +106,11 @@ describe("class decor side-effect", () => {
 
         it("decorations on child of decorated class do not leak to siblings", () => {
 
-            @after<any>(hooks.spy1, METHOD)
+            @classDecor.method<any>(METHOD, after(hooks.spy1))
             class Child1 extends Super {
             }
 
-            @after<any>(hooks.spy2, METHOD)
+            @classDecor.method<any>(METHOD, after(hooks.spy2))
             class Child2 extends Super {
             }
 
@@ -137,7 +138,8 @@ describe("class decor side-effect", () => {
 
             it("should not override a method on the class itself", () => {
                 const spy = sinon.spy();
-                const inst = new (after(spy, METHOD, Blah))();
+                const NewClass = classDecor.method<any>(METHOD, after(spy))(Blah);
+                const inst = new (NewClass)();
                 inst.myMethod();
 
                 expect(spy).to.have.callCount(1);
