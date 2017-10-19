@@ -6,7 +6,7 @@ import {mergeOptionalArrays} from "../functoin-decor/common";
 export type MethodWrapper = Wrapper<Function>;
 
 export function forceMethod(...wrappers: MethodWrapper[]): MethodWrappers {
-    const result : MethodWrappers= wrappers;
+    const result: MethodWrappers = wrappers;
     result.force = true;
     return result;
 }

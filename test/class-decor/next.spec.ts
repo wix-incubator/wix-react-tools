@@ -1,5 +1,5 @@
 import {resetAll, spyAll} from "../test-drivers/test-tools";
-import {defineProperties, middleware, onInstance} from "../../src";
+import {middleware, onInstance} from "../../src";
 import {expect} from "test-drive";
 import {classDecor, forceMethod, makeClassDecorMetadata} from "../../src/class-decor/next";
 

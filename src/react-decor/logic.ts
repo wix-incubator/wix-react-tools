@@ -1,11 +1,11 @@
-import {cloneElement, Component, ComponentType, ReactElement, SFC} from "react";
+import {cloneElement, Component, ComponentType, ReactElement} from "react";
 import {DecorReacWrapArguments, isReactClassComponent, resetReactCreateElement, translateName} from "./common";
 import {InheritedWrapApi} from "../wrappers/index";
 import {context, wrappedCreateElement} from "./monkey-patches";
 import {decorFunction} from "../functoin-decor/index";
 import {after, before} from "../class-decor/index";
-import React = require('react');
 import {chain} from "../core/functional";
+import React = require('react');
 
 export function reactDecorMetadataMerge(md1: DecorReacWrapArguments<any>, md2: DecorReacWrapArguments<any>): DecorReacWrapArguments<any> {
     return {
