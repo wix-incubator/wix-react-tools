@@ -1,12 +1,15 @@
 import {InheritedWrapApi, Wrapper} from "../wrappers/index";
 import {ConstructorHook} from "./mixer";
-import {Class} from "../core/types";
+import {Class, TypedPropertyDescriptorMap} from "../core/types";
 import {mergeOptionalArrays} from "../functoin-decor/common";
-import {privateState} from "../index";
-
-export type ClassInitHook<T extends object> = (clazz: Class<T>) => void;
 
 export type MethodWrapper = Wrapper<Function>;
+
+export function forceMethod(...wrappers: MethodWrapper[]): MethodWrappers {
+    const result : MethodWrappers= wrappers;
+    result.force = true;
+    return result;
+}
 
 export type MethodWrappers = Array<MethodWrapper> & {
     force?: true;
@@ -17,26 +20,19 @@ export type MethodsMetaData = {
 
 export type ClassMetaData = {
     constructorHooks: Array<ConstructorHook<any>> | null;
-    classInitHooks: Array<ClassInitHook<any>> | null;
-    methodWrappers: MethodsMetaData | null
-//    subClassInitHooks: Array<ClassInitHook<any>> | null;
+    methodsMetadata: MethodsMetaData | null;
+    properties: TypedPropertyDescriptorMap<any> | null;
 }
 
-function mergeMethodsWrappers(md1: MethodsMetaData | null, md2: MethodsMetaData | null): MethodsMetaData | null {
+function mergeMethodsMetadata(md1: MethodsMetaData | null, md2: MethodsMetaData | null): MethodsMetaData | null {
     if (md1) {
         if (md2) {
             // merge both objects
-            const merged: MethodsMetaData = Object.create(md1);
+            const merged: MethodsMetaData = Object.assign({}, md1, md2);
             for (const methodName in md2) {
-                const md2Wrappers = md2[methodName];
-                if (Array.isArray(md2Wrappers) && md2Wrappers.length) {
-                    const md1Wrappers = md1[methodName];
-                    if (Array.isArray(md1Wrappers) && md1Wrappers.length) {
-                        merged[methodName] = md1Wrappers.concat(md2Wrappers);
-                        merged[methodName].force = md1Wrappers.force || md2Wrappers.force;
-                    } else {
-                        merged[methodName] = md2Wrappers;
-                    }
+                if (md2.hasOwnProperty(methodName) && md1.hasOwnProperty(methodName)) {
+                    merged[methodName] = md1[methodName].concat(md2[methodName]);
+                    merged[methodName].force = md1[methodName].force || md2[methodName].force;
                 }
             }
             return merged;
@@ -48,17 +44,22 @@ function mergeMethodsWrappers(md1: MethodsMetaData | null, md2: MethodsMetaData 
     }
 }
 
-export function classDecorMetadataMerge(md1: ClassMetaData, md2: ClassMetaData): ClassMetaData {
+export function makeClassDecorMetadata(constructorHooks: Array<ConstructorHook<any>> | null,
+                                       methodsMetadata: MethodsMetaData | null,
+                                       properties: TypedPropertyDescriptorMap<any> | null): ClassMetaData {
+    return {constructorHooks, methodsMetadata, properties}
+}
+
+export function mergeClassDecorMetadata(md1: ClassMetaData, md2: ClassMetaData): ClassMetaData {
     return {
         constructorHooks: mergeOptionalArrays(md1.constructorHooks, md2.constructorHooks),
-        classInitHooks: mergeOptionalArrays(md1.classInitHooks, md2.classInitHooks),
-        methodWrappers: mergeMethodsWrappers(md1.methodWrappers, md2.methodWrappers),
-//        subClassInitHooks: mergeOptionalArrays(md1.subClassInitHooks, md2.subClassInitHooks),
+        methodsMetadata: mergeMethodsMetadata(md1.methodsMetadata, md2.methodsMetadata),
+        properties: Object.assign({}, md2.properties, md1.properties),
     };
 }
 
-function call(f: MethodWrapper, g: Function): Function {
-    return f(g);
+function call(f: Function, g: MethodWrapper): Function {
+    return g(f);
 }
 
 function emptyMethod() {
@@ -67,11 +68,11 @@ function emptyMethod() {
 type DumbClass = new(...args: any[]) => object;
 
 function initializeClass(wrapperArgs: Partial<ClassMetaData>, clazz: Class<any>) {
-// decorate class methods
-    const methodWrappers = wrapperArgs.methodWrappers;
-    if (methodWrappers) {
-        for (const methodName in methodWrappers) {
-            const wrappers = methodWrappers[methodName];
+    const methodsMetadata = wrapperArgs.methodsMetadata;
+    if (methodsMetadata) {
+        // decorate class methods
+        for (const methodName in methodsMetadata) {
+            const wrappers = methodsMetadata[methodName];
             if (clazz.prototype[methodName]) {
                 clazz.prototype[methodName] = wrappers.reduce(call, clazz.prototype[methodName]);
             } else if (wrappers.force) {
@@ -79,40 +80,43 @@ function initializeClass(wrapperArgs: Partial<ClassMetaData>, clazz: Class<any>)
             }
         }
     }
-    // run class init hooks
-    const classInitHooks = wrapperArgs.classInitHooks;
-    if (classInitHooks) {
-        for (let i = 0; i < classInitHooks.length; i++) {
-            classInitHooks[i](clazz);
-        }
+    const properties = wrapperArgs.properties;
+    if (properties) {
+        // define properties
+        Object.defineProperties(clazz.prototype, properties);
     }
 }
-
-// run initializeClass once per class
-const initClass = privateState<true, Class<any>>('class-decor-init', (clazz: Class<any>) => {
-    const wrapperArgs = classDecor.getWrapperArgs(clazz);
-    if (wrapperArgs) {
-        initializeClass(wrapperArgs, clazz);
-    } else {
-        throw new Error(`unexpected : class ${clazz.name} is not wrapped`);
-    }
-    return true;
-});
 
 export function classDecorWrapper<T extends Class<object>>(target: T, args: Partial<ClassMetaData>): T {
     if (classDecor.isWrapped(target)) {
         return target;
     }
 
+    let initialized = false; // TODO measure if having a flag in parent scope is faster than private-state of `true`
+
     class Extended extends (target as any as DumbClass) {
         constructor(...args: any[]) {
             super(...args);
-            initClass(Extended);
-            // TODO run class init and constructor hooks (?)
+            const wrapperArgs = classDecor.getWrapperArgs(Extended);
+            if (wrapperArgs) {
+                if (!initialized) {
+                    initialized = true;
+                    initializeClass(wrapperArgs, Extended);
+                }
+                const constructorHooks = wrapperArgs.constructorHooks;
+                if (constructorHooks) {
+                    // run constructor hooks
+                    for (let i = 0; i < constructorHooks.length; i++) {
+                        constructorHooks[i].call(this, args);
+                    }
+                }
+            } else {
+                throw new Error(`unexpected : class ${target.name} is not properly wrapped`);
+            }
         }
     }
 
     return Extended as any;
 }
 
-export const classDecor = new InheritedWrapApi<Partial<ClassMetaData>, Class<object>>('class-decor', classDecorWrapper, classDecorMetadataMerge);
+export const classDecor = new InheritedWrapApi<Partial<ClassMetaData>, Class<object>>('class-decor', classDecorWrapper, mergeClassDecorMetadata);

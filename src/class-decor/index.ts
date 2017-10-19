@@ -17,22 +17,6 @@ export function onInstance<T extends object>(hook: ConstructorHook<T>, target?: 
     return target ? curried(target) : curried;
 }
 
-export function add<T extends { [k: string]: Function }>(mixin: T): ClassDecorator<T>;
-export function add<T extends { [k: string]: Function }, T1 extends T>(mixin: T, target: Class<T1>): Class<T1>;
-export function add<T extends { [k: string]: Function }, T1 extends T>(mixin: T, target?: Class<T1>): Class<T1> | ClassDecorator<T> {
-    function curried<T1 extends T>(t: Class<T1>) {
-        const mixed = mix(t);
-        Object.keys(mixin).forEach((k: keyof T) => {
-            if (!mixed.prototype[k]) {
-                mixed.prototype[k] = mixin[k];
-            }
-        });
-        return mixed;
-    }
-
-    return target ? curried(target) : curried;
-}
-
 export function defineProperties<T extends object>(properties: TypedPropertyDescriptorMap<T>): ClassDecorator<T>;
 export function defineProperties<T extends object, T1 extends T>(properties: TypedPropertyDescriptorMap<T>, target: Class<T1>): Class<T1>;
 export function defineProperties<T extends object, T1 extends T>(properties: TypedPropertyDescriptorMap<T>, target?: Class<T1>): Class<T1> | ClassDecorator<T> {
