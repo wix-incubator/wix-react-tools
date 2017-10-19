@@ -119,4 +119,37 @@ export function classDecorWrapper<T extends Class<object>>(target: T, args: Part
     return Extended as any;
 }
 
-export const classDecor = new InheritedWrapApi<Partial<ClassMetaData>, Class<object>>('class-decor', classDecorWrapper, mergeClassDecorMetadata);
+
+export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
+
+export class ClassDecor extends InheritedWrapApi<Partial<ClassMetaData>, Class<object>> {
+
+    static readonly instance = new ClassDecor();
+
+    // singleton
+    private constructor(){
+        if (ClassDecor.instance){
+            return ClassDecor.instance;
+        }
+        super('class-decor', classDecorWrapper, mergeClassDecorMetadata);
+    }
+
+    onInstance<T extends object>(hook: ConstructorHook<T>): ClassDecorator<T> {
+        return this.makeWrapper(makeClassDecorMetadata([hook], null, null));
+    }
+
+    method<T extends object, N extends keyof T>(methodName: keyof T, functionDecorator: Wrapper<T[N]>): ClassDecorator<T> {
+        return this.makeWrapper(makeClassDecorMetadata(null, {[methodName] : [functionDecorator]}, null));
+    }
+
+    forceMethod<T extends object, N extends keyof T>(methodName: keyof T, functionDecorator: Wrapper<T[N]>): ClassDecorator<T> {
+        return this.makeWrapper(makeClassDecorMetadata(null, {[methodName] : forceMethod(functionDecorator)}, null));
+    }
+
+    defineProperties<T extends object>(properties: TypedPropertyDescriptorMap<T>): ClassDecorator<T> {
+        return this.makeWrapper(makeClassDecorMetadata(null, null, properties));
+    }
+}
+
+
+export const classDecor = ClassDecor.instance;
