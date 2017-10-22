@@ -213,7 +213,8 @@ describe("class decor inheritance", () => {
                     }
 
                     // simulate other decorators with no reference to myMethod
-                    UserClass = classDecor.onInstance(()=>{})(_UserClass);
+                    UserClass = classDecor.onInstance(() => {
+                    })(_UserClass);
                 });
                 checkClass(sampleTest);
             });

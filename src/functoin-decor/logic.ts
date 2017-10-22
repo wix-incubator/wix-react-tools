@@ -45,7 +45,7 @@ function createNextForMiddlewareHook(context: any, originalFunction: Function, m
 }
 
 export function funcDecorWrapper<T extends Function>(target: T, args: FunctionMetaData): T {
-    if (!args.name && target.name){
+    if (!args.name && target.name) {
         args.name = target.name;
     }
     const wrappedFunction = function wrappedFunction(this: any) {

@@ -1,12 +1,10 @@
-import {stylable, reactDecor} from "../../src";
+import {reactDecor, stylable, overrideGlobalConfig, runInContext, devMode} from "../../src";
 import {createGenerator, StateMap, Stylesheet} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {ElementArgs} from "../../src/react-decor/common";
-import {overrideGlobalConfig, runInContext} from "../../src/core/config";
-import {devMode} from "../../src/core/dev-mode";
 
 /**
  * this suite serves two purposes:

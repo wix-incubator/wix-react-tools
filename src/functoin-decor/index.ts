@@ -12,8 +12,8 @@ export class FunctionDecor extends WrapApi<Partial<FunctionMetaData>, Function> 
     static readonly instance = new FunctionDecor();
 
     // singleton
-    private constructor(){
-        if (FunctionDecor.instance){
+    private constructor() {
+        if (FunctionDecor.instance) {
             return FunctionDecor.instance;
         }
         super('function-decor', funcDecorWrapper, funcDecorMetadataMerge);

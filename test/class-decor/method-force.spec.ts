@@ -1,4 +1,4 @@
-import {functionDecor, classDecor} from "../../src";
+import {classDecor, functionDecor} from "../../src";
 import {expect, sinon} from "test-drive";
 
 describe('method forcing', () => {

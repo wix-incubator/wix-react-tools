@@ -1,7 +1,6 @@
 import {resetAll, spyAll} from "../test-drivers/test-tools";
-import {functionDecor} from "../../src";
+import {classDecor, functionDecor} from "../../src";
 import {expect} from "test-drive";
-import {classDecor} from "../../src";
 
 describe('class-decor documentation examples', () => {
     let log: string[] = [];
@@ -91,7 +90,7 @@ describe('class-decor documentation examples', () => {
                 }
             }
 
-            class Logger extends Parent{
+            class Logger extends Parent {
                 printMessage(text: string) {
                     console.log(text);
                 }

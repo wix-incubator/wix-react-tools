@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {devMode, runInContext, functionDecor} from "../../src";
+import {devMode, functionDecor, runInContext} from "../../src";
 
 
 describe("function-decor dev mode warnings", () => {

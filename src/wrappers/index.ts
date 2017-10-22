@@ -48,6 +48,7 @@ export class WrapApi<A, T extends object> {
         const wrappers = [wrapper];
         return wrapper;
     }
+
 // todo protected
     wrap<T1 extends T>(wrapperArgs: A, wrapperSymbols: Function[], subj: T1): T1 {
         if (this.metadataProvider.hasState(subj)) {
@@ -137,17 +138,17 @@ export class InheritedWrapApi<A, T extends object> extends WrapApi<A, T> {
         return super.wrap(wrapperArgs, wrapperSymbols, subj);
     }
 
+    // TODO protected
+    isThisWrapped(subj: T): boolean {
+        const metadata = super.getMetadata(subj);
+        return !!(metadata && metadata.symbols.length > 0);
+    }
+
     protected getMetadata(subj: T): Metadata<A, T> | null {
         if (isAnyClass(subj)) {
             return this.inheritedMetadataProvider(subj);
         } else {
             return super.getMetadata(subj);
         }
-    }
-
-    // TODO protected
-    isThisWrapped(subj: T): boolean {
-        const metadata = super.getMetadata(subj);
-        return !!(metadata && metadata.symbols.length > 0);
     }
 }
