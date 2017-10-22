@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - class decor generics API simplified
 - function wrapping metadata now using private state (so it's visible on function to debugger in dev-mode)
 - react decor now has a single hook type, which is informed if the argument is root.
+- lodash no longer a runtime dependency
 
 ### Removed
 - deprecated `root` export
