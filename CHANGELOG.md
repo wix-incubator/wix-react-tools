@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Added
+- a changelog (this file)
 - the three decor APIs (class, function and react) are nuw exported as objects.
 - meta API to the decor APIs
    - isDecorated
