@@ -32,9 +32,8 @@ export class ReactDecor extends InheritedWrapApi<DecorReacWrapArguments<any>, Co
 
     static readonly instance = new ReactDecor();
 
-    // TODO: make private
-    readonly sfcDecorator: Wrapper<StatelessComponent>;
-    readonly classComponentDecorator: ClassDecorator<Component>;
+    private sfcDecorator: Wrapper<StatelessComponent>;
+    private classComponentDecorator: ClassDecorator<Component>;
 
     // singleton
     private constructor() {

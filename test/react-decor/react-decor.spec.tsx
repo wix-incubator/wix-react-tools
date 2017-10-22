@@ -189,7 +189,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 const wrap = reactDecor.makeWrapper<PropsWithName, Component<any>>([]);
                 const WrappedComp = wrap(Comp);
 
-                const {select} = clientRenderer.render(<WrappedComp name="Jon"/>); // todo: maybe fix currently client only
+                const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
                 const content = select('content');
 
                 expect(content).to.be.ok;
