@@ -1,9 +1,8 @@
-import {Wrapper} from "../wrappers/index";
 import {Class, TypedPropertyDescriptorMap} from "../core/types";
-import {mergeOptionalArrays} from "../functoin-decor/common";
-import {ClassDecor} from "./index";
 import {privateState} from "../core/private-state";
 import {functionDecor} from "../functoin-decor/index";
+import {Wrapper} from "../wrappers/index";
+import {ClassDecor} from "./index";
 
 export type MethodWrapper = Wrapper<Function>;
 
@@ -28,7 +27,7 @@ export type ClassMetaData = {
     properties: TypedPropertyDescriptorMap<any> | null;
 }
 
-function mergeMethodsMetadata(md1: MethodsMetaData | null, md2: MethodsMetaData | null): MethodsMetaData | null {
+export function mergeMethodsMetadata(md1: MethodsMetaData | null, md2: MethodsMetaData | null): MethodsMetaData | null {
     if (md1) {
         if (md2) {
             // merge both objects
@@ -54,13 +53,6 @@ export function makeClassDecorMetadata(constructorHooks: Array<ConstructorHook<a
     return {constructorHooks, methodsMetadata, properties}
 }
 
-export function mergeClassDecorMetadata(md1: ClassMetaData, md2: ClassMetaData): ClassMetaData {
-    return {
-        constructorHooks: mergeOptionalArrays(md1.constructorHooks, md2.constructorHooks), //old be
-        methodsMetadata: mergeMethodsMetadata(md1.methodsMetadata, md2.methodsMetadata),
-        properties: Object.assign({}, md2.properties, md1.properties),
-    };
-}
 
 function call(f: Function, g: MethodWrapper): Function {
     return g(f);
@@ -113,13 +105,9 @@ function initializeConstructor(wrapperArgs: Partial<ClassMetaData>, clazz: Class
 
 const initCtor = privateState<true, Class<any>>('class-decor-initialized', () => true);
 
-export function classDecorWrapper<T extends Class<object>>(this: ClassDecor, target: T): T {
-    if (this.isThisWrapped(target)) {
-        return target;
-    }
-    const classDecor = this;
 
-    class Extended extends (target as any as DumbClass) {
+export function extendClass<T extends Class<object>>(classDecor: ClassDecor, target: T): T {
+    return class Extended extends (target as any as DumbClass) {
         constructor(...args: any[]) {
             super(...args);
             const wrapperArgs = classDecor.getWrapperArgs(Extended);
@@ -143,8 +131,7 @@ export function classDecorWrapper<T extends Class<object>>(this: ClassDecor, tar
                 throw new Error(`unexpected : class ${target.name} is not properly wrapped`);
             }
         }
-    }
-
-    return Extended as any;
+    } as any;
 }
+
 

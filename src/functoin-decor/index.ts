@@ -1,6 +1,6 @@
-import {AfterHook, BeforeHook, FunctionMetaData, MiddlewareHook} from "./common";
+import {AfterHook, BeforeHook, FunctionMetaData, mergeOptionalArrays, MiddlewareHook} from "./common";
 import {WrapApi, Wrapper} from "../wrappers/index";
-import {funcDecorMetadataMerge, funcDecorWrapper} from "./logic";
+import {funcDecorWrapper} from "./logic";
 
 export {
     AfterHook, BeforeHook, MiddlewareHook, FunctionMetaData
@@ -16,7 +16,7 @@ export class FunctionDecor extends WrapApi<Partial<FunctionMetaData>, Function> 
         if (FunctionDecor.instance) {
             return FunctionDecor.instance;
         }
-        super('function-decor', funcDecorWrapper, funcDecorMetadataMerge);
+        super('function-decor');
     }
 
     before(preMethod: BeforeHook): Wrapper<Function> {
@@ -29,6 +29,19 @@ export class FunctionDecor extends WrapApi<Partial<FunctionMetaData>, Function> 
 
     middleware(hook: MiddlewareHook<any>): Wrapper<Function> {
         return this.makeWrapper({middleware: [hook]});
+    }
+
+    protected mergeArgs(base: FunctionMetaData, addition: FunctionMetaData): FunctionMetaData {
+        return {
+            name: base.name || addition.name,
+            middleware: mergeOptionalArrays(base.middleware, addition.middleware),
+            before: mergeOptionalArrays(base.before, addition.before),
+            after: mergeOptionalArrays(addition.after, base.after), //reverse order
+        };
+    }
+
+    protected wrappingLogic<T extends Function>(target: T, args: FunctionMetaData): T {
+        return funcDecorWrapper(target, args);
     }
 }
 

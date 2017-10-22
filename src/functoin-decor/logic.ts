@@ -1,14 +1,4 @@
-import {FunctionMetaData, isArrayLikeObject, mergeOptionalArrays, MiddlewareHook} from "./common";
-
-export function funcDecorMetadataMerge(md1: FunctionMetaData, md2: FunctionMetaData): FunctionMetaData {
-    return {
-        name: md1.name || md2.name,
-        middleware: mergeOptionalArrays(md1.middleware, md2.middleware),
-        before: mergeOptionalArrays(md1.before, md2.before),
-        after: mergeOptionalArrays(md2.after, md1.after),
-    };
-}
-
+import {FunctionMetaData, isArrayLikeObject, MiddlewareHook} from "./common";
 
 function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
     let serialized = '(unSerializable)';
@@ -18,7 +8,6 @@ function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
     }
     throw new Error('before hook did not return an array-like object: ' + serialized)
 }
-
 
 class MiddlewareTracker {
     lastMiddlewareRunning = 0;

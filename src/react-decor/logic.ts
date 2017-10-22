@@ -1,28 +1,10 @@
-import {cloneElement, ComponentType, ReactElement} from "react";
-import {DecorReacWrapArguments, isReactClassComponent, resetReactCreateElement} from "./common";
+import {cloneElement, ReactElement} from "react";
+import {resetReactCreateElement} from "./common";
 import {Wrapper} from "../wrappers/index";
 import {context, wrappedCreateElement} from "./monkey-patches";
 import {functionDecor} from "../functoin-decor/index";
 import {ReactDecor} from "./index";
 import React = require('react');
-
-export function reactDecorMetadataMerge(md1: DecorReacWrapArguments<any>, md2: DecorReacWrapArguments<any>): DecorReacWrapArguments<any> {
-    return {
-        statelessHooks: md1.statelessHooks.concat(md2.statelessHooks),
-        classHooks: md1.classHooks.concat(md2.classHooks),
-    };
-}
-
-export function reactDecorWrapper<T extends ComponentType>(this: ReactDecor, target: T, _args: DecorReacWrapArguments<any>): T {
-    let Wrapped = target;
-    if (isReactClassComponent(target)) {
-        Wrapped = this.classComponentDecorator(target as any) as T;
-    } else if (typeof target === 'function') {
-        Wrapped = this.sfcDecorator(target as any) as T;
-    }
-    return Wrapped;
-}
-
 
 export function makeRenderWrapper(reactDecor: ReactDecor): Wrapper<Function> {
     function beforeRender(this: any, args: [object, any], wrappedRender: Function): [object, any] {

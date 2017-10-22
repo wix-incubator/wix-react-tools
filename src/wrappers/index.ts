@@ -18,10 +18,10 @@ export type Wrapper<T extends object> = <T1 extends T>(subj: T1) => T1
 /**
  * an instance of this class is a wrapping API for a specific domain
  */
-export class WrapApi<A, T extends object> {
+export abstract class WrapApi<A, T extends object> {
     protected readonly metadataProvider: StateProvider<Metadata<A, T>, T>;
 
-    constructor(private id: string, private wrapper: InternalWrapper<A, T>, protected merge: Merge<A>) {
+    constructor(private id: string) {
         this.metadataProvider = privateState<Metadata<A, T>, T>(id + '-metadata', (targetObj: T) => ({
             original: null as any,
             symbols: [],
@@ -55,7 +55,7 @@ export class WrapApi<A, T extends object> {
             // subj is already a product of this wrapping API
             // deconstruct it, merge with arguments and re-wrap the original
             const subjMetadata = this.metadataProvider(subj) as Metadata<A, T1>;
-            wrapperArgs = this.merge(subjMetadata.wrapperArgs, wrapperArgs);
+            wrapperArgs = this.mergeArgs(subjMetadata.wrapperArgs, wrapperArgs);
             subj = subjMetadata.original;
             wrapperSymbols = subjMetadata.symbols.concat(wrapperSymbols);
             if (subjMetadata.symbols.length > 0 || wrapperSymbols.length > 0) {
@@ -64,7 +64,7 @@ export class WrapApi<A, T extends object> {
             }
             // TODO: if wrapperSymbols (and / or wrapperArgs?) are same as before, return subj (it's already wrapped correctly). opt out (force unique wrapping) with metadata flag.
         }
-        const wrapped = this.wrapper(subj, wrapperArgs);
+        const wrapped = this.wrappingLogic(subj, wrapperArgs);
         // TODO if wrapped === subj, continue? should be declarative configurable?
         const metadata = this.metadataProvider(wrapped);
         metadata.original = subj;
@@ -113,6 +113,23 @@ export class WrapApi<A, T extends object> {
         return null;
     }
 
+    /**
+     * main wrapping logic
+     * specific to wrapping domain
+     * @param {T1} target thing to wrap
+     * @param {A} args arguments of wrapper
+     * @returns {T1} wrapped target (or target itself if opt out of wrapping)
+     */
+    protected abstract wrappingLogic<T1 extends T>(target: T1, args: A): T1;
+
+    /**
+     * merge two instances of wrapper arguments into one
+     * @param {A} base the pre-existing arguments
+     * @param {A} addition new arguments
+     * @returns {A} a new arguments object combining both arguments
+     */
+    protected abstract mergeArgs(base: A, addition: A): A;
+
     protected getMetadata(subj: T): Metadata<A, T> | null {
         if (this.metadataProvider.hasState(subj)) {
             return this.metadataProvider(subj);
@@ -121,7 +138,7 @@ export class WrapApi<A, T extends object> {
     }
 }
 
-export class InheritedWrapApi<A, T extends object> extends WrapApi<A, T> {
+export abstract class InheritedWrapApi<A, T extends object> extends WrapApi<A, T> {
     // todo protected
     readonly inheritedMetadataProvider: InheritedClassStateProvider<Metadata<A, T>, T & Class<any>> = getInheritedClassStateProvider<Metadata<A, T>, T & Class<any>>(this.metadataProvider);
 
@@ -131,7 +148,7 @@ export class InheritedWrapApi<A, T extends object> extends WrapApi<A, T> {
             const parentClass = Object.getPrototypeOf(subj.prototype).constructor;
             const ancestorMetaData = this.inheritedMetadataProvider(parentClass);
             if (ancestorMetaData) {
-                wrapperArgs = this.merge(ancestorMetaData.wrapperArgs, wrapperArgs);
+                wrapperArgs = this.mergeArgs(ancestorMetaData.wrapperArgs, wrapperArgs);
                 wrapperSymbols = ancestorMetaData.symbols.concat(wrapperSymbols);
             }
         }
