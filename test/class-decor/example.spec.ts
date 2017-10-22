@@ -1,5 +1,5 @@
 import {resetAll, spyAll} from "../test-drivers/test-tools";
-import {middleware} from "../../src";
+import {functionDecor} from "../../src";
 import {expect} from "test-drive";
 import {classDecor} from "../../src";
 
@@ -64,11 +64,34 @@ describe('class-decor documentation examples', () => {
             next(['goodbye']);
         }
 
-        const hook = middleware(logMW);
+        const hook = functionDecor.middleware(logMW);
 
         it('wraps existing method', () => {
             @classDecor.method<Logger>('printMessage', hook)
             class Logger {
+                printMessage(text: string) {
+                    console.log(text);
+                }
+            }
+
+            const logger = new Logger();
+            logger.printMessage('hello');
+            expect(context).to.equal(logger);
+            expectLog(
+                `called on method with hello`,
+                `goodbye`
+            );
+        });
+
+        it('wraps overridden method ', () => {
+            @classDecor.method<Parent>('printMessage', hook)
+            class Parent {
+                printMessage(text: string) {
+                    console.log(text);
+                }
+            }
+
+            class Logger extends Parent{
                 printMessage(text: string) {
                     console.log(text);
                 }

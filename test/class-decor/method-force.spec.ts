@@ -1,4 +1,4 @@
-import {after, before, middleware, classDecor} from "../../src";
+import {functionDecor, classDecor} from "../../src";
 import {expect, sinon} from "test-drive";
 
 describe('method forcing', () => {
@@ -24,8 +24,8 @@ describe('method forcing', () => {
     }
 
     describe('.method does not create a method if none previously exists', () => {
-        it('before', () => {
-            @classDecor.method<Logger>('myMethod', before(beforeHook))
+        it('functionDecor.before', () => {
+            @classDecor.method<Logger>('myMethod', functionDecor.before(beforeHook))
             class Logger {
                 myMethod: () => void;
             }
@@ -33,9 +33,9 @@ describe('method forcing', () => {
             const logger = new Logger();
             expect(logger.myMethod).to.equal(undefined);
         });
-        it('after', () => {
+        it('functionDecor.after', () => {
 
-            @classDecor.method<Logger>('myMethod', after(afterHook))
+            @classDecor.method<Logger>('myMethod', functionDecor.after(afterHook))
             class Logger {
                 myMethod: () => void;
             }
@@ -43,8 +43,8 @@ describe('method forcing', () => {
             const logger = new Logger();
             expect(logger.myMethod).to.equal(undefined);
         });
-        it('middleware', () => {
-            @classDecor.method<Logger>('myMethod', middleware(middlewareHook))
+        it('functionDecor.middleware', () => {
+            @classDecor.method<Logger>('myMethod', functionDecor.middleware(middlewareHook))
             class Logger {
                 myMethod: () => void;
             }
@@ -55,8 +55,8 @@ describe('method forcing', () => {
     });
 
     describe('.forceMethod creates a method if none previously exists', () => {
-        it('before', () => {
-            @classDecor.forceMethod<Logger>('myMethod', before(beforeHook))
+        it('functionDecor.before', () => {
+            @classDecor.forceMethod<Logger>('myMethod', functionDecor.before(beforeHook))
             class Logger {
                 myMethod: () => void;
             }
@@ -65,9 +65,9 @@ describe('method forcing', () => {
             logger.myMethod();
             expect(spy).to.have.callCount(1);
         });
-        it('after', () => {
+        it('functionDecor.after', () => {
 
-            @classDecor.forceMethod<Logger>('myMethod', after(afterHook))
+            @classDecor.forceMethod<Logger>('myMethod', functionDecor.after(afterHook))
             class Logger {
                 myMethod: () => void;
             }
@@ -76,8 +76,8 @@ describe('method forcing', () => {
             logger.myMethod();
             expect(spy).to.have.callCount(1);
         });
-        it('middleware', () => {
-            @classDecor.forceMethod<Logger>('myMethod', middleware(middlewareHook))
+        it('functionDecor.middleware', () => {
+            @classDecor.forceMethod<Logger>('myMethod', functionDecor.middleware(middlewareHook))
             class Logger {
                 myMethod: () => void;
             }
@@ -89,8 +89,8 @@ describe('method forcing', () => {
     });
 
     describe('.forceMethod wraps a method if it previously exists', () => {
-        it('before', () => {
-            @classDecor.forceMethod<Logger>('myMethod', before(beforeHook))
+        it('functionDecor.before', () => {
+            @classDecor.forceMethod<Logger>('myMethod', functionDecor.before(beforeHook))
             class Logger {
                 myMethod() {
                 };
@@ -100,8 +100,8 @@ describe('method forcing', () => {
             logger.myMethod();
             expect(spy).to.have.callCount(1);
         });
-        it('after', () => {
-            @classDecor.forceMethod<Logger>('myMethod', after(afterHook))
+        it('functionDecor.after', () => {
+            @classDecor.forceMethod<Logger>('myMethod', functionDecor.after(afterHook))
             class Logger {
                 myMethod() {
                 };
@@ -111,8 +111,8 @@ describe('method forcing', () => {
             logger.myMethod();
             expect(spy).to.have.callCount(1);
         });
-        it('middleware', () => {
-            @classDecor.forceMethod<Logger>('myMethod', middleware(middlewareHook))
+        it('functionDecor.middleware', () => {
+            @classDecor.forceMethod<Logger>('myMethod', functionDecor.middleware(middlewareHook))
             class Logger {
                 myMethod() {
                 };

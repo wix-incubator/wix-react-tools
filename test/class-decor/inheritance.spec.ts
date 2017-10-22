@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {after, before, chain, Class, classDecor, ClassDecorator, middleware} from "../../src";
+import {chain, Class, classDecor, ClassDecorator, functionDecor} from "../../src";
 import {expectSpyChain, resetAll, spyAll} from "../test-drivers/test-tools";
 
 const ORIGIN_ARGUMENT = 111;
@@ -102,18 +102,18 @@ describe("class decor inheritance", () => {
         describe("priority", () => {
 
             function beforeAfterDecor<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, before(function (this: T, args: [number]) {
+                return classDecor.method<T>(METHOD, functionDecor.before(function (this: T, args: [number]) {
                         SPIES.firstBefore(this, args);
                         return [args[0] + 1]
                     }),
-                    after(function (this: T, result: number) {
+                    functionDecor.after(function (this: T, result: number) {
                         SPIES.lastAfter(this, result);
                         return result + 1;
                     }))(cls);
             }
 
             function middlewareDecor<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, middleware(function (this: T, next: Function, args: [number]) {
+                return classDecor.method<T>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
                     SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.firstAfter(this, res);
@@ -133,50 +133,26 @@ describe("class decor inheritance", () => {
         describe("before and after", () => {
 
             function outer<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, before(function (this: T, args: [number]) {
+                return classDecor.method<T>(METHOD, functionDecor.before(function (this: T, args: [number]) {
                         SPIES.firstBefore(this, args);
                         return [args[0] + 1]
                     }),
-                    after(function (this: T, result: number) {
+                    functionDecor.after(function (this: T, result: number) {
                         SPIES.lastAfter(this, result);
                         return result + 1;
                     }))(cls);
             }
 
             function inner<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, before(function (this: T, args: [number]) {
+                return classDecor.method<T>(METHOD, functionDecor.before(function (this: T, args: [number]) {
                         SPIES.lastBefore(this, args);
                         return [args[0] + 1]
                     }),
-                    after(function (this: T, result: number) {
+                    functionDecor.after(function (this: T, result: number) {
                         SPIES.firstAfter(this, result);
                         return result + 1;
                     }))(cls);
             }
-
-            //
-            // function outer<T extends Base>(cls: Class<T>): Class<T> {
-            //     return chain(
-            //         before<T>(function (this: T, args: [number]) {
-            //             SPIES.firstBefore(this, args);
-            //             return [args[0] + 1]
-            //         }, METHOD),
-            //         after<T>(function (this: T, result: number) {
-            //             SPIES.lastAfter(this, result);
-            //             return result + 1;
-            //         }, METHOD))(cls);
-            // }
-            // function inner<T extends Base>(cls: Class<T>): Class<T> {
-            //     return chain(
-            //         before<T>(function (this: T, args: [number]) {
-            //             SPIES.lastBefore(this, args);
-            //             return [args[0] + 1]
-            //         }, METHOD),
-            //         after<T>(function (this: T, result: number) {
-            //             SPIES.firstAfter(this, result);
-            //             return result + 1;
-            //         }, METHOD))(cls);
-            // }
 
             // first is outer, last is inner
             checkDecorationStyles(outer, inner);
@@ -185,7 +161,7 @@ describe("class decor inheritance", () => {
         describe("middleware", () => {
 
             function outer<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, middleware(function (this: T, next: Function, args: [number]) {
+                return classDecor.method<T>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
                     SPIES.firstBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.lastAfter(this, res);
@@ -194,31 +170,13 @@ describe("class decor inheritance", () => {
             }
 
             function inner<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, middleware(function (this: T, next: Function, args: [number]) {
+                return classDecor.method<T>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
                     SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.firstAfter(this, res);
                     return res + 1;
                 }))(cls);
             }
-            //
-            // function outer<T extends Base>(cls: Class<T>): Class<T> {
-            //     return middleware<T>(function (this: T, next: Function, args: [number]) {
-            //         SPIES.firstBefore(this, args);
-            //         const res = next([args[0] + 1]);
-            //         SPIES.lastAfter(this, res);
-            //         return res + 1;
-            //     }, METHOD, cls);
-            // }
-            //
-            // function inner<T extends Base>(cls: Class<T>): Class<T> {
-            //     return middleware<T>(function (this: T, next: Function, args: [number]) {
-            //         SPIES.lastBefore(this, args);
-            //         const res = next([args[0] + 1]);
-            //         SPIES.firstAfter(this, res);
-            //         return res + 1;
-            //     }, METHOD, cls);
-            // }
 
             // first  is outer, last is inner
             checkDecorationStyles(outer, inner);

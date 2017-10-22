@@ -12,7 +12,7 @@ export * from './react-util/global-id';
 
 // js decor
 export {classDecor, ClassDecorator} from './class-decor/index';
-export * from "./functoin-decor/index";
+export {functionDecor, cloneFunction} from "./functoin-decor/index";
 
 // react decor
 export * from './react-decor/index';

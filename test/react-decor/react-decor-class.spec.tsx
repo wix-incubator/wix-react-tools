@@ -2,8 +2,7 @@ import * as React from "react";
 import {HTMLAttributes} from "react";
 import {ClientRenderer, expect} from "test-drive-react";
 import {inBrowser} from "mocha-plugin-env/dist/src";
-import {ElementArgs, onEachElement} from "../../src";
-import {reactDecor} from "../../src/react-decor/logic";
+import {ElementArgs, reactDecor} from "../../src";
 
 declare const process: any;
 
@@ -35,8 +34,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
         return args;
     }
 
-    const fooDecorator = onEachElement(fooHook);
-    const barDecorator = onEachElement(barHook);
+    const fooDecorator = reactDecor.onEachElement(fooHook);
+    const barDecorator = reactDecor.onEachElement(barHook);
 
     it('multiple hooks work together', () => {
         @fooDecorator

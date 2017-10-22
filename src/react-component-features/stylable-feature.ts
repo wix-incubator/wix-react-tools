@@ -1,7 +1,6 @@
 import {RuntimeStylesheet} from "stylable";
-import {makeDecorReacWrapArguments} from "../react-decor/index";
+import {makeDecorReacWrapArguments, reactDecor} from "../react-decor/index";
 import {ElementArgs} from "../react-decor/common";
-import {reactDecor} from "../react-decor/logic";
 
 export const stylable = reactDecor.makeWrapperFactory((sheet: RuntimeStylesheet) => {
     function classNameMapper(name: string) {

@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {after, devMode, middleware, runInContext} from "../../src";
+import {devMode, runInContext, functionDecor} from "../../src";
 
 
 describe("function-decor dev mode warnings", () => {
@@ -14,7 +14,7 @@ describe("function-decor dev mode warnings", () => {
 
     describe("after", () => {
         function overrideMethodReturnedValueWithUndefined() {
-            const func = after(() => {
+            const func = functionDecor.after(() => {
             })(
                 function returnsValue() {
                     return {};
@@ -41,7 +41,7 @@ describe("function-decor dev mode warnings", () => {
 
     describe("middleware", () => {
         it("warns you when a middleware doesn't call its 'next' function (iff deMode is turned ON)", () => {
-            const duckWillQuack = middleware(function badLeeroyBrown() {/*Don't call next()*/
+            const duckWillQuack = functionDecor.middleware(function badLeeroyBrown() {/*Don't call next()*/
             })(function duckWillQuack() {
             });
             runInContext(devMode.ON, () => {
@@ -54,7 +54,7 @@ describe("function-decor dev mode warnings", () => {
         });
 
         it("doesn't warn you when a middleware DOES call its 'next' function (iff devMode is turned ON)", () => {
-            const duckWillQuack = middleware((next, args) => next(args))(function duckWillQuack() {
+            const duckWillQuack = functionDecor.middleware((next, args) => next(args))(function duckWillQuack() {
             });
 
             runInContext(devMode.ON, () => {
@@ -64,7 +64,7 @@ describe("function-decor dev mode warnings", () => {
         });
 
         it("doesn't warn you when a middleware doesn't call its 'next' function (iff devMode is turned OFF)", () => {
-            const duckWillQuack = middleware(function badLeeroyBrown() {/*Don't call next()*/
+            const duckWillQuack = functionDecor.middleware(function badLeeroyBrown() {/*Don't call next()*/
             })(function duckWillQuack() {
             });
 

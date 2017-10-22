@@ -1,4 +1,4 @@
-import {onRootElement, stylable} from "../../src";
+import {stylable, reactDecor} from "../../src";
 import {createGenerator, StateMap, Stylesheet} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
@@ -46,7 +46,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
         return selectWithState;
     }
 
-    const customWrapper = onRootElement<Props>((props: Props, args: ElementArgs<any>) => {
+    const customWrapper = reactDecor.onRootElement<Props>((props: Props, args: ElementArgs<any>) => {
         const styleState = {
             byDecorator: !!props.byDecorator,
             noRightBorderRadius: !!props.byRender

@@ -23,19 +23,18 @@ class DisposableComp extends React.Component<Props, any> implements disposable.T
     }
 }
 
-
 describe.assuming(inBrowser(), 'only in browser')("disposable decorator", () => {
     const clientRenderer = new ClientRenderer();
     afterEach(() => runInContext(devMode.OFF, () => clientRenderer.cleanup()));
 
     it('called on unmount', () => {
-        let sinonSpy = sinon.spy();
+        const spy = sinon.spy();
         const {container} = clientRenderer.render(<div/>);
 
-        clientRenderer.render(<div><DisposableComp hook={sinonSpy}/></div>, container);
-        expect(sinonSpy).to.have.callCount(0);
+        clientRenderer.render(<div><DisposableComp hook={spy}/></div>, container);
+        expect(spy).to.have.callCount(0);
 
         clientRenderer.render(<div/>, container);
-        expect(sinonSpy).to.have.callCount(1);
+        expect(spy).to.have.callCount(1);
     });
 });

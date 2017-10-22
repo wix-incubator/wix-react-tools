@@ -71,3 +71,5 @@ export function getInheritedClassStateProvider<P, T extends Class<object>>(provi
     inherited.unsafe.origin = inherited.origin.unsafe = unsafe(provider.stateId, inherited.origin);
     return inherited
 }
+
+// TODO: cached version

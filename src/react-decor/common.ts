@@ -15,7 +15,7 @@ import {
     SFC
 } from "react";
 import {Instance} from '../core/types';
-import {middleware} from "../functoin-decor/index";
+import {functionDecor} from "../functoin-decor/index";
 
 export function isNotEmptyArrayLike(arr: Array<any> | undefined | null): arr is Array<any> {
     return !!(arr && (arr.length > 0));
@@ -91,7 +91,7 @@ export function resetReactCreateElement() {
 }
 
 
-export const translateName = middleware((next: (args: [React.ComponentType]) => React.ComponentType, args: [React.ComponentType]) => {
+export const translateName = functionDecor.middleware((next: (args: [React.ComponentType]) => React.ComponentType, args: [React.ComponentType]) => {
     const result: React.ComponentType = next(args);
     if (!result.displayName && args[0].name) {
         result.displayName = args[0].name;

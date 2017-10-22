@@ -1,5 +1,5 @@
 import {Attributes, Component, ReactElement, ReactNode, ReactType} from "react";
-import {decorFunction} from "../functoin-decor/index";
+import {functionDecor} from "../functoin-decor/index";
 import {
     DecorReactHooks,
     ElementArgs,
@@ -50,7 +50,7 @@ const saveCreateElementArguments = (createElementResult: ReactElement<any>): Rea
     return createElementResult;
 };
 
-export const wrappedCreateElement = decorFunction({
+export const wrappedCreateElement = functionDecor.makeWrapper({
     before: [applyHooksOnArguments],
     after: [saveCreateElementArguments]
 })(originalReactCreateElement);

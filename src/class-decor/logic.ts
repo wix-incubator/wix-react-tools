@@ -2,6 +2,8 @@ import {Wrapper} from "../wrappers/index";
 import {Class, TypedPropertyDescriptorMap} from "../core/types";
 import {mergeOptionalArrays} from "../functoin-decor/common";
 import {ClassDecor} from "./index";
+import {privateState} from "../core/private-state";
+import {functionDecor} from "../functoin-decor/index";
 
 export type MethodWrapper = Wrapper<Function>;
 
@@ -54,7 +56,7 @@ export function makeClassDecorMetadata(constructorHooks: Array<ConstructorHook<a
 
 export function mergeClassDecorMetadata(md1: ClassMetaData, md2: ClassMetaData): ClassMetaData {
     return {
-        constructorHooks: mergeOptionalArrays(md1.constructorHooks, md2.constructorHooks),
+        constructorHooks: mergeOptionalArrays(md1.constructorHooks, md2.constructorHooks), //old be
         methodsMetadata: mergeMethodsMetadata(md1.methodsMetadata, md2.methodsMetadata),
         properties: Object.assign({}, md2.properties, md1.properties),
     };
@@ -69,19 +71,13 @@ function emptyMethod() {
 
 type DumbClass = new(...args: any[]) => object;
 
-function initializeClass(wrapperArgs: Partial<ClassMetaData>, clazz: Class<any>) {
-    const methodsMetadata = wrapperArgs.methodsMetadata;
-    if (methodsMetadata) {
-        // decorate class methods
-        for (const methodName in methodsMetadata) {
-            const wrappers = methodsMetadata[methodName];
-            if (clazz.prototype[methodName]) {
-                clazz.prototype[methodName] = wrappers.reduce(call, clazz.prototype[methodName]);
-            } else if (wrappers.force) {
-                clazz.prototype[methodName] = wrappers.reduce(call, emptyMethod);
-            }
-        }
-    }
+/**
+ * initialize decorated class (wrapped methods and added properties)
+ * @param {Partial<ClassMetaData>} wrapperArgs class-decor metadata
+ * @param {Class<any>} clazz class to initialize
+ */
+function initializeExtended(wrapperArgs: Partial<ClassMetaData>, clazz: Class<any>) {
+    initializeConstructor(wrapperArgs, clazz);
     const properties = wrapperArgs.properties;
     if (properties) {
         // define properties
@@ -89,21 +85,52 @@ function initializeClass(wrapperArgs: Partial<ClassMetaData>, clazz: Class<any>)
     }
 }
 
-export function classDecorWrapper<T extends Class<object>>(this : ClassDecor, target: T): T {
+/**
+ * initialize wrapped methods of constructor that inherits (or is itself) a decorated class
+ * @param {Partial<ClassMetaData>} wrapperArgs
+ * @param {Class<any>} clazz
+ */
+function initializeConstructor(wrapperArgs: Partial<ClassMetaData>, clazz: Class<any>) {
+    initCtor(clazz);
+    const methodsMetadata = wrapperArgs.methodsMetadata;
+    if (methodsMetadata) {
+        // decorate class methods
+        for (const methodName in methodsMetadata) {
+            const wrappers = methodsMetadata[methodName];
+            let method: Function | null = null;
+            if (clazz.prototype[methodName]) {
+                method = functionDecor.normalize(clazz.prototype[methodName]);
+            } else if (wrappers.force) {
+                method = emptyMethod;
+            }
+
+            if (method) {
+                clazz.prototype[methodName] = wrappers.reduce(call, method);
+            }
+        }
+    }
+}
+
+const initCtor = privateState<true, Class<any>>('class-decor-initialized', () => true);
+
+export function classDecorWrapper<T extends Class<object>>(this: ClassDecor, target: T): T {
     if (this.isThisWrapped(target)) {
         return target;
     }
     const classDecor = this;
-    let initialized = false; // TODO measure if having a flag in parent scope is faster than private-state of `true`
 
     class Extended extends (target as any as DumbClass) {
         constructor(...args: any[]) {
             super(...args);
             const wrapperArgs = classDecor.getWrapperArgs(Extended);
             if (wrapperArgs) {
-                if (!initialized) {
-                    initialized = true;
-                    initializeClass(wrapperArgs, Extended);
+                if (!initCtor.hasState(Extended)) {
+                    initializeExtended(wrapperArgs, Extended);
+                }
+                const ctor = this.constructor as Class<any>;
+                // `classDecor.getWrapped(ctor) === target` asserts that ctor is initialized after initializeExtended() of all of its wrapped ancestors
+                if (!initCtor.hasState(ctor) && classDecor.getWrapped(ctor) === target) {
+                    initializeConstructor(wrapperArgs, ctor);
                 }
                 const constructorHooks = wrapperArgs.constructorHooks;
                 if (constructorHooks) {

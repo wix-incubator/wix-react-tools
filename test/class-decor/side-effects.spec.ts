@@ -1,6 +1,6 @@
 import {expect, sinon} from "test-drive-react";
 import {getHeritage, resetAll, spyAll} from "../test-drivers/test-tools";
-import {before, after, chain, Class, classDecor, middleware} from "../../src";
+import { chain, Class, classDecor, functionDecor} from "../../src";
 
 const METHOD = "myMethod";
 
@@ -12,9 +12,9 @@ class Foo {
 describe("class decor side-effect", () => {
     const decorate = chain<Foo>(
         classDecor.onInstance<Foo>(() => undefined),
-        classDecor.method<Foo>(METHOD, before(() => undefined)),
-        classDecor.method<Foo>(METHOD, after(() => undefined)),
-        classDecor.method<Foo>(METHOD, middleware(() => undefined))
+        classDecor.method<Foo>(METHOD, functionDecor.before(() => undefined)),
+        classDecor.method<Foo>(METHOD, functionDecor.after(() => undefined)),
+        classDecor.method<Foo>(METHOD, functionDecor.middleware(() => undefined))
     );
 
     // fixture class tree
@@ -57,7 +57,7 @@ describe("class decor side-effect", () => {
         });
 
         beforeEach('init classes', () => {
-            @classDecor.method<any>(METHOD, after(hooks.spySuper))
+            @classDecor.forceMethod<any>(METHOD, functionDecor.after(hooks.spySuper))
             class _Super {
             }
 
@@ -65,7 +65,7 @@ describe("class decor side-effect", () => {
         });
 
         it("init of parent class do not leak to children", () => {
-            @classDecor.method<any>(METHOD, after(hooks.spy1))
+            @classDecor.method<any>(METHOD, functionDecor.after(hooks.spy1))
             class Child1 extends Super {
 
             }
@@ -106,11 +106,11 @@ describe("class decor side-effect", () => {
 
         it("decorations on child of decorated class do not leak to siblings", () => {
 
-            @classDecor.method<any>(METHOD, after(hooks.spy1))
+            @classDecor.method<any>(METHOD, functionDecor.after(hooks.spy1))
             class Child1 extends Super {
             }
 
-            @classDecor.method<any>(METHOD, after(hooks.spy2))
+            @classDecor.method<any>(METHOD, functionDecor.after(hooks.spy2))
             class Child2 extends Super {
             }
 
@@ -138,7 +138,7 @@ describe("class decor side-effect", () => {
 
             it("should not override a method on the class itself", () => {
                 const spy = sinon.spy();
-                const NewClass = classDecor.method<any>(METHOD, after(spy))(Blah);
+                const NewClass = classDecor.method<any>(METHOD, functionDecor.after(spy))(Blah);
                 const inst = new (NewClass)();
                 inst.myMethod();
 

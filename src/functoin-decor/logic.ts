@@ -5,7 +5,7 @@ export function funcDecorMetadataMerge(md1: FunctionMetaData, md2: FunctionMetaD
         name: md1.name || md2.name,
         middleware: mergeOptionalArrays(md1.middleware, md2.middleware),
         before: mergeOptionalArrays(md1.before, md2.before),
-        after: mergeOptionalArrays(md1.after, md2.after),
+        after: mergeOptionalArrays(md2.after, md1.after),
     };
 }
 

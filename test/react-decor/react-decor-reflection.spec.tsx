@@ -1,7 +1,7 @@
 import * as React from "react";
 import {expect, sinon} from "test-drive-react";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
-import {decorateReactComponent, ElementArgs, reactDecor, StatelessElementHook} from "../../src";
+import {ElementArgs, reactDecor, StatelessElementHook} from "../../src";
 
 type PropsWithName = { name: string };
 
@@ -12,8 +12,8 @@ const SFComp: React.SFC<PropsWithName> = ({name}) => (
 const hook: StatelessElementHook<PropsWithName> = (_p: PropsWithName, args: ElementArgs<any>): ElementArgs<any> => {
     return args;
 };
-const wrapper = decorateReactComponent([hook]);
-const wrapper2 = decorateReactComponent([hook]);
+const wrapper = reactDecor.makeWrapper([hook]);
+const wrapper2 = reactDecor.makeWrapper([hook]);
 
 describe("react-decorator-reflection", () => {
     describe("reactDecor.isWrapped", () => {

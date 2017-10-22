@@ -1,5 +1,5 @@
 import {Disposers} from "../core/disposers";
-import {after} from "../functoin-decor";
+import {functionDecor} from "../functoin-decor";
 import {classDecor} from "../class-decor";
 import {privateState, StateProvider} from "../core/private-state";
 import {chain} from "../core/functional";
@@ -20,8 +20,8 @@ export namespace disposable {
     }
 }
 
-const hookUnmount = classDecor.method<React.Component>("componentWillUnmount",
-    after(function (methodReturn) {
+const hookUnmount = classDecor.forceMethod<React.Component>("componentWillUnmount",
+    functionDecor.after(function (methodReturn) {
         if (privateDisposers.hasState(this)) {
             privateDisposers(this).disposeAll();
         }
