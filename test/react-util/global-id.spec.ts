@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { expect } from 'test-drive-react';
-import { globalId } from '../../src';
+import {expect} from 'test-drive-react';
+import {globalId} from '../../src';
 
-class TestClass extends React.Component<Partial<globalId.Props>> {}
+class TestClass extends React.Component<Partial<globalId.Props>> {
+}
 
-const { getRootId, getLocalId } = globalId;
+const {getRootId, getLocalId} = globalId;
 
 describe('GlobalID', () => {
     const id = 'pancake';
@@ -16,7 +17,7 @@ describe('GlobalID', () => {
             const componentInstance = new TestClass();
             expect(getRootId(componentInstance)).to.equal(getRootId(componentInstance));
 
-            const props = { id };
+            const props = {id};
             expect(getRootId(props)).to.equal(getRootId(props));
         });
 
@@ -25,8 +26,8 @@ describe('GlobalID', () => {
             const differentInstance = new TestClass();
             expect(getRootId(componentInstance)).to.not.equal(getRootId(differentInstance));
 
-            const props = { id };
-            const differentProps = { id: anotherId };
+            const props = {id};
+            const differentProps = {id: anotherId};
             expect(getRootId(props)).to.not.equal(getRootId(differentProps));
         });
 
@@ -38,7 +39,7 @@ describe('GlobalID', () => {
             const componentInstance = new TestClass({id});
             expect(getRootId(componentInstance)).to.equal(id);
 
-            const props = { id: anotherId };
+            const props = {id: anotherId};
             expect(getRootId(props)).to.equal(anotherId);
         });
 

@@ -1,5 +1,5 @@
 import {expect} from "test-drive";
-import {devMode, getGlobalConfig, runInContext, overrideGlobalConfig} from "../../src";
+import {devMode, getGlobalConfig, overrideGlobalConfig, runInContext} from "../../src";
 
 declare const process: { env: any };
 
@@ -29,6 +29,10 @@ describe('dev-mode', () => {
         it("devMode.OFF un-sets global config to dev-mode", () => {
             const nodeEnv = runInContext(devMode.OFF, () => process.env.NODE_ENV);
             expect(nodeEnv).to.eql('production');
+        });
+
+        it("process.env.NODE_ENV is not set to 'production' by default during tests", () => {
+            expect(process.env.NODE_ENV).to.not.eql('production');
         });
     });
 });

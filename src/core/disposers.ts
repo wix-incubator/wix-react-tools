@@ -1,6 +1,7 @@
 export const UNCAUGHT_DISPOSER_ERROR_MESSAGE = 'uncaught disposer error';
 
 let i = 0;
+
 function uniqueKey(): string {
     return '$$$' + (i++);
 }
@@ -33,6 +34,12 @@ export class Disposers {
         delete this.disposers[key];
     }
 
+    disposeAll(): void {
+        Object.keys(this.disposers)
+            .forEach(k => this.execute(k));
+        this.disposers = {};
+    }
+
     private execute(key: string) {
         try {
             if (this.disposers.hasOwnProperty(key)) {
@@ -41,11 +48,5 @@ export class Disposers {
         } catch (e) {
             console.warn(UNCAUGHT_DISPOSER_ERROR_MESSAGE, e);
         }
-    }
-
-    disposeAll(): void {
-        Object.keys(this.disposers)
-            .forEach(k => this.execute(k));
-        this.disposers = {};
     }
 }

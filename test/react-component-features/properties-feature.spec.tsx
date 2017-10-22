@@ -2,18 +2,20 @@ import {inBrowser} from "mocha-plugin-env";
 import {ClientRenderer, expect} from "test-drive-react";
 import {properties} from "../../src";
 import * as React from "react";
+import {runInContext} from "../../src/core/config";
+import {devMode} from "../../src/core/dev-mode";
 
 const ROOT_ATTRIBUTE_NAME = 'data-reactroot';
 
 describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
 
     const clientRenderer = new ClientRenderer();
-    afterEach(() => clientRenderer.cleanup());
+    afterEach(() => runInContext(devMode.OFF, () => clientRenderer.cleanup()));
 
     it("works with empty SFC", () => {
         const Comp = properties(() => <div data-automation-id="Root"/>);
 
-        const {select} = clientRenderer.render(<Comp />);
+        const {select} = clientRenderer.render(<Comp/>);
 
         expect(select('Root')).to.have.attribute(ROOT_ATTRIBUTE_NAME);
     });
@@ -26,7 +28,7 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
             }
         }
 
-        const {select} = clientRenderer.render(<Comp />);
+        const {select} = clientRenderer.render(<Comp/>);
 
         expect(select('Root')).to.have.attribute(ROOT_ATTRIBUTE_NAME);
     })

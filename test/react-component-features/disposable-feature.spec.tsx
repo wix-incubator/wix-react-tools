@@ -2,6 +2,8 @@ import * as React from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {disposable, Disposers} from "../../src";
 import {inBrowser} from "mocha-plugin-env/dist/src";
+import {runInContext} from "../../src/core/config";
+import {devMode} from "../../src/core/dev-mode";
 
 interface Props {
     hook: Function
@@ -17,23 +19,22 @@ class DisposableComp extends React.Component<Props, any> implements disposable.T
     }
 
     render() {
-        return <div />;
+        return <div/>;
     }
 }
 
-
 describe.assuming(inBrowser(), 'only in browser')("disposable decorator", () => {
     const clientRenderer = new ClientRenderer();
-    afterEach(() => clientRenderer.cleanup());
+    afterEach(() => runInContext(devMode.OFF, () => clientRenderer.cleanup()));
 
     it('called on unmount', () => {
-        let sinonSpy = sinon.spy();
-        const {container} = clientRenderer.render(<div />);
+        const spy = sinon.spy();
+        const {container} = clientRenderer.render(<div/>);
 
-        clientRenderer.render(<div><DisposableComp hook={sinonSpy} /></div>, container);
-        expect(sinonSpy).to.have.callCount(0);
+        clientRenderer.render(<div><DisposableComp hook={spy}/></div>, container);
+        expect(spy).to.have.callCount(0);
 
-        clientRenderer.render(<div />, container);
-        expect(sinonSpy).to.have.callCount(1);
+        clientRenderer.render(<div/>, container);
+        expect(spy).to.have.callCount(1);
     });
 });

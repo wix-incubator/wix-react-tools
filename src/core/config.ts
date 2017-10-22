@@ -4,6 +4,7 @@ import {GlobalConfig} from "./types";
 export interface Dictionary {
     [index: string]: any;
 }
+
 let internalState: Dictionary = {};
 
 let dirty = true;
@@ -11,25 +12,32 @@ let dirty = true;
 let publicState: Readonly<Dictionary> = {};
 
 // TODO use eventEmitter?
-type Listener = <T>(newVal:any)=>void;
-let listeners : {[k:string]:Listener[]} = {};
+type Listener = <T>(newVal: any) => void;
+let listeners: { [k: string]: Listener[] } = {};
 
+function callListeners(newConfig: any, replace: boolean) {
+    const newKeys = Object.keys(newConfig);
+    const propNames = replace ? newKeys.concat(Object.keys(internalState)) : newKeys;
+    propNames.forEach(function (name: string) {
+        if ((internalState[name] !== newConfig[name]) && listeners[name]) {
+            listeners[name].forEach(l => l(newConfig[name]));
+        }
+    });
+}
 
 export function overrideGlobalConfig<T extends object = GlobalConfig>(config: T): void {
     unsafeOverrideGlobalConfig(deepClone(config));
 }
 
- function unsafeOverrideGlobalConfig<T extends object = GlobalConfig>(config: T): void {
+function unsafeOverrideGlobalConfig<T extends object = GlobalConfig>(config: T): void {
+    callListeners(config, true);
     internalState = config;
     dirty = true;
 }
 
 export function setGlobalConfig<T extends object = GlobalConfig>(config: T): void {
+    callListeners(config, false);
     deepMergeClone(internalState, config);
-    const propNames = Object.keys(config);
-    propNames.forEach(function (name) {
-        listeners[name] && listeners[name].forEach(l => l(internalState[name]));
-    });
     dirty = true;
 }
 
@@ -40,7 +48,7 @@ export function getGlobalConfig<T extends object = GlobalConfig>(): T {
     return publicState as T;
 }
 
-export function onGlobalConfig(name:string, listener: <T>(newVal:any)=>void){
+export function onGlobalConfig(name: string, listener: <T>(newVal: any) => void) {
     listeners[name] ? listeners[name].push(listener) : listeners[name] = [listener];
 }
 
@@ -116,4 +124,4 @@ function deepMergeClone(dest: Dictionary, src: Dictionary, path: string[] = []):
 // make module a singleton
 
 declare let module: any;
-module.exports = ifndef('react-base-global-config-0', module.exports);
+module.exports = ifndef('global-config-0', module.exports);

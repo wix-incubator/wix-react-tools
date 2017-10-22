@@ -1,26 +1,23 @@
 import {ComponentProps, rootProps} from "./root-props";
 import {ElementArgs} from "../react-decor/common";
-import {decorateReactComponent, Wrapper} from "../react-decor/index";
+import {makeRootOnly, reactDecor, ReactFeature} from "../react-decor/index";
 
-
-function makeDecorator(blacklist?: Array<string>): Wrapper<ComponentProps> {
-    return decorateReactComponent({
-        onRootElement: [(props: any, args: ElementArgs<any>) => {
-            args.elementProps = rootProps(props, args.elementProps, blacklist);
-            return args;
-        }]
-    });
+function makeDecorator(blacklist?: Array<string>): ReactFeature<ComponentProps> {
+    return reactDecor.makeFeature([makeRootOnly((props: any, args: ElementArgs<any>) => {
+        args.elementProps = rootProps(props, args.elementProps, blacklist);
+        return args;
+    })]);
 }
 
 function without(blacklist: Array<string>) {
     return makeDecorator(blacklist);
 }
 
-export type Properties =  Wrapper<ComponentProps> & {
+export type Properties = ReactFeature<ComponentProps> & {
     /**
      * black-list some of the props so that they are not copied automatically
      */
-    without: (blacklist: Array<string>) => Wrapper<ComponentProps>;
+    without: (blacklist: Array<string>) => ReactFeature<ComponentProps>;
 }
 
 export namespace properties {

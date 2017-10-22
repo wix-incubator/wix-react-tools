@@ -1,15 +1,16 @@
-import {stylable, isDecorated} from "../../src";
+import {reactDecor, stylable} from "../../src";
 import {createGenerator} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
-import {simulateRender} from "../../src/react-decor/react-decor-class";
+import {runInContext} from "../../src/core/config";
+import {devMode} from "../../src/core/dev-mode";
 
 
 describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
 
     const clientRenderer = new ClientRenderer();
-    afterEach(() => clientRenderer.cleanup());
+    afterEach(() => runInContext(devMode.OFF, () => clientRenderer.cleanup()));
 
     const {fromCSS} = createGenerator();
     const {runtime} = fromCSS(`
@@ -25,6 +26,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
                 </div>
             }
         }
+
         const {select, container} = clientRenderer.render(<Comp> </Comp>);
 
         expect(select('Root')).to.have.class(runtime.root);
@@ -43,6 +45,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
                 </div>
             }
         }
+
         const {select, container} = clientRenderer.render(<Comp> </Comp>);
 
         expect(select('Root')).to.have.class(runtime.root);
@@ -77,7 +80,8 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
                     </div>
                 }
             }
-            const {select} = clientRenderer.render(<Comp > </Comp>);
+
+            const {select} = clientRenderer.render(<Comp> </Comp>);
 
             expect(select('Root')).to.have.attribute(rootStateAttrName);
             expect(select('Node')).to.have.attribute(nodeStateAttrName);
@@ -94,7 +98,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
                 }
             }
 
-            const rootElement = simulateRender(Comp);
+            const rootElement = new Comp().render();
             expect(rootElement && rootElement.props).to.not.have.property('style-state');
         });
     });
@@ -102,12 +106,14 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
     describe('decoration', () => {
         @stylable(runtime)
         class Comp extends React.Component {
-            render() { return <div data-automation-id="Root" /> }
+            render() {
+                return <div data-automation-id="Root"/>
+            }
         }
 
         it('should return true when checking isDecorated on a component decorated with stylable', () => {
-            expect(isDecorated(Comp)).to.equal(true);
-            expect(isDecorated(Comp, stylable)).to.equal(true);
+            expect(reactDecor.isDecorated(Comp)).to.equal(true);
+            expect(reactDecor.isDecorated(Comp, stylable)).to.equal(true);
         });
     });
 });

@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { isComponentInstance } from '../react-decor/common';
-import { privateState, StateProvider } from '../core/private-state';
+import {isComponentInstance} from '../react-decor/common';
+import {privateState, StateProvider} from '../core/private-state';
 
 let counter: number = 0;
 const provider: StateProvider<string> = privateState('globalId', () => `${counter++}`);

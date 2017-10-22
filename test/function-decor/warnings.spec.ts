@@ -1,9 +1,8 @@
 import {expect, sinon} from "test-drive-react";
-import {after, GlobalConfig, middleware, runInContext, devMode} from "../../src";
+import {devMode, functionDecor, runInContext} from "../../src";
 
 
-// TODO: change tests to function-decor style (instead of class decor) and make them pass
-describe("class-decor dev mode warnings", () => {
+describe("function-decor dev mode warnings", () => {
     let warn = console.warn;
     beforeEach("replace console.warn with spy", () => {
         console.warn = sinon.spy();
@@ -15,28 +14,26 @@ describe("class-decor dev mode warnings", () => {
 
     describe("after", () => {
         function overrideMethodReturnedValueWithUndefined() {
-            @after<Foo>(() => undefined, 'returnsValue')
-            class Foo {
-                returnsValue() {
+            const func = functionDecor.after(() => {
+            })(
+                function returnsValue() {
                     return {};
-                }
-            }
-            const inst = new Foo();
+                });
 
-            const res = inst.returnsValue();
+            const res = func();
 
             expect(res).to.equal(undefined);
         }
 
         it("prompts a warning when in dev mode", () => {
-            runInContext<GlobalConfig>(devMode.ON, overrideMethodReturnedValueWithUndefined);
+            runInContext(devMode.ON, overrideMethodReturnedValueWithUndefined);
 
             expect(console.warn).to.have.callCount(1);
             expect(console.warn).to.have.been.calledWith('@after returnsValue Did you forget to return a value?');
         });
 
         it("does not prompt a warning when not in dev mode", () => {
-            runInContext<GlobalConfig>({devMode: false}, overrideMethodReturnedValueWithUndefined);
+            runInContext(devMode.OFF, overrideMethodReturnedValueWithUndefined);
 
             expect(console.warn).to.have.callCount(0);
         });
@@ -44,16 +41,11 @@ describe("class-decor dev mode warnings", () => {
 
     describe("middleware", () => {
         it("warns you when a middleware doesn't call its 'next' function (iff deMode is turned ON)", () => {
-            @middleware<Duck>(function badLeeroyBrown() {
-                //Don't call next()
-            }, "duckWillQuack")
-            class Duck {
-                duckWillQuack: () => void;
-            }
-            let duck = new Duck();
-
-            runInContext<GlobalConfig>(devMode.ON, () => {
-                duck.duckWillQuack();
+            const duckWillQuack = functionDecor.middleware(function badLeeroyBrown() {/*Don't call next()*/
+            })(function duckWillQuack() {
+            });
+            runInContext(devMode.ON, () => {
+                duckWillQuack();
                 expect(console.warn).to.have.callCount(1);
                 expect(console.warn).to.have.been.calledWithMatch(/\@middleware/);
                 expect(console.warn).to.have.been.calledWithMatch(/badLeeroyBrown/);
@@ -62,31 +54,22 @@ describe("class-decor dev mode warnings", () => {
         });
 
         it("doesn't warn you when a middleware DOES call its 'next' function (iff devMode is turned ON)", () => {
-            @middleware<Duck>((instance, next, args) => {
-                next(args);
-            }, "duckWillQuack")
-            class Duck {
-                duckWillQuack: () => void;
-            }
-            let duck = new Duck();
+            const duckWillQuack = functionDecor.middleware((next, args) => next(args))(function duckWillQuack() {
+            });
 
-            runInContext<GlobalConfig>(devMode.ON, () => {
-                duck.duckWillQuack();
+            runInContext(devMode.ON, () => {
+                duckWillQuack();
                 expect(console.warn).to.have.callCount(0);
             });
         });
 
         it("doesn't warn you when a middleware doesn't call its 'next' function (iff devMode is turned OFF)", () => {
-            @middleware<Duck>(() => {
-                //Don't call next()
-            }, "duckWillQuack")
-            class Duck {
-                duckWillQuack: () => void;
-            }
-            let duck = new Duck();
+            const duckWillQuack = functionDecor.middleware(function badLeeroyBrown() {/*Don't call next()*/
+            })(function duckWillQuack() {
+            });
 
-            runInContext<GlobalConfig>({devMode: false}, () => {
-                duck.duckWillQuack();
+            runInContext(devMode.OFF, () => {
+                duckWillQuack();
                 expect(console.warn).to.have.callCount(0);
             });
         });

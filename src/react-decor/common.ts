@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
     Attributes,
     ClassicComponent,
@@ -13,9 +14,11 @@ import {
     ReactSVG,
     SFC
 } from "react";
-import { Instance } from '../core/types';
+import {Instance} from '../core/types';
+import {functionDecor} from "../functoin-decor/index";
+import {Feature} from "../wrappers/index";
 
-export function isNotEmptyArrayLike(arr: Array<any> | undefined): arr is Array<any> {
+export function isNotEmptyArrayLike(arr: Array<any> | undefined | null): arr is Array<any> {
     return !!(arr && (arr.length > 0));
 }
 
@@ -54,28 +57,43 @@ export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): 
     return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
 }
 
-export type Wrapper<P extends object> = {
-    <T extends ComponentType<P>>(comp: T):T;
-}
-
-export interface ElementHook<P extends object, T extends Component<P> = Component<P>> {
-    <E = object>(this: Instance<T>|undefined, props: P, args: ElementArgs<E>): ElementArgs<E>
-}
+export type ReactFeature<P extends object> = Feature<ComponentType<P>>;
 
 export interface StatefulElementHook<P extends object, T extends Component<P> = Component<P>> {
-    <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>): ElementArgs<E>
+    rootOnly?: boolean;
+
+    <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>, isRoot: boolean): ElementArgs<E>
 }
 
-export interface StatelessElementHook<P extends object> {
-    <E = object>(props: P, args: ElementArgs<E>): ElementArgs<E>
+export type StatelessElementHook<P extends object> = StatefulElementHook<P, any>;
+
+export type StatelessDecorReactHooks<P extends object> = Array<StatelessElementHook<P>>;
+
+export type DecorReactHooks<P extends object, T extends Component<P> = Component<P>> = Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
+
+export interface ReactDecoration<P extends object, T extends Component<P> = Component<P>> {
+    statelessHooks: Array<StatelessElementHook<P>>;
+    classHooks: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
 }
 
-export interface StatelessDecorReactHooks<P extends object> {
-    onRootElement?: Array<StatelessElementHook<P>>;
-    onEachElement?: Array<StatelessElementHook<P>>;
+export type Stateful = 'T' | 'F';
+export type ElementHook<S extends Stateful, P extends object> = {
+    T: StatefulElementHook<P>;
+    F: StatelessElementHook<P>;
+}[S];
+
+
+export const originalReactCreateElement: typeof React.createElement = React.createElement;
+
+export function resetReactCreateElement() {
+    (React as any).createElement = originalReactCreateElement;
 }
 
-export interface DecorReactHooks<P extends object, T extends Component<P> = Component<P>> {
-    onRootElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
-    onEachElement?: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
-}
+
+export const translateName = functionDecor.middleware((next: (args: [React.ComponentType]) => React.ComponentType, args: [React.ComponentType]) => {
+    const result: React.ComponentType = next(args);
+    if (!result.displayName && args[0].name) {
+        result.displayName = args[0].name;
+    }
+    return result;
+});

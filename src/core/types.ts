@@ -3,6 +3,10 @@ export type Class<T extends object> = {
     new(...args: any[]): T
 };
 
+export function isAnyClass(func: any): func is Class<object> {
+    return func.prototype && func.prototype.constructor === func;
+}
+
 export function isClass<T extends object>(protoValidator: (proto: object) => proto is T, func: Function): func is Class<T> {
     return func.prototype && (func.prototype.constructor === func) && protoValidator(func.prototype);
 }
@@ -22,7 +26,9 @@ export interface TypedPropertyDescriptor<T> {
     enumerable?: boolean;
     value?: T;
     writable?: boolean;
+
     get? (): T;
+
     set? (v: T): void;
 }
 

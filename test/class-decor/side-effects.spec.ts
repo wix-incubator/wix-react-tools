@@ -1,6 +1,6 @@
 import {expect, sinon} from "test-drive-react";
 import {getHeritage, resetAll, spyAll} from "../test-drivers/test-tools";
-import {after, before, chain, Class, middleware, onInstance} from "../../src";
+import {chain, Class, classDecor, functionDecor} from "../../src";
 
 const METHOD = "myMethod";
 
@@ -8,33 +8,38 @@ class Foo {
     myMethod() {
     }
 }
+
 describe("class decor side-effect", () => {
     const decorate = chain<Foo>(
-        onInstance<Foo>(() => undefined),
-        before<Foo>(() => undefined, METHOD),
-        after<Foo>(() => undefined, METHOD),
-        middleware<Foo>(() => undefined, METHOD)
+        classDecor.onInstance<Foo>(() => undefined),
+        classDecor.method<Foo>(METHOD, functionDecor.before(() => undefined)),
+        classDecor.method<Foo>(METHOD, functionDecor.after(() => undefined)),
+        classDecor.method<Foo>(METHOD, functionDecor.middleware(() => undefined))
     );
 
     // fixture class tree
     @decorate @decorate @decorate
     class Bar extends Foo {
     }
+
     @decorate @decorate @decorate
     class Biz extends Bar {
     }
+
     class Baz extends Biz {
     }
+
     const NUM_USER_CLASSES = 3; // [Bar, Biz, Baz].length
+
+    it("reflects decoration well", () => {
+        expect(classDecor.isDecorated(Foo), 'Foo').to.equal(false);
+        expect(classDecor.isDecorated(Bar), 'Bar').to.equal(true);
+        expect(classDecor.isDecorated(Biz), 'Biz').to.equal(true);
+        expect(classDecor.isDecorated(Baz), 'Baz').to.equal(true);
+    });
 
     it("only add one class to heritage per decorated level (2 total)", () => {
         expect(getHeritage(Baz).length, 'getHeritage(Baz).length').to.eql(getHeritage(Foo).length + NUM_USER_CLASSES + 2);
-    });
-
-    xit("does not change constructor name(s)", () => {
-        expect(new Bar().constructor.name, "new Bar().constructor.name").to.equal("Bar");
-        expect(new Biz().constructor.name, "new Biz().constructor.name").to.equal("Biz");
-        expect(new Baz().constructor.name, "new Baz().constructor.name").to.equal("Baz");
     });
 
     describe('heritage boundaries', () => {
@@ -52,17 +57,19 @@ describe("class decor side-effect", () => {
         });
 
         beforeEach('init classes', () => {
-            @after(hooks.spySuper, METHOD)
+            @classDecor.forceMethod<any>(METHOD, functionDecor.after(hooks.spySuper))
             class _Super {
             }
+
             Super = _Super;
         });
 
         it("init of parent class do not leak to children", () => {
-            @after(hooks.spy1, METHOD)
+            @classDecor.method<any>(METHOD, functionDecor.after(hooks.spy1))
             class Child1 extends Super {
 
             }
+
             new Super();
             const c1Inst = new Child1();
 
@@ -76,11 +83,13 @@ describe("class decor side-effect", () => {
                     hooks.spy1();
                 }
             }
+
             class Child2 extends Super implements Foo {
                 myMethod() {
                     hooks.spy2();
                 }
             }
+
             const c1Inst = new Child1();
             c1Inst.myMethod();
             expect(hooks.spySuper, 'after c1Inst.myMethod()').to.have.callCount(1);
@@ -97,11 +106,11 @@ describe("class decor side-effect", () => {
 
         it("decorations on child of decorated class do not leak to siblings", () => {
 
-            @after(hooks.spy1, METHOD)
+            @classDecor.method<any>(METHOD, functionDecor.after(hooks.spy1))
             class Child1 extends Super {
             }
 
-            @after(hooks.spy2, METHOD)
+            @classDecor.method<any>(METHOD, functionDecor.after(hooks.spy2))
             class Child2 extends Super {
             }
 
@@ -129,7 +138,8 @@ describe("class decor side-effect", () => {
 
             it("should not override a method on the class itself", () => {
                 const spy = sinon.spy();
-                const inst = new (after(spy, METHOD, Blah))();
+                const NewClass = classDecor.method<any>(METHOD, functionDecor.after(spy))(Blah);
+                const inst = new (NewClass)();
                 inst.myMethod();
 
                 expect(spy).to.have.callCount(1);

@@ -1,10 +1,12 @@
 import {expect} from "test-drive";
-import {privateState, runInContext, STATE_DEV_MODE_KEY, devMode} from "../../src";
+import {devMode, privateState, runInContext, STATE_DEV_MODE_KEY} from "../../src";
 
 let ids = ["ID0", "ID1", "ID2"];
+
 function emptyState(_: any) {
     return {};
 }
+
 type State = {
     foo?: string
     bar?: string

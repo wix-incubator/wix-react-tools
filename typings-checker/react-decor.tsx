@@ -1,4 +1,4 @@
-import {decorateReactComponent, StatelessElementHook} from "../dist/src/index";
+import {reactDecor, StatelessElementHook} from "../dist/src/index";
 
 declare const SFComp: React.SFC<PropsWithName>;
 declare const SFComp2: React.SFC<PropsWithName2>;
@@ -8,33 +8,21 @@ type PropsWithName = { name: string };
 type PropsWithName2 = { name: Function };
 
 describe('React Decorator', () => {
-    // $ExpectType Wrapper<{}>
-    decorateReactComponent({});
+    // $ExpectType Feature<ComponentType<{}>>
+    reactDecor.makeFeature([]);
 
-    // $ExpectType Wrapper<{}>
-    decorateReactComponent({}, {});
+    // $ExpectType Feature<ComponentType<{}>>
+    reactDecor.makeFeature([], []);
 
-    // $ExpectType Wrapper<PropsWithName>
-    decorateReactComponent(
-        {
-            onEachElement: [hook],
-            onRootElement: [hook]
-        });
+    // $ExpectType Feature<ComponentType<PropsWithName>>
+    reactDecor.makeFeature([hook]);
 
-    // $ExpectType Wrapper<PropsWithName>
-    decorateReactComponent(
-        {
-            onEachElement: [hook],
-            onRootElement: [hook]
-        },
-        {
-            onEachElement: [hook],
-            onRootElement: [hook]
-        });
+    // $ExpectType Feature<ComponentType<PropsWithName>>
+    reactDecor.makeFeature([hook], [hook]);
 
     // $ExpectType StatelessComponent<PropsWithName>
-    decorateReactComponent({}, {})(SFComp);
+    reactDecor.makeFeature([], [])(SFComp);
 
     // $ExpectType ComponentClass<PropsWithName>
-    decorateReactComponent({}, {})(ClassComp);
+    reactDecor.makeFeature([], [])(ClassComp);
 });
