@@ -1,4 +1,4 @@
-import {after, before, decorFunction, middleware} from "../dist/src/index";
+import {functionDecor} from "../dist/src/index";
 
 declare function original(text: string): string;
 
@@ -10,39 +10,39 @@ declare function mwHook(next: (methodArguments: [string]) => string, methodArgum
 
 describe(`middleware`, () => {
     // $ExpectType (text: string) => string
-    middleware(mwHook)(original);
+    functionDecor.middleware(mwHook)(original);
     // $ExpectType (text: "foo") => "bar"
-    middleware(mwHook)(subset);
+    functionDecor.middleware(mwHook)(subset);
 })
 
 declare function bHook(methodArguments: [string]): [string];
 
 describe(`before`, () => {
     // $ExpectType (text: string) => string
-    before(bHook)(original);
+    functionDecor.before(bHook)(original);
     // $ExpectType (text: "foo") => "bar"
-    before(bHook)(subset);
+    functionDecor.before(bHook)(subset);
 })
 
 declare function aHook(methodResult: string): string;
 
 describe(`after`, () => {
     // $ExpectType (text: string) => string
-    after(aHook)(original);
+    functionDecor.after(aHook)(original);
     // $ExpectType (text: "foo") => "bar"
-    after(aHook)(subset);
+    functionDecor.after(aHook)(subset);
 })
 
 describe(`decorFunction`, () => {
     // $ExpectType (text: string) => string
-    decorFunction({
+    functionDecor.makeWrapper({
         middleware: [mwHook],
         before: [bHook],
         after: [aHook]
     })(original);
 
     // $ExpectType (text: "foo") => "bar"
-    decorFunction({
+    functionDecor.makeWrapper({
         middleware: [mwHook],
         before: [bHook],
         after: [aHook]
