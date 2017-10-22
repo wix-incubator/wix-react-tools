@@ -32,10 +32,10 @@ describe("class decor side-effect", () => {
     const NUM_USER_CLASSES = 3; // [Bar, Biz, Baz].length
 
     it("reflects decoration well", () => {
-        expect(classDecor.isWrapped(Foo), 'Foo').to.equal(false);
-        expect(classDecor.isWrapped(Bar), 'Bar').to.equal(true);
-        expect(classDecor.isWrapped(Biz), 'Biz').to.equal(true);
-        expect(classDecor.isWrapped(Baz), 'Baz').to.equal(true);
+        expect(classDecor.isDecorated(Foo), 'Foo').to.equal(false);
+        expect(classDecor.isDecorated(Bar), 'Bar').to.equal(true);
+        expect(classDecor.isDecorated(Biz), 'Biz').to.equal(true);
+        expect(classDecor.isDecorated(Baz), 'Baz').to.equal(true);
     });
 
     it("only add one class to heritage per decorated level (2 total)", () => {

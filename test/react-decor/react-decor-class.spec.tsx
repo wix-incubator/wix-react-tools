@@ -46,9 +46,9 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
             }
         }
 
-        expect(reactDecor.isWrapped(MyComp)).to.eql(true);
-        expect(reactDecor.isWrapped(MyComp, fooDecorator)).to.eql(true);
-        expect(reactDecor.isWrapped(MyComp, barDecorator)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp, fooDecorator)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp, barDecorator)).to.eql(true);
         const {select} = clientRenderer.render(<MyComp/>);
         expect(select('1')).to.have.attribute('data-foo', 'foo');
         expect(select('1')).to.have.attribute('data-bar', 'bar');
@@ -68,9 +68,9 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
 
         }
 
-        expect(reactDecor.isWrapped(MyComp)).to.eql(true);
-        expect(reactDecor.isWrapped(MyComp, fooDecorator)).to.eql(true);
-        expect(reactDecor.isWrapped(MyComp, barDecorator)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp, fooDecorator)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp, barDecorator)).to.eql(true);
         const {select} = clientRenderer.render(<MyComp/>);
         expect(select('1')).to.have.attribute('data-foo', 'foo');
         expect(select('1')).to.have.attribute('data-bar', 'bar');
@@ -89,13 +89,13 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
             }
         }
 
-        expect(reactDecor.isWrapped(Parent)).to.eql(true);
-        expect(reactDecor.isWrapped(Parent, fooDecorator)).to.eql(true);
-        expect(reactDecor.isWrapped(Parent, barDecorator)).to.eql(false);
+        expect(reactDecor.isDecorated(Parent)).to.eql(true);
+        expect(reactDecor.isDecorated(Parent, fooDecorator)).to.eql(true);
+        expect(reactDecor.isDecorated(Parent, barDecorator)).to.eql(false);
 
-        expect(reactDecor.isWrapped(MyComp)).to.eql(true);
-        expect(reactDecor.isWrapped(MyComp, fooDecorator)).to.eql(true);
-        expect(reactDecor.isWrapped(MyComp, barDecorator)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp, fooDecorator)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp, barDecorator)).to.eql(true);
         const {select} = clientRenderer.render(<MyComp/>);
         expect(select('1')).to.have.attribute('data-foo', 'foo');
         expect(select('1')).to.have.attribute('data-bar', 'bar');

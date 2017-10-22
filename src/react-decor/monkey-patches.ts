@@ -50,7 +50,7 @@ const saveCreateElementArguments = (createElementResult: ReactElement<any>): Rea
     return createElementResult;
 };
 
-export const wrappedCreateElement = functionDecor.makeWrapper({
+export const wrappedCreateElement = functionDecor.makeFeature({
     before: [applyHooksOnArguments],
     after: [saveCreateElementArguments]
 })(originalReactCreateElement);

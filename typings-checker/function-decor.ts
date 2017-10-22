@@ -35,14 +35,14 @@ describe(`after`, () => {
 
 describe(`decorFunction`, () => {
     // $ExpectType (text: string) => string
-    functionDecor.makeWrapper({
+    functionDecor.makeFeature({
         middleware: [mwHook],
         before: [bHook],
         after: [aHook]
     })(original);
 
     // $ExpectType (text: "foo") => "bar"
-    functionDecor.makeWrapper({
+    functionDecor.makeFeature({
         middleware: [mwHook],
         before: [bHook],
         after: [aHook]

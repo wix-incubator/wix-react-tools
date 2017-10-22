@@ -1,5 +1,5 @@
 import {expect, sinon} from "test-drive-react";
-import {chain, Class, classDecor, ClassDecorator, functionDecor} from "../../src";
+import {chain, Class, classDecor, ClassFeature, functionDecor} from "../../src";
 import {expectSpyChain, resetAll, spyAll} from "../test-drivers/test-tools";
 
 const ORIGIN_ARGUMENT = 111;
@@ -18,7 +18,7 @@ class Base {
 
 }
 
-type Decorator = ClassDecorator<Base>;
+type Decorator = ClassFeature<Base>;
 
 function makeBaseClass(spy?: sinon.SinonSpy): typeof Base {
     return class extends Base {
@@ -101,8 +101,8 @@ describe("class decor inheritance", () => {
 
         describe("priority", () => {
 
-            function beforeAfterDecor<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, functionDecor.before(function (this: T, args: [number]) {
+            function beforeAfterDecor<T extends Class<Base>>(cls: T): T {
+                return classDecor.method<Base>(METHOD, functionDecor.before(function (this: T, args: [number]) {
                         SPIES.firstBefore(this, args);
                         return [args[0] + 1]
                     }),
@@ -112,8 +112,8 @@ describe("class decor inheritance", () => {
                     }))(cls);
             }
 
-            function middlewareDecor<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
+            function middlewareDecor<T extends Class<Base>>(cls: T): T {
+                return classDecor.method<Base>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
                     SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.firstAfter(this, res);
@@ -132,8 +132,8 @@ describe("class decor inheritance", () => {
 
         describe("before and after", () => {
 
-            function outer<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, functionDecor.before(function (this: T, args: [number]) {
+            function outer<T extends Class<Base>>(cls: T): T {
+                return classDecor.method<Base>(METHOD, functionDecor.before(function (this: T, args: [number]) {
                         SPIES.firstBefore(this, args);
                         return [args[0] + 1]
                     }),
@@ -143,8 +143,8 @@ describe("class decor inheritance", () => {
                     }))(cls);
             }
 
-            function inner<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, functionDecor.before(function (this: T, args: [number]) {
+            function inner<T extends Class<Base>>(cls: T): T {
+                return classDecor.method<Base>(METHOD, functionDecor.before(function (this: T, args: [number]) {
                         SPIES.lastBefore(this, args);
                         return [args[0] + 1]
                     }),
@@ -160,8 +160,8 @@ describe("class decor inheritance", () => {
 
         describe("middleware", () => {
 
-            function outer<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
+            function outer<T extends Class<Base>>(cls: T): T {
+                return classDecor.method<Base>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
                     SPIES.firstBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.lastAfter(this, res);
@@ -169,8 +169,8 @@ describe("class decor inheritance", () => {
                 }))(cls);
             }
 
-            function inner<T extends Base>(cls: Class<T>): Class<T> {
-                return classDecor.method<T>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
+            function inner<T extends Class<Base>>(cls: T): T {
+                return classDecor.method<Base>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
                     SPIES.lastBefore(this, args);
                     const res = next([args[0] + 1]);
                     SPIES.firstAfter(this, res);

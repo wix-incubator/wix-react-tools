@@ -1,8 +1,8 @@
 import {RuntimeStylesheet} from "stylable";
-import {makeDecorReacWrapArguments, reactDecor} from "../react-decor/index";
+import {makeReactDecoration, reactDecor} from "../react-decor/index";
 import {ElementArgs} from "../react-decor/common";
 
-export const stylable = reactDecor.makeWrapperFactory((sheet: RuntimeStylesheet) => {
+export const stylable = reactDecor.makeFeatureFactory((sheet: RuntimeStylesheet) => {
     function classNameMapper(name: string) {
         return sheet.$stylesheet.get(name) || name;
     }
@@ -25,5 +25,5 @@ export const stylable = reactDecor.makeWrapperFactory((sheet: RuntimeStylesheet)
         return args;
     }
 
-    return makeDecorReacWrapArguments([stylableElementHook]);
+    return makeReactDecoration([stylableElementHook]);
 });

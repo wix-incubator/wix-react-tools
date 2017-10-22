@@ -109,7 +109,7 @@ describe('function-decor documentation examples', () => {
         it('supports empty hooks object', () => {
             const wrappers = {};
 
-            const enhanced = functionDecor.makeWrapper(wrappers)(original);
+            const enhanced = functionDecor.makeFeature(wrappers)(original);
 
             const res = enhanced('0');
 
@@ -118,7 +118,7 @@ describe('function-decor documentation examples', () => {
             );
         });
 
-        it('should be able to wrap multiple before/after/middleware functions', () => {
+        it('should be able to decorate multiple before/after/middleware functions', () => {
             const wrappers = {
                 middleware: [
                     middlewarePrintMethod,
@@ -134,7 +134,7 @@ describe('function-decor documentation examples', () => {
                 ]
             };
 
-            const enhanced = functionDecor.makeWrapper(wrappers)(original);
+            const enhanced = functionDecor.makeFeature(wrappers)(original);
 
             const res = enhanced('0');
 
@@ -156,7 +156,7 @@ describe('function-decor documentation examples', () => {
             };
             func.foo = 'bar';
 
-            const wrapped: any = functionDecor.makeWrapper({})(func);
+            const wrapped: any = functionDecor.makeFeature({})(func);
 
             expect(wrapped.foo).to.eql(func.foo);
         });

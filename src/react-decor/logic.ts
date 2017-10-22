@@ -1,16 +1,16 @@
 import {cloneElement, ReactElement} from "react";
 import {resetReactCreateElement} from "./common";
-import {Wrapper} from "../wrappers/index";
+import {Feature} from "../wrappers/index";
 import {context, wrappedCreateElement} from "./monkey-patches";
 import {functionDecor} from "../functoin-decor/index";
 import {ReactDecor} from "./index";
 import React = require('react');
 
-export function makeRenderWrapper(reactDecor: ReactDecor): Wrapper<Function> {
+export function makeRenderFeature(reactDecor: ReactDecor): Feature<Function> {
     function beforeRender(this: any, args: [object, any], wrappedRender: Function): [object, any] {
         if (React.createElement !== wrappedCreateElement) {
             const isClass = this && this.render === wrappedRender;
-            const wrapperArgs = reactDecor.getWrapperArgs(isClass ? this.constructor : wrappedRender);
+            const wrapperArgs = reactDecor.getDecoration(isClass ? this.constructor : wrappedRender);
             if (wrapperArgs) {
                 context.componentInstance = this;
                 context.createArgsMap.clear();
@@ -18,7 +18,7 @@ export function makeRenderWrapper(reactDecor: ReactDecor): Wrapper<Function> {
                 context.componentProps = args[0] || this.props; // args[0] for props in a functional react component
                 React.createElement = wrappedCreateElement;
             } else {
-                throw new Error('how comes no wrapperArgs?');
+                throw new Error('how comes no decoration?');
             }
         }
         return args;
@@ -41,7 +41,7 @@ export function makeRenderWrapper(reactDecor: ReactDecor): Wrapper<Function> {
         return renderResult;
     }
 
-    return functionDecor.makeWrapper({
+    return functionDecor.makeFeature({
         before: [beforeRender],
         after: [afterRender]
     });

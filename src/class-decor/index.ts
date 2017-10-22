@@ -1,4 +1,4 @@
-import {InheritedWrapApi, Wrapper} from "../wrappers/index";
+import {DecorClassApi, Feature} from "../wrappers/index";
 import {
     ClassMetaData,
     ConstructorHook,
@@ -10,9 +10,9 @@ import {
 import {Class, TypedPropertyDescriptorMap} from "../core/types";
 import {mergeOptionalArrays} from "../functoin-decor/common";
 
-export type ClassDecorator<T extends object> = <T1 extends T>(clazz: Class<T1>) => Class<T1>;
+export type ClassFeature<T extends object> = Feature<Class<T>>;
 
-export class ClassDecor extends InheritedWrapApi<Partial<ClassMetaData>, Class<object>> {
+export class ClassDecor extends DecorClassApi<Partial<ClassMetaData>, Class<object>> {
 
     static readonly instance = new ClassDecor();
 
@@ -24,27 +24,27 @@ export class ClassDecor extends InheritedWrapApi<Partial<ClassMetaData>, Class<o
         super('class-decor');
     }
 
-    onInstance<T extends object>(hook: ConstructorHook<T>): ClassDecorator<T> {
-        return this.makeWrapper(makeClassDecorMetadata([hook], null, null));
+    onInstance<T extends object>(hook: ConstructorHook<T>): ClassFeature<T> {
+        return this.makeFeature(makeClassDecorMetadata([hook], null, null));
     }
 
-    method<T extends object, N extends keyof T = any>(methodName: N, ...functionDecorators: Array<Wrapper<T[N]>>): ClassDecorator<T> {
-        return this.makeWrapper(makeClassDecorMetadata(null, {[methodName]: functionDecorators}, null));
+    method<T extends object, N extends keyof T = any>(methodName: N, ...functionDecorators: Array<Feature<T[N]>>): ClassFeature<T> {
+        return this.makeFeature(makeClassDecorMetadata(null, {[methodName]: functionDecorators}, null));
     }
 
-    forceMethod<T extends object, N extends keyof T = any>(methodName: N, ...functionDecorators: Array<Wrapper<T[N]>>): ClassDecorator<T> {
-        return this.makeWrapper(makeClassDecorMetadata(null, {[methodName]: forceMethod(...functionDecorators)}, null));
+    forceMethod<T extends object, N extends keyof T = any>(methodName: N, ...functionDecorators: Array<Feature<T[N]>>): ClassFeature<T> {
+        return this.makeFeature(makeClassDecorMetadata(null, {[methodName]: forceMethod(...functionDecorators)}, null));
     }
 
-    defineProperty<T extends object, N extends keyof T = any>(propName: N, property: TypedPropertyDescriptor<T[N]>): ClassDecorator<T> {
-        return this.makeWrapper(makeClassDecorMetadata(null, null, {[propName]: property}));
+    defineProperty<T extends object, N extends keyof T = any>(propName: N, property: TypedPropertyDescriptor<T[N]>): ClassFeature<T> {
+        return this.makeFeature(makeClassDecorMetadata(null, null, {[propName]: property}));
     }
 
-    defineProperties<T extends object>(properties: TypedPropertyDescriptorMap<T>): ClassDecorator<T> {
-        return this.makeWrapper(makeClassDecorMetadata(null, null, properties));
+    defineProperties<T extends object>(properties: TypedPropertyDescriptorMap<T>): ClassFeature<T> {
+        return this.makeFeature(makeClassDecorMetadata(null, null, properties));
     }
 
-    protected mergeArgs(base: ClassMetaData, addition: ClassMetaData): ClassMetaData {
+    protected mergeDecorations(base: ClassMetaData, addition: ClassMetaData): ClassMetaData {
         return {
             constructorHooks: mergeOptionalArrays(base.constructorHooks, addition.constructorHooks), //old be
             methodsMetadata: mergeMethodsMetadata(base.methodsMetadata, addition.methodsMetadata),
@@ -52,8 +52,8 @@ export class ClassDecor extends InheritedWrapApi<Partial<ClassMetaData>, Class<o
         };
     }
 
-    protected wrappingLogic<T extends Class<object>>(this: ClassDecor, target: T): T {
-        if (this.isThisWrapped(target)) {
+    protected decorationLogic<T extends Class<object>>(this: ClassDecor, target: T): T {
+        if (this.isThisDecorated(target)) {
             return target;
         } else {
             return extendClass(this, target);

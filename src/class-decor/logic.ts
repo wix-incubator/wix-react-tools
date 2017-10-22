@@ -1,10 +1,10 @@
 import {Class, TypedPropertyDescriptorMap} from "../core/types";
 import {privateState} from "../core/private-state";
 import {functionDecor} from "../functoin-decor/index";
-import {Wrapper} from "../wrappers/index";
+import {Feature} from "../wrappers/index";
 import {ClassDecor} from "./index";
 
-export type MethodWrapper = Wrapper<Function>;
+export type MethodWrapper = Feature<Function>;
 
 export type ConstructorHook<T extends object> = (this: T, constructorArguments: any[]) => void;
 
@@ -110,14 +110,14 @@ export function extendClass<T extends Class<object>>(classDecor: ClassDecor, tar
     return class Extended extends (target as any as DumbClass) {
         constructor(...args: any[]) {
             super(...args);
-            const wrapperArgs = classDecor.getWrapperArgs(Extended);
+            const wrapperArgs = classDecor.getDecoration(Extended);
             if (wrapperArgs) {
                 if (!initCtor.hasState(Extended)) {
                     initializeExtended(wrapperArgs, Extended);
                 }
                 const ctor = this.constructor as Class<any>;
-                // `classDecor.getWrapped(ctor) === target` asserts that ctor is initialized after initializeExtended() of all of its wrapped ancestors
-                if (!initCtor.hasState(ctor) && classDecor.getWrapped(ctor) === target) {
+                // `classDecor.getOriginal(ctor) === target` asserts that ctor is initialized after initializeExtended() of all of its wrapped ancestors
+                if (!initCtor.hasState(ctor) && classDecor.getOriginal(ctor) === target) {
                     initializeConstructor(wrapperArgs, ctor);
                 }
                 const constructorHooks = wrapperArgs.constructorHooks;

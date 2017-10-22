@@ -16,6 +16,7 @@ import {
 } from "react";
 import {Instance} from '../core/types';
 import {functionDecor} from "../functoin-decor/index";
+import {Feature} from "../wrappers/index";
 
 export function isNotEmptyArrayLike(arr: Array<any> | undefined | null): arr is Array<any> {
     return !!(arr && (arr.length > 0));
@@ -56,9 +57,7 @@ export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): 
     return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
 }
 
-export type Wrapper<P extends object> = {
-    <T extends ComponentType<P>>(comp: T): T;
-}
+export type ReactFeature<P extends object> = Feature<ComponentType<P>>;
 
 export interface StatefulElementHook<P extends object, T extends Component<P> = Component<P>> {
     rootOnly?: boolean;
@@ -72,7 +71,7 @@ export type StatelessDecorReactHooks<P extends object> = Array<StatelessElementH
 
 export type DecorReactHooks<P extends object, T extends Component<P> = Component<P>> = Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
 
-export interface DecorReacWrapArguments<P extends object, T extends Component<P> = Component<P>> {
+export interface ReactDecoration<P extends object, T extends Component<P> = Component<P>> {
     statelessHooks: Array<StatelessElementHook<P>>;
     classHooks: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
 }

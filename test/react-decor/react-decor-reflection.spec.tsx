@@ -12,41 +12,41 @@ const SFComp: React.SFC<PropsWithName> = ({name}) => (
 const hook: StatelessElementHook<PropsWithName> = (_p: PropsWithName, args: ElementArgs<any>): ElementArgs<any> => {
     return args;
 };
-const wrapper = reactDecor.makeWrapper([hook]);
-const wrapper2 = reactDecor.makeWrapper([hook]);
+const wrapper = reactDecor.makeFeature([hook]);
+const wrapper2 = reactDecor.makeFeature([hook]);
 
 describe("react-decorator-reflection", () => {
-    describe("reactDecor.isWrapped", () => {
+    describe("reactDecor.isDecorated", () => {
         function suite(Comp: any) {
             const WrappedComp = wrapper(Comp);
 
             it("should return false on an undecorated component", () => {
-                expect(reactDecor.isWrapped(Comp)).to.equal(false);
+                expect(reactDecor.isDecorated(Comp)).to.equal(false);
             });
 
             it("should return true for a wrapped component", () => {
 
-                expect(reactDecor.isWrapped(WrappedComp)).to.equal(true);
+                expect(reactDecor.isDecorated(WrappedComp)).to.equal(true);
             });
 
             it("should return false for a component not wrapped", () => {
 
-                expect(reactDecor.isWrapped(Comp, wrapper)).to.equal(false);
+                expect(reactDecor.isDecorated(Comp, wrapper)).to.equal(false);
             });
 
             it("should return false for a component not wrapped by specific wrapper", () => {
-                expect(reactDecor.isWrapped(WrappedComp, wrapper2)).to.equal(false);
+                expect(reactDecor.isDecorated(WrappedComp, wrapper2)).to.equal(false);
             });
 
             it("should return true for a component wrapped by a single decorator", () => {
-                expect(reactDecor.isWrapped(WrappedComp, wrapper)).to.equal(true);
+                expect(reactDecor.isDecorated(WrappedComp, wrapper)).to.equal(true);
             });
 
             it("should return true for a component wrapped by multiple specific decorators", () => {
                 const WrappedComp2 = wrapper2(WrappedComp);
 
-                expect(reactDecor.isWrapped(WrappedComp2, wrapper)).to.equal(true);
-                expect(reactDecor.isWrapped(WrappedComp2, wrapper2)).to.equal(true);
+                expect(reactDecor.isDecorated(WrappedComp2, wrapper)).to.equal(true);
+                expect(reactDecor.isDecorated(WrappedComp2, wrapper2)).to.equal(true);
             });
 
             describe("with console stubbing", () => {
@@ -59,21 +59,21 @@ describe("react-decorator-reflection", () => {
         testWithBothComponentTypes(SFComp, suite);
     });
 
-    describe("reactDecor.getWrapped", () => {
+    describe("reactDecor.getOriginal", () => {
         function suite(Comp: any) {
             const WrappedComp = wrapper(Comp);
 
             it("should return null on an undecorated component", () => {
-                expect(reactDecor.getWrapped(Comp)).to.equal(null);
+                expect(reactDecor.getOriginal(Comp)).to.equal(null);
             });
 
             it("should return original component for a wrapped component", () => {
-                expect(reactDecor.getWrapped(WrappedComp)).to.equal(Comp);
+                expect(reactDecor.getOriginal(WrappedComp)).to.equal(Comp);
             });
 
             it("should return original component for a component wrapped by multiple specific decorators", () => {
                 const WrappedComp2 = wrapper2(WrappedComp);
-                expect(reactDecor.getWrapped(WrappedComp2)).to.equal(Comp);
+                expect(reactDecor.getOriginal(WrappedComp2)).to.equal(Comp);
             });
         }
 

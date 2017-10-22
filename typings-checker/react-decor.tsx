@@ -8,21 +8,21 @@ type PropsWithName = { name: string };
 type PropsWithName2 = { name: Function };
 
 describe('React Decorator', () => {
-    // $ExpectType Wrapper<{}>
-    reactDecor.makeWrapper([]);
+    // $ExpectType Feature<ComponentType<{}>>
+    reactDecor.makeFeature([]);
 
-    // $ExpectType Wrapper<{}>
-    reactDecor.makeWrapper([], []);
+    // $ExpectType Feature<ComponentType<{}>>
+    reactDecor.makeFeature([], []);
 
-    // $ExpectType Wrapper<PropsWithName>
-    reactDecor.makeWrapper([hook]);
+    // $ExpectType Feature<ComponentType<PropsWithName>>
+    reactDecor.makeFeature([hook]);
 
-    // $ExpectType Wrapper<PropsWithName>
-    reactDecor.makeWrapper([hook], [hook]);
+    // $ExpectType Feature<ComponentType<PropsWithName>>
+    reactDecor.makeFeature([hook], [hook]);
 
     // $ExpectType StatelessComponent<PropsWithName>
-    reactDecor.makeWrapper([], [])(SFComp);
+    reactDecor.makeFeature([], [])(SFComp);
 
     // $ExpectType ComponentClass<PropsWithName>
-    reactDecor.makeWrapper([], [])(ClassComp);
+    reactDecor.makeFeature([], [])(ClassComp);
 });

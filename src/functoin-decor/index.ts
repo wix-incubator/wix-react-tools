@@ -1,5 +1,5 @@
 import {AfterHook, BeforeHook, FunctionMetaData, mergeOptionalArrays, MiddlewareHook} from "./common";
-import {WrapApi, Wrapper} from "../wrappers/index";
+import {DecorApi, Feature} from "../wrappers/index";
 import {funcDecorWrapper} from "./logic";
 
 export {
@@ -7,7 +7,7 @@ export {
 } from "./common";
 
 
-export class FunctionDecor extends WrapApi<Partial<FunctionMetaData>, Function> {
+export class FunctionDecor extends DecorApi<Partial<FunctionMetaData>, Function> {
 
     static readonly instance = new FunctionDecor();
 
@@ -19,19 +19,19 @@ export class FunctionDecor extends WrapApi<Partial<FunctionMetaData>, Function> 
         super('function-decor');
     }
 
-    before(preMethod: BeforeHook): Wrapper<Function> {
-        return this.makeWrapper({before: [preMethod]});
+    before(preMethod: BeforeHook): Feature<Function> {
+        return this.makeFeature({before: [preMethod]});
     }
 
-    after(postMethod: AfterHook<any>): Wrapper<Function> {
-        return this.makeWrapper({after: [postMethod]});
+    after(postMethod: AfterHook<any>): Feature<Function> {
+        return this.makeFeature({after: [postMethod]});
     }
 
-    middleware(hook: MiddlewareHook<any>): Wrapper<Function> {
-        return this.makeWrapper({middleware: [hook]});
+    middleware(hook: MiddlewareHook<any>): Feature<Function> {
+        return this.makeFeature({middleware: [hook]});
     }
 
-    protected mergeArgs(base: FunctionMetaData, addition: FunctionMetaData): FunctionMetaData {
+    protected mergeDecorations(base: FunctionMetaData, addition: FunctionMetaData): FunctionMetaData {
         return {
             name: base.name || addition.name,
             middleware: mergeOptionalArrays(base.middleware, addition.middleware),
@@ -40,11 +40,11 @@ export class FunctionDecor extends WrapApi<Partial<FunctionMetaData>, Function> 
         };
     }
 
-    protected wrappingLogic<T extends Function>(target: T, args: FunctionMetaData): T {
+    protected decorationLogic<T extends Function>(target: T, args: FunctionMetaData): T {
         return funcDecorWrapper(target, args);
     }
 }
 
 export const functionDecor = FunctionDecor.instance;
 
-export const cloneFunction: Wrapper<Function> = functionDecor.makeWrapper({});
+export const cloneFunction: Feature<Function> = functionDecor.makeFeature({});

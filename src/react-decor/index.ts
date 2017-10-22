@@ -1,7 +1,7 @@
 import {Component, ComponentType, StatelessComponent} from "react";
 import {
     DecorReactHooks,
-    DecorReacWrapArguments,
+    ReactDecoration,
     ElementArgs,
     ElementHook,
     isReactClassComponent,
@@ -10,12 +10,12 @@ import {
     StatelessDecorReactHooks,
     StatelessElementHook,
     translateName,
-    Wrapper
+    ReactFeature
 } from "./common";
-import {makeRenderWrapper} from "./logic";
+import {makeRenderFeature} from "./logic";
 import {cloneFunction} from "../functoin-decor/index";
-import {InheritedWrapApi} from "../wrappers/index";
-import {classDecor, ClassDecorator} from "../class-decor/index";
+import {DecorClassApi} from "../wrappers/index";
+import {classDecor, ClassFeature} from "../class-decor/index";
 import {isArray} from "util";
 
 export {
@@ -23,17 +23,17 @@ export {
     StatelessDecorReactHooks,
     StatefulElementHook,
     StatelessElementHook,
-    Wrapper,
+    ReactFeature,
     ElementArgs
 } from "./common";
 
 
-export class ReactDecor extends InheritedWrapApi<DecorReacWrapArguments<any>, ComponentType<any>> {
+export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentType<any>> {
 
     static readonly instance = new ReactDecor();
 
-    private sfcDecorator: Wrapper<StatelessComponent>;
-    private classComponentDecorator: ClassDecorator<Component>;
+    private sfcFeature: ReactFeature<StatelessComponent>;
+    private classComponentFeature: ClassFeature<Component>;
 
     // singleton
     private constructor() {
@@ -41,47 +41,47 @@ export class ReactDecor extends InheritedWrapApi<DecorReacWrapArguments<any>, Co
             return ReactDecor.instance;
         }
         super('react-decor');
-        const renderWrapper = makeRenderWrapper(this);
-        this.sfcDecorator = process.env.NODE_ENV === 'production' ? renderWrapper : translateName(renderWrapper);
-        const rawCompClassDecorator = classDecor.method<Component>('render', renderWrapper);
-        this.classComponentDecorator = process.env.NODE_ENV === 'production' ? rawCompClassDecorator : translateName(rawCompClassDecorator);
+        const renderWrapper = makeRenderFeature(this);
+        this.sfcFeature = process.env.NODE_ENV === 'production' ? renderWrapper : translateName(renderWrapper);
+        const rawCompClassFeature = classDecor.method<Component>('render', renderWrapper);
+        this.classComponentFeature = process.env.NODE_ENV === 'production' ? rawCompClassFeature : translateName(rawCompClassFeature);
     }
 
-    makeWrapper<P extends object, T extends Component<P> = Component<P>>(wrapperArgs: DecorReacWrapArguments<P, T>): Wrapper<P> ;
+    makeFeature<P extends object, T extends Component<P> = Component<P>>(wrapperArgs: ReactDecoration<P, T>): ReactFeature<P> ;
 
-    makeWrapper<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): Wrapper<P> ;
+    makeFeature<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): ReactFeature<P> ;
 
-    makeWrapper<P extends object, T extends Component<P> = Component<P>>(statelessHooks: DecorReacWrapArguments<P, T> | StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): Wrapper<P> {
+    makeFeature<P extends object, T extends Component<P> = Component<P>>(statelessHooks: ReactDecoration<P, T> | StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): ReactFeature<P> {
         if (isArray(statelessHooks)) {
-            return super.makeWrapper(makeDecorReacWrapArguments(statelessHooks, classHooks));
+            return super.makeFeature(makeReactDecoration(statelessHooks, classHooks));
         } else {
-            return super.makeWrapper(statelessHooks);
+            return super.makeFeature(statelessHooks);
         }
     }
 
 // TODO: remove ?
-    onRootElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): Wrapper<P> {
-        return this.makeWrapper([asRootOnly(statelessHook)], classHook ? [asRootOnly(classHook)] : undefined);
+    onRootElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): ReactFeature<P> {
+        return this.makeFeature([asRootOnly(statelessHook)], classHook ? [asRootOnly(classHook)] : undefined);
     }
 
 // TODO: remove ?
-    onEachElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): Wrapper<P> {
-        return this.makeWrapper([statelessHook], classHook ? [classHook] : undefined);
+    onEachElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): ReactFeature<P> {
+        return this.makeFeature([statelessHook], classHook ? [classHook] : undefined);
     }
 
-    protected mergeArgs(base: DecorReacWrapArguments<any>, addition: DecorReacWrapArguments<any>): DecorReacWrapArguments<any> {
+    protected mergeDecorations(base: ReactDecoration<any>, addition: ReactDecoration<any>): ReactDecoration<any> {
         return {
             statelessHooks: base.statelessHooks.concat(addition.statelessHooks),
             classHooks: base.classHooks.concat(addition.classHooks),
         };
     }
 
-    protected wrappingLogic<T extends ComponentType>(this: ReactDecor, target: T, _args: DecorReacWrapArguments<any>): T {
+    protected decorationLogic<T extends ComponentType>(this: ReactDecor, target: T, _args: ReactDecoration<any>): T {
         let Wrapped = target;
         if (isReactClassComponent(target)) {
-            Wrapped = this.classComponentDecorator(target as any) as T;
+            Wrapped = this.classComponentFeature(target as any) as T;
         } else if (typeof target === 'function') {
-            Wrapped = this.sfcDecorator(target as any) as T;
+            Wrapped = this.sfcFeature(target as any) as T;
         }
         return Wrapped;
     }
@@ -89,7 +89,7 @@ export class ReactDecor extends InheritedWrapApi<DecorReacWrapArguments<any>, Co
 
 export const reactDecor = ReactDecor.instance;
 
-export function makeDecorReacWrapArguments<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): DecorReacWrapArguments<P, T> {
+export function makeReactDecoration<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): ReactDecoration<P, T> {
     return {
         statelessHooks: statelessHooks,
         classHooks: classHooks || statelessHooks

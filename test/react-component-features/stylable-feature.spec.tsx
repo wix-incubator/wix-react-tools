@@ -112,8 +112,8 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         }
 
         it('should return true when checking isDecorated on a component decorated with stylable', () => {
-            expect(reactDecor.isWrapped(Comp)).to.equal(true);
-            expect(reactDecor.isWrapped(Comp, stylable)).to.equal(true);
+            expect(reactDecor.isDecorated(Comp)).to.equal(true);
+            expect(reactDecor.isDecorated(Comp, stylable)).to.equal(true);
         });
     });
 });
