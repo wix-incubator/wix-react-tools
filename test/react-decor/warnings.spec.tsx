@@ -1,11 +1,9 @@
 import {inBrowser} from "mocha-plugin-env";
 import * as React from "react";
 import {SFC} from "react";
-import {asRootOnly, devMode, ElementArgs, reactDecor, runInContext} from "../../src";
+import {asRootOnly, devMode, ElementArgs, reactDecor, runInContext, resetReactMonkeyPatches} from "../../src";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
-import {resetReactCreateElement} from "../../src/react-decor/common";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
-
 
 type PropsWithName = { name: string };
 
@@ -18,7 +16,7 @@ function addChangeRemoveHook(componentProps: PropsWithName, args: ElementArgs<an
 
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
-    beforeEach(resetReactCreateElement);
+    beforeEach(resetReactMonkeyPatches);
     const clientRenderer = new ClientRenderer();
 
     describe('react decoration warnings', () => {

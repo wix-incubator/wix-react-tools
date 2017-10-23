@@ -1,7 +1,6 @@
 import {cloneElement, ReactElement} from "react";
-import {resetReactCreateElement} from "./common";
 import {Feature} from "../wrappers/index";
-import {context, wrappedCreateElement} from "./monkey-patches";
+import {context, resetReactMonkeyPatches, wrappedCreateElement, wrappedReactCloneElement} from "./monkey-patches";
 import {functionDecor} from "../functoin-decor/index";
 import {ReactDecor} from "./index";
 import React = require('react');
@@ -17,6 +16,7 @@ export function makeRenderFeature(reactDecor: ReactDecor): Feature<Function> {
                 context.hooks = isClass ? wrapperArgs.classHooks : wrapperArgs.statelessHooks;
                 context.componentProps = args[0] || this.props; // args[0] for props in a functional react component
                 React.createElement = wrappedCreateElement;
+                React.cloneElement = wrappedReactCloneElement;
             } else {
                 throw new Error('how comes no decoration?');
             }
@@ -37,7 +37,7 @@ export function makeRenderFeature(reactDecor: ReactDecor): Feature<Function> {
                 console.warn('unexpected root node : ', renderResult);
             }
         }
-        resetReactCreateElement();
+        resetReactMonkeyPatches();
         return renderResult;
     }
 

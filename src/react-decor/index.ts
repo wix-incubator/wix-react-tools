@@ -19,6 +19,7 @@ import {classDecor, ClassFeature} from "../class-decor/index";
 import {isArray} from "util";
 import memoize = require('memoize-weak');
 
+export {resetReactMonkeyPatches} from "./monkey-patches";
 export {
     DecorReactHooks,
     StatelessDecorReactHooks,

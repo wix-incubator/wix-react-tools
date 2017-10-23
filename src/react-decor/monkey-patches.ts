@@ -3,10 +3,10 @@ import {functionDecor} from "../functoin-decor/index";
 import {
     DecorReactHooks,
     ElementArgs,
-    originalReactCreateElement,
     translateArgumentsToObject,
     translateObjectToArguments
 } from "./common";
+import * as React from "react";
 
 declare const process: { env: { [k: string]: any } };
 
@@ -17,6 +17,14 @@ export interface HookContext<T extends object> {
     hooks: DecorReactHooks<T>;
     componentProps: T;
     createArgsMap: Map<object, ElementArgs<any>>;
+}
+
+export const originalReactCreateElement: typeof React.createElement = React.createElement;
+export const originalReactCloneElement: typeof React.cloneElement = React.cloneElement;
+
+export function resetReactMonkeyPatches() {
+    (React as any).createElement = originalReactCreateElement;
+    (React as any).cloneElement = originalReactCloneElement;
 }
 
 const emptyObj = Object.freeze({});
@@ -54,3 +62,9 @@ export const wrappedCreateElement = functionDecor.makeFeature({
     before: [applyHooksOnArguments],
     after: [saveCreateElementArguments]
 })(originalReactCreateElement);
+
+
+export const wrappedReactCloneElement = functionDecor.makeFeature({
+    before: [],
+    after: []
+})(originalReactCloneElement);

@@ -3,13 +3,13 @@ import {Component, ComponentType, SFC} from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {resetAll, spyAll, testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {inBrowser} from "mocha-plugin-env/dist/src";
-import {devMode, ElementArgs, reactDecor, runInContext} from "../../src";
+import {devMode, ElementArgs, reactDecor, runInContext, resetReactMonkeyPatches} from "../../src";
 import {asRootOnly, makeRootOnly} from "../../src/react-decor/index";
-import {ElementHook, resetReactCreateElement, StatelessElementHook} from "../../src/react-decor/common";
+import {ElementHook, StatelessElementHook} from "../../src/react-decor/common";
 
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
-    beforeEach(resetReactCreateElement);
+    beforeEach(resetReactMonkeyPatches);
     const clientRenderer = new ClientRenderer();
 
     const fakeConsole = spyAll({
@@ -155,16 +155,15 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         }
 
         testWithBothComponentTypes(SFComp, suite);
-        describe(`on result of React.cloneElement`, () => {
+        describe(`on result of React.cloneElement (once or more on same element)`, () => {
 
             // something to clone. similar to SFComp's result, only with no "data-change-me" attributes and no text element {name}
-            const resultOrigin = <div data-automation-id="root" data-delete-me="TBDeleted">
-                <span data-automation-id="content" data-delete-me="TBDeleted"/>
-            </div>;
+            const resultOrigin = <div data-automation-id="root" data-delete-me="TBDeleted" data-change-me="TBChanged" />;
 
             const ClonerSFComp: React.SFC<PropsWithName> = ({name}) => {
-                const clonedSpan = React.cloneElement(resultOrigin.props.children, {"data-change-me": "TBChanged"}, name);
-                return React.cloneElement(resultOrigin, {"data-change-me": "TBChanged"}, clonedSpan);
+                const content = React.cloneElement(resultOrigin, {"data-automation-id": "content"}, name);
+                // notice how root is a result of two clones
+                return React.cloneElement(content, {"data-automation-id": "root"}, content);
             };
 
             testWithBothComponentTypes(ClonerSFComp, suite);

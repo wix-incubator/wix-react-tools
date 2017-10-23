@@ -82,14 +82,6 @@ export type ElementHook<S extends Stateful, P extends object> = {
     F: StatelessElementHook<P>;
 }[S];
 
-
-export const originalReactCreateElement: typeof React.createElement = React.createElement;
-
-export function resetReactCreateElement() {
-    (React as any).createElement = originalReactCreateElement;
-}
-
-
 export const translateName = functionDecor.middleware((next: (args: [React.ComponentType]) => React.ComponentType, args: [React.ComponentType]) => {
     const result: React.ComponentType = next(args);
     if (!result.displayName && args[0].name) {
