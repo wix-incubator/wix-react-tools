@@ -12,14 +12,14 @@ import {
     StatelessElementHook,
     translateName
 } from "./common";
-import {makeRenderFeature} from "./logic";
 import {cloneFunction} from "../functoin-decor/index";
 import {DecorClassApi} from "../wrappers/index";
 import {classDecor, ClassFeature} from "../class-decor/index";
 import {isArray} from "util";
+import {makeRenderFeature} from "./logic";
 import memoize = require('memoize-weak');
 
-export {resetReactMonkeyPatches} from "./monkey-patches";
+export {resetReactMonkeyPatches} from "./logic";
 export {
     DecorReactHooks,
     StatelessDecorReactHooks,
