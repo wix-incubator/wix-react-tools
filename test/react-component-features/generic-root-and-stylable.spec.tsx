@@ -1,4 +1,4 @@
-import {reactDecor, stylable, overrideGlobalConfig, runInContext, devMode} from "../../src";
+import {devMode, overrideGlobalConfig, reactDecor, runInContext, stylable} from "../../src";
 import {createGenerator, StateMap, Stylesheet} from "stylable";
 import {ClientRenderer, expect} from "test-drive-react";
 import * as React from "react";

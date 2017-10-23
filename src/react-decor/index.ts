@@ -1,22 +1,23 @@
 import {Component, ComponentType, StatelessComponent} from "react";
 import {
     DecorReactHooks,
-    ReactDecoration,
     ElementArgs,
     ElementHook,
     isReactClassComponent,
+    ReactDecoration,
+    ReactFeature,
     Stateful,
     StatefulElementHook,
     StatelessDecorReactHooks,
     StatelessElementHook,
-    translateName,
-    ReactFeature
+    translateName
 } from "./common";
 import {makeRenderFeature} from "./logic";
 import {cloneFunction} from "../functoin-decor/index";
 import {DecorClassApi} from "../wrappers/index";
 import {classDecor, ClassFeature} from "../class-decor/index";
 import {isArray} from "util";
+import memoize = require('memoize-weak');
 
 export {
     DecorReactHooks,
@@ -59,14 +60,20 @@ export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentTyp
         }
     }
 
-// TODO: remove ?
     onRootElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): ReactFeature<P> {
-        return this.makeFeature([asRootOnly(statelessHook)], classHook ? [asRootOnly(classHook)] : undefined);
+        if (classHook) {
+            return this.makeFeature([asRootOnly(statelessHook)], [asRootOnly(classHook)]);
+        } else {
+            return this.makeFeature([asRootOnly(statelessHook)],);
+        }
     }
 
-// TODO: remove ?
     onEachElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): ReactFeature<P> {
-        return this.makeFeature([statelessHook], classHook ? [classHook] : undefined);
+        if (classHook) {
+            return this.makeFeature([statelessHook], [classHook]);
+        } else {
+            return this.makeFeature([statelessHook],);
+        }
     }
 
     protected mergeDecorations(base: ReactDecoration<any>, addition: ReactDecoration<any>): ReactDecoration<any> {
@@ -96,14 +103,11 @@ export function makeReactDecoration<P extends object, T extends Component<P> = C
     };
 }
 
-export function asRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
+export const asRootOnly = memoize(function asRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
     return hook.rootOnly ? hook : makeRootOnly(cloneFunction(hook));
-}
+});
 
 export function makeRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
-    if (hook.name === 'addChangeRemoveHook') {
-        debugger;
-    }
     hook.rootOnly = true;
     return hook;
 }
