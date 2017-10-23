@@ -3,9 +3,9 @@ import {Component, ComponentType, SFC} from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {resetAll, spyAll, testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {inBrowser} from "mocha-plugin-env/dist/src";
-import {devMode, ElementArgs, reactDecor, runInContext, StatelessElementHook} from "../../src";
+import {devMode, ElementArgs, reactDecor, runInContext} from "../../src";
 import {asRootOnly, makeRootOnly} from "../../src/react-decor/index";
-import {ElementHook, resetReactCreateElement} from "../../src/react-decor/common";
+import {ElementHook, resetReactCreateElement, StatelessElementHook} from "../../src/react-decor/common";
 
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
@@ -155,6 +155,20 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         }
 
         testWithBothComponentTypes(SFComp, suite);
+        describe(`on result of React.cloneElement`, () => {
+
+            // something to clone. similar to SFComp's result, only with no "data-change-me" attributes and no text element {name}
+            const resultOrigin = <div data-automation-id="root" data-delete-me="TBDeleted">
+                <span data-automation-id="content" data-delete-me="TBDeleted"/>
+            </div>;
+
+            const ClonerSFComp: React.SFC<PropsWithName> = ({name}) => {
+                const clonedSpan = React.cloneElement(resultOrigin.props.children, {"data-change-me": "TBChanged"}, name);
+                return React.cloneElement(resultOrigin, {"data-change-me": "TBChanged"}, clonedSpan);
+            };
+
+            testWithBothComponentTypes(ClonerSFComp, suite);
+        });
     });
 
     describe(`.makeFeature sugar wrappings`, () => {
