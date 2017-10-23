@@ -18,10 +18,6 @@ import {Instance} from '../core/types';
 import {functionDecor} from "../functoin-decor/index";
 import {Feature} from "../wrappers/index";
 
-export function isNotEmptyArrayLike(arr: Array<any> | undefined | null): arr is Array<any> {
-    return !!(arr && (arr.length > 0));
-}
-
 export function isReactClassComponent(value: any): value is ComponentClass<any> {
     return value && isComponentInstance(value.prototype);
 }
@@ -42,19 +38,6 @@ export type ElementArgs<P extends HTMLAttributes<HTMLElement>> = {
     type: ElementType<P>,
     elementProps: Attributes & Partial<P>,
     children: Array<ReactNode>
-}
-export type ElementArgsTuple<P extends HTMLAttributes<HTMLElement>> = [ElementType<P>, undefined | (Attributes & Partial<P>), ReactNode]
-
-export function translateArgumentsToObject<P extends {}>(args: ElementArgsTuple<P>): ElementArgs<P> {
-    return {
-        type: args[0],
-        elementProps: args[1] || {},
-        children: args.length > 2 ? Array.prototype.slice.call(args, 2) : []
-    };
-}
-
-export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): ElementArgsTuple<P> {
-    return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
 }
 
 export type ReactFeature<P extends object> = Feature<ComponentType<P>>;

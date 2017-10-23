@@ -26,7 +26,9 @@ export {
     StatefulElementHook,
     StatelessElementHook,
     ReactFeature,
-    ElementArgs
+    ElementArgs,
+    isComponentInstance,
+    isReactClassComponent
 } from "./common";
 
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {isComponentInstance} from '../react-decor/common';
+import {isComponentInstance} from '../react-decor';
 import {privateState, StateProvider} from '../core/private-state';
 
 let counter: number = 0;

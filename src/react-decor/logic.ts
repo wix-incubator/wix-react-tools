@@ -1,6 +1,6 @@
-import {Attributes, cloneElement, Component, ReactElement, ReactNode, ReactType} from "react";
+import {Attributes, cloneElement, Component, HTMLAttributes, ReactElement, ReactNode, ReactType} from "react";
 import {functionDecor} from "../functoin-decor/index";
-import {DecorReactHooks, ElementArgs, translateArgumentsToObject, translateObjectToArguments} from "./common";
+import {DecorReactHooks, ElementArgs, ElementType} from "./common";
 import {ReactDecor} from "./index";
 import {Feature} from "../wrappers/index";
 import React = require('react');
@@ -34,6 +34,20 @@ const context = {
 
 let createElementArgsObject: ElementArgs<any>;
 
+type ElementArgsTuple<P extends HTMLAttributes<HTMLElement>> = [ElementType<P>, undefined | (Attributes & Partial<P>), ReactNode]
+
+function translateArgumentsToObject<P extends {}>(args: ElementArgsTuple<P>): ElementArgs<P> {
+    return {
+        type: args[0],
+        elementProps: args[1] || {},
+        children: args.length > 2 ? Array.prototype.slice.call(args, 2) : []
+    };
+}
+
+function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): ElementArgsTuple<P> {
+    return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
+}
+
 const applyHooksOnArguments = (createElementArgsTuple: CreateElementArgsTuple<any>): CreateElementArgsTuple<any> => {
     createElementArgsObject = translateArgumentsToObject(createElementArgsTuple);
     if (context.hooks) {
@@ -59,6 +73,15 @@ export const wrappedCreateElement = functionDecor.makeFeature({
     before: [applyHooksOnArguments],
     after: [saveCreateElementArguments]
 })(originalReactCreateElement);
+
+/*
+
+React.cloneElement(
+  element,
+  [props],
+  [...children]
+)
+ */
 
 
 export const wrappedReactCloneElement = functionDecor.makeFeature({
