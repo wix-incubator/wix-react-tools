@@ -228,7 +228,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
             }
         }
 
-        function testReactFields(Comp: any, type: 'SFC' | 'Class Component') {
+        function testReactFields(Comp: ComponentType, type: 'SFC' | 'Class Component') {
             it(`should copy react fields - ${type}`, () => {
                 const wrap = reactDecor.makeFeature<PropsWithName>([]);
                 const WrappedComp = wrap(Comp);
@@ -253,7 +253,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
             }
         }
 
-        function testDefaultDisplayName(Comp: any, type: 'SFC' | 'Class Component') {
+        function testDefaultDisplayName(Comp: ComponentType, type: 'SFC' | 'Class Component') {
             it(`should copy name to displayName if original comp has no displayName - ${type}`, () => {
                 runInContext(devMode.ON, () => {
                     const wrap = reactDecor.makeFeature<PropsWithName>([]);
@@ -271,7 +271,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
     describe(`regression`, () => {
         const SFComp: React.SFC = () => <div><span/></div>;
 
-        function testReactClassAndFunctionDecoration(Comp: any) {
+        function testReactClassAndFunctionDecoration(Comp: ComponentType) {
             it('elementProps is never empty', () => {
                 const hook: StatelessElementHook<{}> = sinon.spy(function (_p: any, args: ElementArgs<any>): ElementArgs<any> {
                     expect(args.elementProps).to.containSubset({});
@@ -300,7 +300,7 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 <span data-automation-id="child2"/>
             </div>);
 
-            function suite(Comp: any) {
+            function suite(Comp: ComponentType<any>) {
                 it('multiple children with no changes', () => {
                     const wrapper = reactDecor.makeFeature([statelessHook1, statelessHook2].map(asRootOnly));
                     const WrappedComp = wrapper(Comp);
