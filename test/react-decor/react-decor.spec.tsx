@@ -152,22 +152,6 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 expect(fakeConsole.log.getCall(2)).to.have.been.calledWithMatch(/root/);
                 expect(fakeConsole.log.getCall(3)).to.have.been.calledWithMatch(/root/);
             });
-
-            it('recognise cloned elements', () => {
-                const hook = makeRootOnly((_props: any, args: ElementArgs<any>) => ({
-                    ...args,
-                    elementProps: {...(args.elementProps as object)}
-                }));
-                const wrap = reactDecor.makeFeature([hook, asRootOnly(addChangeRemoveHook), statelessHook1]);
-                const WrappedComp = wrap(Comp);
-
-                const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
-
-                expect(select('root')).to.not.have.attribute('data-delete-me');
-                expect(select('root')).to.have.attribute('data-add-me', 'Jon');
-                expect(select('root')).to.have.attribute('data-change-me', 'Jon');
-                expect(select('content')).to.be.ok;
-            });
         }
 
         testWithBothComponentTypes(SFComp, suite);
