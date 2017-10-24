@@ -46,29 +46,6 @@ export abstract class DecorApi<D, T extends object> {
         return wrapper;
     }
 
-    protected decorate<T1 extends T>(decoration: D, featureSymbols: Function[], subj: T1): T1 {
-        if (this.metadataProvider.hasState(subj)) {
-            // subj is already a product of this wrapping API
-            // deconstruct it, merge with arguments and re-wrap the original
-            const subjMetadata = this.metadataProvider(subj) as Metadata<D, T1>;
-            decoration = this.mergeDecorations(subjMetadata.decoration, decoration);
-            subj = subjMetadata.original;
-            featureSymbols = subjMetadata.symbols.concat(featureSymbols);
-            if (subjMetadata.symbols.length > 0 || featureSymbols.length > 0) {
-                // de-dupe featureSymbols array
-                featureSymbols = Array.from(new Set(featureSymbols));
-            }
-            // TODO: if featureSymbols (and / or decoration?) are same as before, return subj (it's already wrapped correctly). opt out (force unique wrapping) with metadata flag.
-        }
-        const wrapped = this.decorationLogic(subj, decoration);
-        // TODO if wrapped === subj, continue? should be declarative configurable?
-        const metadata = this.metadataProvider(wrapped);
-        metadata.original = subj;
-        metadata.symbols = featureSymbols;
-        metadata.decoration = decoration;
-        return wrapped;
-    }
-
     isDecorated(subj: T, featureSymbol?: any): boolean {
         const metadata = this.getMetadata(subj);
         if (metadata) {
@@ -107,6 +84,29 @@ export abstract class DecorApi<D, T extends object> {
             return metadata.decoration;
         }
         return null;
+    }
+
+    protected decorate<T1 extends T>(decoration: D, featureSymbols: Function[], subj: T1): T1 {
+        if (this.metadataProvider.hasState(subj)) {
+            // subj is already a product of this wrapping API
+            // deconstruct it, merge with arguments and re-wrap the original
+            const subjMetadata = this.metadataProvider(subj) as Metadata<D, T1>;
+            decoration = this.mergeDecorations(subjMetadata.decoration, decoration);
+            subj = subjMetadata.original;
+            featureSymbols = subjMetadata.symbols.concat(featureSymbols);
+            if (subjMetadata.symbols.length > 0 || featureSymbols.length > 0) {
+                // de-dupe featureSymbols array
+                featureSymbols = Array.from(new Set(featureSymbols));
+            }
+            // TODO: if featureSymbols (and / or decoration?) are same as before, return subj (it's already wrapped correctly). opt out (force unique wrapping) with metadata flag.
+        }
+        const wrapped = this.decorationLogic(subj, decoration);
+        // TODO if wrapped === subj, continue? should be declarative configurable?
+        const metadata = this.metadataProvider(wrapped);
+        metadata.original = subj;
+        metadata.symbols = featureSymbols;
+        metadata.decoration = decoration;
+        return wrapped;
     }
 
     /**

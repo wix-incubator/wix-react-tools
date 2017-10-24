@@ -8,19 +8,20 @@ import {
     ComponentClass,
     ComponentState,
     ComponentType,
+    DOMElement,
     HTMLAttributes,
+    ReactElement,
     ReactHTML,
     ReactNode,
     ReactSVG,
+    ReactType,
     SFC
 } from "react";
 import {Instance} from '../core/types';
 import {functionDecor} from "../functoin-decor/index";
 import {Feature} from "../wrappers/index";
 
-export function isNotEmptyArrayLike(arr: Array<any> | undefined | null): arr is Array<any> {
-    return !!(arr && (arr.length > 0));
-}
+export type Element<P extends {}> = { type: ReactType } & (DOMElement<P, any> | ReactElement<P>);
 
 export function isReactClassComponent(value: any): value is ComponentClass<any> {
     return value && isComponentInstance(value.prototype);
@@ -40,29 +41,21 @@ export type ElementType<P> =
 
 export type ElementArgs<P extends HTMLAttributes<HTMLElement>> = {
     type: ElementType<P>,
-    elementProps: Attributes & Partial<P>,
+    newProps: Attributes & Partial<P>,
+    originalElement?: Element<Partial<P>>, // only in cloneElement
     children: Array<ReactNode>
-}
-export type ElementArgsTuple<P extends HTMLAttributes<HTMLElement>> = [ElementType<P>, undefined | (Attributes & Partial<P>), ReactNode]
-
-export function translateArgumentsToObject<P extends {}>(args: ElementArgsTuple<P>): ElementArgs<P> {
-    return {
-        type: args[0],
-        elementProps: args[1] || {},
-        children: args.length > 2 ? Array.prototype.slice.call(args, 2) : []
-    };
-}
-
-export function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): ElementArgsTuple<P> {
-    return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
 }
 
 export type ReactFeature<P extends object> = Feature<ComponentType<P>>;
 
+export type Falsy = void | undefined | null | 0 | false | '' ;
+
+export type Maybe<T> = T | Falsy;
+
 export interface StatefulElementHook<P extends object, T extends Component<P> = Component<P>> {
     rootOnly?: boolean;
 
-    <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>, isRoot: boolean): ElementArgs<E>
+    <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>, isRoot: boolean): Maybe<ElementArgs<E>>;
 }
 
 export type StatelessElementHook<P extends object> = StatefulElementHook<P, any>;
@@ -81,14 +74,6 @@ export type ElementHook<S extends Stateful, P extends object> = {
     T: StatefulElementHook<P>;
     F: StatelessElementHook<P>;
 }[S];
-
-
-export const originalReactCreateElement: typeof React.createElement = React.createElement;
-
-export function resetReactCreateElement() {
-    (React as any).createElement = originalReactCreateElement;
-}
-
 
 export const translateName = functionDecor.middleware((next: (args: [React.ComponentType]) => React.ComponentType, args: [React.ComponentType]) => {
     const result: React.ComponentType = next(args);

@@ -1,8 +1,8 @@
 import * as React from "react";
-import {HTMLAttributes} from "react";
+import {Component, HTMLAttributes} from "react";
 import {ClientRenderer, expect} from "test-drive-react";
-import {inBrowser} from "mocha-plugin-env/dist/src";
-import {ElementArgs, reactDecor} from "../../src";
+import {inBrowser} from "mocha-plugin-env";
+import {ElementArgs, reactDecor, StatefulElementHook} from "../../src";
 
 declare const process: any;
 
@@ -25,12 +25,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
 
 
     function fooHook<P extends { ['data-foo']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-        args.elementProps['data-foo'] = 'foo';
+        args.newProps['data-foo'] = 'foo';
         return args;
     }
 
     function barHook<P extends { ['data-bar']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-        args.elementProps['data-bar'] = 'bar';
+        args.newProps['data-bar'] = 'bar';
         return args;
     }
 
@@ -100,4 +100,42 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
         expect(select('1')).to.have.attribute('data-foo', 'foo');
         expect(select('1')).to.have.attribute('data-bar', 'bar');
     });
+
+
+    describe('stateful hooks', () => {
+        type PropsWithName = { name: string };
+
+        class ClassComp extends Component<PropsWithName> {
+            foo = 'foo!';
+            bar = 'bar!';
+
+            render() {
+                return <div data-automation-id="root" data-delete-me="TBDeleted" data-change-me="TBChanged">
+                    <span data-automation-id="content" data-delete-me="TBDeleted" data-change-me="TBChanged">
+                        {name}
+                    </span>
+                </div>;
+            }
+        }
+
+        const statefulHook: StatefulElementHook<PropsWithName, ClassComp> = function (this: ClassComp, componentProps: PropsWithName, args: ElementArgs<any>, isRoot: boolean): ElementArgs<any> {
+            if (isRoot) {
+                args.newProps['data-foo'] = this.foo;
+            } else {
+                args.newProps['data-bar'] = this.bar;
+            }
+            return args;
+        };
+
+        it('has access to component instance as well as to elements', () => {
+            const wrap = reactDecor.makeFeature([], [statefulHook]);
+            const WrappedComp = wrap(ClassComp);
+
+            const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
+            expect(select('root')).to.have.attribute('data-foo', 'foo!');
+            expect(select('content')).to.have.attribute('data-bar', 'bar!');
+        });
+
+    });
+
 });
