@@ -7,8 +7,12 @@ declare let process: {env : {[k:string]: any}};
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global['global'] === global && global) || window;
 
-globalCtx['process'] = process = globalCtx['process'] || process || {};
-process.env = process.env || {};
+const _env = 'env';
+const _process = 'process';
+
+globalCtx[_process] = process = globalCtx[_process] || process || {};
+
+globalCtx[_process][_env] = process.env || {};
 
 export const devMode = {
     ON: Object.freeze({
@@ -31,8 +35,8 @@ if (process.env.NODE_ENV === 'development') {
 // set process.env.NODE_ENV according to global config's devMode flag
 onGlobalConfig('devMode', (newVal: any) => {
     if (newVal) {
-        process.env.NODE_ENV = 'development';
+        globalCtx[_process][_env].NODE_ENV = 'development';
     } else {
-        process.env.NODE_ENV = 'production';
+        globalCtx[_process][_env].NODE_ENV = 'production';
     }
 });
