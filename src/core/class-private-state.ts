@@ -26,50 +26,41 @@ export interface ClassStateProvider<P = any, T extends Class<object> = Class<obj
     unsafe: UnsafeClassStateProvider<P, T>;
 }
 
-export function classPrivateState<P = any, T extends Class<object> = Class<object>>(key: string, initializer: { (targetObj: T): P }): ClassStateProvider<P, T> {
-    const result = privateState(key, initializer) as ClassStateProvider<P, T>;
-    result.inherited = getInheritedClassStateProvider(result);
-    result.unsafe.inherited = result.inherited.unsafe;
-    return result;
-}
-
-export function getInheritedState<P, T extends Class<object>>(provider: StateProvider<P, T>, clazz: T): P | null {
-    while (clazz as Class<object> !== Object) {
-        if (provider.hasState(clazz)) {
-            return provider(clazz);
+function makeHeritageProvider<P, T extends Class<object>>(provider: StateProvider<P, T>): (clazz: T) => InheritedState<P, T> {
+    const internal: StateProvider<InheritedState<P, T>, T> = privateState('inherited-' + provider.stateId, (clazz: T) => {
+        if (clazz as Class<object> === Object) {
+            return {origin: null, value: null};
         }
-        clazz = Object.getPrototypeOf(clazz.prototype).constructor;
-    }
-    return null;
-}
-
-export function getOriginOfState<P, T extends Class<object>>(provider: StateProvider<P, T>, clazz: T) {
-    while (clazz as Class<object> !== Object) {
         if (provider.hasState(clazz)) {
-            return clazz;
+            return {origin: clazz, value: provider(clazz)};
         }
-        clazz = Object.getPrototypeOf(clazz.prototype).constructor as T;
-    }
-    return null;
+        return internal(Object.getPrototypeOf(clazz.prototype).constructor);
+    });
+    return internal;
 }
 
-export function hasInheritedState<T extends Class<object>>(provider: StateProvider<any, T>, clazz: T) {
-    while (clazz as Class<object> !== Object) {
-        if (provider.hasState(clazz)) {
-            return true;
-        }
-        clazz = Object.getPrototypeOf(clazz.prototype).constructor;
+export function addClassMethodsToPrivateState<P, T extends Class<object>>(provider: StateProvider<P, T>): ClassStateProvider<P, T> {
+    const classProvider = provider as ClassStateProvider<P, T>;
+    if (typeof classProvider.inherited === 'function') {
+        return classProvider;
     }
-    return false;
-}
-
-export function getInheritedClassStateProvider<P, T extends Class<object>>(provider: StateProvider<P, T>): InheritedClassStateProvider<P, T> {
-    const inherited = getInheritedState.bind(null, provider) as InheritedClassStateProvider<P, T>;
-    inherited.origin = getOriginOfState.bind(null, provider) as StateProvider<T, T>;
-    inherited.origin.hasState = inherited.hasState = hasInheritedState.bind(null, provider);
+    const heritageProvider = makeHeritageProvider(provider);
+    // construct the inherited methods
+    const inherited = ((clazz: T) => heritageProvider(clazz).value)  as InheritedClassStateProvider<P, T>;
+    inherited.origin = ((clazz: T) => heritageProvider(clazz).origin) as StateProvider<T, T>;
+    inherited.origin.hasState = inherited.hasState = ((clazz: T) => heritageProvider(clazz).origin !== null);
     inherited.unsafe = unsafe(provider.stateId, inherited) as InheritedClassStateProvider<P, T>['unsafe'];
     inherited.unsafe.origin = inherited.origin.unsafe = unsafe(provider.stateId, inherited.origin);
-    return inherited
+    classProvider.inherited = inherited;
+    classProvider.unsafe.inherited = classProvider.inherited.unsafe;
+    return classProvider
 }
 
-// TODO: cached version
+type InheritedState<P, T extends Class<object>> = {
+    origin: T | null;
+    value: P | null;
+}
+
+export function classPrivateState<P = any, T extends Class<object> = Class<object>>(key: string, initializer: { (targetObj: T): P }): ClassStateProvider<P, T> {
+    return addClassMethodsToPrivateState(privateState(key, initializer));
+}

@@ -1,7 +1,6 @@
 import {privateState, StateProvider} from "../core/private-state";
 import {Class, isAnyClass} from "../core/types";
-import {getInheritedClassStateProvider} from "../index";
-import {InheritedClassStateProvider} from "../core/class-private-state";
+import {addClassMethodsToPrivateState, InheritedClassStateProvider} from "../core/class-private-state";
 
 
 export interface Metadata<D, T extends object> {
@@ -134,7 +133,7 @@ export abstract class DecorApi<D, T extends object> {
 }
 
 export abstract class DecorClassApi<D, T extends object> extends DecorApi<D, T> {
-    protected readonly inheritedMetadataProvider: InheritedClassStateProvider<Metadata<D, T>, T & Class<any>> = getInheritedClassStateProvider<Metadata<D, T>, T & Class<any>>(this.metadataProvider);
+    protected readonly inheritedMetadataProvider: InheritedClassStateProvider<Metadata<D, T>, T & Class<any>> = addClassMethodsToPrivateState<Metadata<D, T>, T & Class<any>>(this.metadataProvider).inherited;
 
     protected decorate<T1 extends T>(wrapperArgs: D, wrapperSymbols: Function[], subj: T1): T1 {
         if (isAnyClass(subj) && !this.metadataProvider.hasState(subj)) {
