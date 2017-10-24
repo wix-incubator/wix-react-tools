@@ -49,7 +49,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
             byDecorator: !!props.byDecorator,
             noRightBorderRadius: !!props.byRender
         };
-        mergeStyleState(args.elementProps, styleState);
+        mergeStyleState(args.newProps, styleState);
         return args;
     });
     const stylableWrapper = stylable(runtime);

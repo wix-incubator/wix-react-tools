@@ -7,22 +7,21 @@ export const stylable = reactDecor.makeFeatureFactory((sheet: RuntimeStylesheet)
         return sheet.$stylesheet.get(name) || name;
     }
 
-    function stylableElementHook(_props: any, args: ElementArgs<any>, isRoot: boolean): ElementArgs<any> {
-        if (typeof args.elementProps.className === 'string') {
-            args.elementProps.className = args.elementProps.className.split(' ').map(classNameMapper).join(' ');
+    function stylableElementHook(_props: any, args: ElementArgs<any>, isRoot: boolean){
+        if (typeof args.newProps.className === 'string') {
+            args.newProps.className = args.newProps.className.split(' ').map(classNameMapper).join(' ');
         }
-        const {['style-state']: cssStates, ...rest} = args.elementProps;
+        const {['style-state']: cssStates, ...rest} = args.newProps;
         if (cssStates) {
-            args.elementProps = {...rest, ...sheet.$stylesheet.cssStates(cssStates)};
+            args.newProps = {...rest, ...sheet.$stylesheet.cssStates(cssStates)};
         }
         if (isRoot) {
-            if (args.elementProps.className) {
-                args.elementProps.className = sheet.$stylesheet.get(sheet.$stylesheet.root) + ' ' + args.elementProps.className;
+            if (args.newProps.className) {
+                args.newProps.className = sheet.$stylesheet.get(sheet.$stylesheet.root) + ' ' + args.newProps.className;
             } else {
-                args.elementProps.className = sheet.$stylesheet.get(sheet.$stylesheet.root);
+                args.newProps.className = sheet.$stylesheet.get(sheet.$stylesheet.root);
             }
         }
-        return args;
     }
 
     return makeReactDecoration([stylableElementHook]);

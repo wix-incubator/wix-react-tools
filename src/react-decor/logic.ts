@@ -1,6 +1,6 @@
-import {Attributes, cloneElement, Component, HTMLAttributes, ReactElement, ReactNode, ReactType} from "react";
+import {Attributes, Component, HTMLAttributes, ReactElement, ReactNode, ReactType} from "react";
 import {functionDecor} from "../functoin-decor/index";
-import {DecorReactHooks, ElementArgs, ElementType} from "./common";
+import {DecorReactHooks, Element, ElementArgs, ElementType} from "./common";
 import {ReactDecor} from "./index";
 import {Feature} from "../wrappers/index";
 import React = require('react');
@@ -8,6 +8,7 @@ import React = require('react');
 declare const process: { env: { [k: string]: any } };
 
 type CreateElementArgsTuple<P extends {}> = [ReactType, undefined | (Attributes & Partial<P>), ReactNode];
+type CloneElementArgsTuple<P extends {}> = [Element<Partial<P>>, undefined | (Attributes & Partial<P>), ReactNode];
 
 interface HookContext<T extends object> {
     componentInstance: undefined | Component<T>
@@ -32,61 +33,78 @@ const context = {
     createArgsMap: new Map()
 } as HookContext<object>; // componentProps will be overwritten before render
 
-let createElementArgsObject: ElementArgs<any>;
+let currentElementArgs: ElementArgs<any>;
 
-type ElementArgsTuple<P extends HTMLAttributes<HTMLElement>> = [ElementType<P>, undefined | (Attributes & Partial<P>), ReactNode]
+type CrerateElementArgsTuple<P extends HTMLAttributes<HTMLElement>> = [ElementType<P>, undefined | (Attributes & Partial<P>), ReactNode]
 
-function translateArgumentsToObject<P extends {}>(args: ElementArgsTuple<P>): ElementArgs<P> {
+function translateObjectToCloneElementArguments<P extends {}>(args: ElementArgs<P>): CloneElementArgsTuple<P> {
+    return [args.originalElement!, args.newProps, ...args.children] as CloneElementArgsTuple<P>;
+}
+
+function translateCloneElementArgumentsToObject<P extends {}>(args: CloneElementArgsTuple<P>): ElementArgs<P> {
     return {
-        type: args[0],
-        elementProps: args[1] || {},
+        type: args[0].type,
+        newProps: args[1] || {},
+        originalElement: args[0],
         children: args.length > 2 ? Array.prototype.slice.call(args, 2) : []
     };
 }
 
-function translateObjectToArguments<P extends {}>(args: ElementArgs<P>): ElementArgsTuple<P> {
-    return [args.type, args.elementProps, ...args.children] as ElementArgsTuple<P>;
+function translateCreateElementArgumentsToObject<P extends {}>(args: CrerateElementArgsTuple<P>): ElementArgs<P> {
+    return {
+        type: args[0],
+        newProps: args[1] || {},
+        children: args.length > 2 ? Array.prototype.slice.call(args, 2) : []
+    };
 }
 
-const applyHooksOnArguments = (createElementArgsTuple: CreateElementArgsTuple<any>): CreateElementArgsTuple<any> => {
-    createElementArgsObject = translateArgumentsToObject(createElementArgsTuple);
+function translateObjectToCrerateElementArguments<P extends {}>(args: ElementArgs<P>): CrerateElementArgsTuple<P> {
+    return [args.type, args.newProps, ...args.children] as CrerateElementArgsTuple<P>;
+}
+
+function applyHooksOnCrerateElementArguments(argsTuple: CreateElementArgsTuple<any>): CreateElementArgsTuple<any> {
     if (context.hooks) {
+        currentElementArgs = translateCreateElementArgumentsToObject(argsTuple);
         for (let i = 0; i < context.hooks.length; i++) {
             const hook = context.hooks[i];
             if (!hook.rootOnly) {
-                createElementArgsObject = hook.call(context.componentInstance, context.componentProps, createElementArgsObject, false);
+                currentElementArgs = hook.call(context.componentInstance, context.componentProps, currentElementArgs, false) || currentElementArgs;
             }
         }
-        return translateObjectToArguments(createElementArgsObject);
+        return translateObjectToCrerateElementArguments(currentElementArgs);
     }
-    return createElementArgsTuple;
+    return argsTuple;
+}
+
+const applyHooksOnCloneElementArguments = (argsTuple: CloneElementArgsTuple<any>): CloneElementArgsTuple<any> => {
+    if (context.hooks) {
+        currentElementArgs = translateCloneElementArgumentsToObject(argsTuple);
+        for (let i = 0; i < context.hooks.length; i++) {
+            const hook = context.hooks[i];
+            if (!hook.rootOnly) {
+                currentElementArgs = hook.call(context.componentInstance, context.componentProps, currentElementArgs, false) || currentElementArgs;
+            }
+        }
+        return translateObjectToCloneElementArguments(currentElementArgs);
+    }
+    return argsTuple;
 };
 
-const saveCreateElementArguments = (createElementResult: ReactElement<any>): ReactElement<any> => {
-    if (createElementResult) {
-        context.createArgsMap.set(createElementResult, createElementArgsObject);
+const saveCurrentElementArgs = (newElement: ReactElement<any>): ReactElement<any> => {
+    if (newElement) {
+        context.createArgsMap.set(newElement, currentElementArgs);
     }
-    return createElementResult;
+    return newElement;
 };
 
 export const wrappedCreateElement = functionDecor.makeFeature({
-    before: [applyHooksOnArguments],
-    after: [saveCreateElementArguments]
+    before: [applyHooksOnCrerateElementArguments],
+    after: [saveCurrentElementArgs]
 })(originalReactCreateElement);
 
-/*
-
-React.cloneElement(
-  element,
-  [props],
-  [...children]
-)
- */
-
-
 export const wrappedReactCloneElement = functionDecor.makeFeature({
-    before: [],
-    after: []
+    before: [applyHooksOnCloneElementArguments],
+    after: [saveCurrentElementArgs]
 })(originalReactCloneElement);
 
 export function makeRenderFeature(reactDecor: ReactDecor): Feature<Function> {
@@ -113,9 +131,11 @@ export function makeRenderFeature(reactDecor: ReactDecor): Feature<Function> {
             let rootElementArgs = context.createArgsMap.get(renderResult);
             if (rootElementArgs) {
                 for (let i = 0; i < context.hooks.length; i++) {
-                    rootElementArgs = context.hooks[i].call(context.componentInstance, context.componentProps, rootElementArgs, true);
+                    rootElementArgs = (context.hooks[i].call(context.componentInstance, context.componentProps, rootElementArgs, true) || rootElementArgs) as ElementArgs<any>;
                 }
-                renderResult = cloneElement(renderResult, (rootElementArgs!).elementProps, ...rootElementArgs!.children);
+                renderResult = originalReactCreateElement(renderResult.type as any, Object.assign({}, renderResult.props, rootElementArgs.newProps), ...rootElementArgs.children);
+                // please un-comment only when using cloneElement is justified by tests
+                // renderResult = originalReactCloneElement(renderResult, rootElementArgs.newProps, ...rootElementArgs.children);
                 context.createArgsMap.set(renderResult, rootElementArgs!);
             } else if (process.env.NODE_ENV !== 'production') {
                 console.warn('unexpected root node : ', renderResult);

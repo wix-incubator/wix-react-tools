@@ -1,17 +1,16 @@
 import {inBrowser} from "mocha-plugin-env";
 import * as React from "react";
 import {SFC} from "react";
-import {asRootOnly, devMode, ElementArgs, reactDecor, runInContext, resetReactMonkeyPatches} from "../../src";
+import {asRootOnly, devMode, ElementArgs, reactDecor, resetReactMonkeyPatches, runInContext} from "../../src";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
 
 type PropsWithName = { name: string };
 
-function addChangeRemoveHook(componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
-    args.elementProps['data-add-me'] = componentProps.name;
-    args.elementProps['data-change-me'] = componentProps.name;
-    args.elementProps['data-delete-me'] = undefined;
-    return args;
+function addChangeRemoveHook(componentProps: PropsWithName, args: ElementArgs<any>) {
+    args.newProps['data-add-me'] = componentProps.name;
+    args.newProps['data-change-me'] = componentProps.name;
+    args.newProps['data-delete-me'] = undefined;
 }
 
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {

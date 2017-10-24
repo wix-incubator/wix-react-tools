@@ -8,15 +8,20 @@ import {
     ComponentClass,
     ComponentState,
     ComponentType,
+    DOMElement,
     HTMLAttributes,
+    ReactElement,
     ReactHTML,
     ReactNode,
     ReactSVG,
+    ReactType,
     SFC
 } from "react";
 import {Instance} from '../core/types';
 import {functionDecor} from "../functoin-decor/index";
 import {Feature} from "../wrappers/index";
+
+export type Element<P extends {}> = { type: ReactType } & (DOMElement<P, any> | ReactElement<P>);
 
 export function isReactClassComponent(value: any): value is ComponentClass<any> {
     return value && isComponentInstance(value.prototype);
@@ -36,16 +41,21 @@ export type ElementType<P> =
 
 export type ElementArgs<P extends HTMLAttributes<HTMLElement>> = {
     type: ElementType<P>,
-    elementProps: Attributes & Partial<P>,
+    newProps: Attributes & Partial<P>,
+    originalElement?: Element<Partial<P>>, // only in cloneElement
     children: Array<ReactNode>
 }
 
 export type ReactFeature<P extends object> = Feature<ComponentType<P>>;
 
+export type Falsy = void | undefined | null | 0 | false | '' ;
+
+export type Maybe<T> = T | Falsy;
+
 export interface StatefulElementHook<P extends object, T extends Component<P> = Component<P>> {
     rootOnly?: boolean;
 
-    <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>, isRoot: boolean): ElementArgs<E>
+    <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>, isRoot: boolean): Maybe<ElementArgs<E>>;
 }
 
 export type StatelessElementHook<P extends object> = StatefulElementHook<P, any>;

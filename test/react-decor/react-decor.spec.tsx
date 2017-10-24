@@ -3,9 +3,9 @@ import {Component, ComponentType, SFC} from "react";
 import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {resetAll, spyAll, testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {inBrowser} from "mocha-plugin-env/dist/src";
-import {devMode, ElementArgs, reactDecor, runInContext, resetReactMonkeyPatches} from "../../src";
+import {devMode, ElementArgs, reactDecor, resetReactMonkeyPatches, runInContext} from "../../src";
 import {asRootOnly, makeRootOnly} from "../../src/react-decor/index";
-import {ElementHook, StatelessElementHook} from "../../src/react-decor/common";
+import {ElementHook, Maybe, StatelessElementHook} from "../../src/react-decor/common";
 
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
@@ -22,26 +22,22 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         runInContext(devMode.OFF, () => clientRenderer.cleanup());
     });
 
-
-    function hookReturnsUndefined(_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
-        return undefined as any;
+    function cloneArgsHookNameIsRootId(props: PropsWithName, args: ElementArgs<any>, isRoot: boolean): Maybe<ElementArgs<any>> {
+        return isRoot && {...args, newProps: {...args.newProps, "data-automation-id": props.name}};
     }
 
-    function statelessHook1(_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
-        fakeConsole.log(args.elementProps['data-automation-id']);
-        return args;
+    function statelessHook1(_props: PropsWithName, args: ElementArgs<any>) {
+        fakeConsole.log(args.newProps['data-automation-id']);
     }
 
-    function statelessHook2(_props: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
-        fakeConsole.log(args.elementProps['data-automation-id']);
-        return args;
+    function statelessHook2(_props: PropsWithName, args: ElementArgs<any>) {
+        fakeConsole.log(args.newProps['data-automation-id']);
     }
 
-    function addChangeRemoveHook(componentProps: PropsWithName, args: ElementArgs<any>): ElementArgs<any> {
-        args.elementProps['data-add-me'] = componentProps.name;
-        args.elementProps['data-change-me'] = componentProps.name;
-        args.elementProps['data-delete-me'] = undefined;
-        return args;
+    function addChangeRemoveHook(componentProps: PropsWithName, args: ElementArgs<any>) {
+        args.newProps['data-add-me'] = componentProps.name;
+        args.newProps['data-change-me'] = componentProps.name;
+        args.newProps['data-delete-me'] = undefined;
     }
 
     type PropsWithName = { name?: string };
@@ -106,10 +102,14 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
                 expect((content as HTMLSpanElement).innerText).to.equal('Jon');
             });
 
-            it('throws when hook returns undefined', () => {
-                const wrapWithRootHook = reactDecor.makeFeature([hookReturnsUndefined]);
-                const WrappedComp = wrapWithRootHook(Comp);
-                expect(() => clientRenderer.render(<WrappedComp/>)).to.throw(Error);
+            it('uses result of hook as new arguments', () => {
+                const wrap = reactDecor.makeFeature([cloneArgsHookNameIsRootId, asRootOnly(statelessHook1)]);
+                const WrappedComp = wrap(Comp);
+
+                const {select} = clientRenderer.render(<WrappedComp name="Jon"/>);
+
+                expect(fakeConsole.log).to.have.been.calledWithMatch(/Jon/);
+                expect(select('Jon')).to.be.ok;
             });
 
             it('adding a rootOnly hook to a component will add/remove/change the root elements props', () => {
@@ -157,11 +157,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         testWithBothComponentTypes(SFComp, suite);
         describe(`on result of React.cloneElement (once or more on same element)`, () => {
 
-            // something to clone. similar to SFComp's result, only with no "data-change-me" attributes and no text element {name}
-            const resultOrigin = <div data-automation-id="root" data-delete-me="TBDeleted" data-change-me="TBChanged" />;
+            // something to clone. similar to elements in SFComp's result
+            const templateElement = <div data-automation-id="root" data-delete-me="TBDeleted"
+                                         data-change-me="TBChanged"/>;
 
             const ClonerSFComp: React.SFC<PropsWithName> = ({name}) => {
-                const content = React.cloneElement(resultOrigin, {"data-automation-id": "content"}, name);
+                const content = React.cloneElement(templateElement, {"data-automation-id": "content"}, name);
                 // notice how root is a result of two clones
                 return React.cloneElement(content, {"data-automation-id": "root"}, content);
             };
@@ -271,10 +272,10 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         const SFComp: React.SFC = () => <div><span/></div>;
 
         function testReactClassAndFunctionDecoration(Comp: ComponentType) {
-            it('elementProps is never empty', () => {
-                const hook: StatelessElementHook<{}> = sinon.spy(function (_p: any, args: ElementArgs<any>): ElementArgs<any> {
-                    expect(args.elementProps).to.containSubset({});
-                    return args;
+            it('newProps is never falsy', () => {
+                const hook: StatelessElementHook<{}> = sinon.spy(function (_p: any, args: ElementArgs<any>) {
+                    expect(args.newProps).to.be.ok;
+                    expect(args.newProps).to.containSubset({});
                 });
 
                 const wrap = reactDecor.makeFeature<PropsWithName, Component<any>>([hook]);

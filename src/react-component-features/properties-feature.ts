@@ -4,8 +4,7 @@ import {makeRootOnly, reactDecor, ReactFeature} from "../react-decor/index";
 
 function makeDecorator(blacklist?: Array<string>): ReactFeature<ComponentProps> {
     return reactDecor.makeFeature([makeRootOnly((props: any, args: ElementArgs<any>) => {
-        args.elementProps = rootProps(props, args.elementProps, blacklist);
-        return args;
+        args.newProps = rootProps(props, args.newProps, blacklist);
     })]);
 }
 

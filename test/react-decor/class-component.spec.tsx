@@ -25,12 +25,12 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
 
 
     function fooHook<P extends { ['data-foo']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-        args.elementProps['data-foo'] = 'foo';
+        args.newProps['data-foo'] = 'foo';
         return args;
     }
 
     function barHook<P extends { ['data-bar']?: string } & HTMLAttributes<HTMLElement>>(_props: object, args: ElementArgs<P>) {
-        args.elementProps['data-bar'] = 'bar';
+        args.newProps['data-bar'] = 'bar';
         return args;
     }
 
@@ -120,9 +120,9 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
 
         const statefulHook: StatefulElementHook<PropsWithName, ClassComp> = function (this: ClassComp, componentProps: PropsWithName, args: ElementArgs<any>, isRoot: boolean): ElementArgs<any> {
             if (isRoot) {
-                args.elementProps['data-foo'] = this.foo;
+                args.newProps['data-foo'] = this.foo;
             } else {
-                args.elementProps['data-bar'] = this.bar;
+                args.newProps['data-bar'] = this.bar;
             }
             return args;
         };

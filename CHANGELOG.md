@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - all decor APIs uses same type of resiult : `Feature<T>`
 - class decor uses function decor hooks type
 - class decor generics API simplified
+- class decor hooks arguments schema changed
+- class decor hooks can now change arguments object in-place without returning it
+- class decor hooks now work on cloneElement
 - function wrapping metadata now using private state (so it's visible on function to debugger in dev-mode)
 - react decor now has a single hook type, which is informed if the argument is root.
 - lodash no longer a runtime dependency
