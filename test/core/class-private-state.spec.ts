@@ -1,5 +1,6 @@
-import {Class, classPrivateState} from "../../src/";
+import {Class, classPrivateState, privateState} from "../../src/";
 import {expect} from "test-drive";
+import {addClassMethodsToPrivateState} from "../../src/core/class-private-state";
 
 let count = 0;
 
@@ -14,6 +15,16 @@ function initState(subj: Class<any>) {
 
 describe('Class private state', () => {
     const pState0 = classPrivateState('foo', initState);
+
+    describe('.addClassMethodsToPrivateState', () => {
+        it('returns argument', () => {
+            const ps = privateState<{ subj: Class<any>, count: number }, Class<any>>('foo', initState);
+
+            expect(addClassMethodsToPrivateState(ps)).to.equal(ps);
+        });
+
+    });
+
     describe('.inherited', () => {
         it('returns state of own class if exists', () => {
             class F {

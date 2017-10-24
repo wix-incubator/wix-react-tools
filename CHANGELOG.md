@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - class decor hooks now work on cloneElement
 - function wrapping metadata now using private state (so it's visible on function to debugger in dev-mode)
 - react decor now has a single hook type, which is informed if the argument is root.
+- aggressive caching of class-private-state (affects all inherited class decorations)
 - lodash no longer a runtime dependency
 
 ### Removed
