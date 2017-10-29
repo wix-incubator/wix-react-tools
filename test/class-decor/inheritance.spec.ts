@@ -99,37 +99,6 @@ describe("class decor inheritance", () => {
             childFunction: (target: Base, arg: number) => undefined,
         });
 
-        describe("priority", () => {
-
-            function beforeAfterDecor<T extends Class<Base>>(cls: T): T {
-                return classDecor.method<Base>(METHOD, functionDecor.before(function (this: T, args: [number]) {
-                        SPIES.firstBefore(this, args);
-                        return [args[0] + 1]
-                    }),
-                    functionDecor.after(function (this: T, result: number) {
-                        SPIES.lastAfter(this, result);
-                        return result + 1;
-                    }))(cls);
-            }
-
-            function middlewareDecor<T extends Class<Base>>(cls: T): T {
-                return classDecor.method<Base>(METHOD, functionDecor.middleware(function (this: T, next: Function, args: [number]) {
-                    SPIES.lastBefore(this, args);
-                    const res = next([args[0] + 1]);
-                    SPIES.firstAfter(this, res);
-                    return res + 1;
-                }))(cls);
-            }
-
-            describe("before & after wraps middleware when applied first", () => {
-                checkDecorationStyles(beforeAfterDecor, middlewareDecor, true);
-            });
-            describe("before & after wraps middleware also when applied last", () => {
-                checkDecorationStyles(middlewareDecor, beforeAfterDecor, true);
-            });
-
-        });
-
         describe("before and after", () => {
 
             function outer<T extends Class<Base>>(cls: T): T {
@@ -155,7 +124,7 @@ describe("class decor inheritance", () => {
             }
 
             // first is outer, last is inner
-            checkDecorationStyles(outer, inner);
+            checkDecorationStyles(inner, outer);
         });
 
         describe("middleware", () => {
@@ -179,7 +148,7 @@ describe("class decor inheritance", () => {
             }
 
             // first  is outer, last is inner
-            checkDecorationStyles(outer, inner);
+            checkDecorationStyles(inner, outer);
         });
 
         function checkDecorationStyles(first: Decorator, second: Decorator, sampleTest = false) {

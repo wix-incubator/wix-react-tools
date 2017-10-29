@@ -19,7 +19,10 @@ export class FunctionFeatureStub implements FunctionMetaData {
     }];
     public before: BeforeHook[] = [this.beforeSpy];
     public after: AfterHook<any>[] = [this.afterSpy];
-    public feature: Feature<Function> = functionDecor.makeFeature(this);
+
+    public feature(): Feature<Function>{
+        return functionDecor.makeFeature(this);
+    }
 
     constructor(public name = 'stub') {
     }
@@ -32,21 +35,20 @@ export class FunctionFeatureStub implements FunctionMetaData {
         this.afterSpy.reset();
     }
 
-    expectToHaveWrapped(other: FunctionFeatureStub){
-        expect(other.middlewareBeforeSpy, 'other.middlewareBeforeSpy').to.have.callCount(1);
-        expect(other.middlewareAfterSpy, 'other.middlewareAfterSpy').to.have.callCount(1);
-        expect(other.beforeSpy, 'other.beforeSpy').to.have.callCount(1);
-        expect(other.afterSpy, 'other.afterSpy').to.have.callCount(1);
-
+    expectToHaveBeenCalledOnce(){
         expect(this.middlewareBeforeSpy, 'this.middlewareBeforeSpy').to.have.callCount(1);
         expect(this.middlewareAfterSpy, 'this.middlewareAfterSpy').to.have.callCount(1);
         expect(this.beforeSpy, 'this.beforeSpy').to.have.callCount(1);
         expect(this.afterSpy, 'this.afterSpy').to.have.callCount(1);
+    }
 
-        expect(this.beforeSpy.firstCall).to.have.been.calledBefore(other.beforeSpy);
-        expect(this.middlewareBeforeSpy.firstCall).to.have.been.calledBefore(other.middlewareBeforeSpy);
+    expectToHaveWrapped(other: FunctionFeatureStub){
+        this.expectToHaveBeenCalledOnce();
+        other.expectToHaveBeenCalledOnce();
 
-        expect(this.middlewareAfterSpy.firstCall).to.have.been.calledAfter(other.middlewareAfterSpy);
-        expect(this.afterSpy.firstCall).to.have.been.calledAfter(other.afterSpy);
+        expect(this.beforeSpy.firstCall.calledBefore(other.beforeSpy.firstCall), 'beforeSpy order').to.equal(true);
+        expect(this.middlewareBeforeSpy.firstCall.calledBefore(other.middlewareBeforeSpy.firstCall), 'middlewareBeforeSpy order').to.equal(true);
+        expect(this.middlewareAfterSpy.firstCall.calledAfter(other.middlewareAfterSpy.firstCall), 'middlewareAfterSpy order').to.equal(true);
+        expect(this.afterSpy.firstCall.calledAfter(other.afterSpy.firstCall), 'afterSpy order').to.equal(true);
     }
 }

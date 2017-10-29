@@ -34,9 +34,9 @@ export class FunctionDecor extends DecorApi<Partial<FunctionMetaData>, Function>
     protected mergeDecorations(base: FunctionMetaData, addition: FunctionMetaData): FunctionMetaData {
         return {
             name: base.name || addition.name,
-            middleware: mergeOptionalArrays(base.middleware, addition.middleware),
-            before: mergeOptionalArrays(base.before, addition.before),
-            after: mergeOptionalArrays(addition.after, base.after), //reverse order
+            middleware: mergeOptionalArrays(addition.middleware, base.middleware),
+            before: mergeOptionalArrays(addition.before, base.before),
+            after: mergeOptionalArrays(base.after, addition.after), //reverse order
         };
     }
 

@@ -76,8 +76,8 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
 
                 expect(select('Root')).to.have.class(runtime.root);
                 expect(select('Root')).to.have.attribute('class', runtime.root);
-                expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-                expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byDecorator: true})}`)).to.have.length(1);
+                expect(container.querySelectorAll(`.${runtime.root}`), 'query for root by className').to.have.length(1);
+                expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byDecorator: true})}`), 'query for root by className and styleState').to.have.length(1);
             });
 
             it('supports injecting style-state by component', () => {
@@ -107,5 +107,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
         };
 
     testWithBothComponentTypes(comp, suite(wrapper));
-    testWithBothComponentTypes(comp, suite(wrapper2));
+    describe('reverse order', () => {
+        testWithBothComponentTypes(comp, suite(wrapper2));
+    });
 });
