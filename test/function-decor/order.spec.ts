@@ -6,19 +6,13 @@ describe('function decor order', () => {
     const noop = () => {};
     const ffs1 = new FunctionFeatureStub();
     const ffs2 = new FunctionFeatureStub();
-    let f1: Feature<Function>;
-    let f2: Feature<Function>;
-
     beforeEach('reset features', () => {
         ffs1.reset();
         ffs2.reset();
-
-        f1 = ffs1.feature();
-        f2 = ffs2.feature();
     });
 
-    it('before and after wraps middleware', () => {
-        const wrapped = f1(noop);
+    it('before and after wraps middleware in same feature', () => {
+        const wrapped = ffs1.feature(noop);
         wrapped();
         ffs1.expectToHaveBeenCalledOnce();
 
@@ -27,20 +21,47 @@ describe('function decor order', () => {
         expect(ffs1.middlewareAfterSpy.firstCall.calledBefore(ffs1.afterSpy.firstCall), 'middlewareAfterSpy -> afterSpy').to.equal(true);
     });
 
-    it('naive order works', () => {
-        const wrapped1 = f1(f2(noop));
-        const wrapped2 = f2(f1(noop));
+    it('before and after wraps middleware between features', () => {
+        const wrapped = ffs1.feature(ffs2.feature(noop));
+        wrapped();
+        ffs1.expectToHaveBeenCalledOnce();
+        ffs2.expectToHaveBeenCalledOnce();
 
-        wrapped1();
+        expect(ffs1.beforeSpy.firstCall.calledBefore(ffs2.middlewareBeforeSpy.firstCall), 'ffs1.beforeSpy -> ffs2.middlewareBeforeSpy').to.equal(true);
+        expect(ffs2.beforeSpy.firstCall.calledBefore(ffs1.middlewareBeforeSpy.firstCall), 'ffs2.beforeSpy -> ffs1.middlewareBeforeSpy').to.equal(true);
+        expect(ffs1.middlewareAfterSpy.firstCall.calledBefore(ffs2.afterSpy.firstCall), 'ffs1.middlewareAfterSpy -> ffs2.afterSpy').to.equal(true);
+        expect(ffs2.middlewareAfterSpy.firstCall.calledBefore(ffs1.afterSpy.firstCall), 'ffs2.middlewareAfterSpy -> ffs1.afterSpy').to.equal(true);
+    });
+
+    it('naive order works', () => {
+        const feature1 = ffs1.feature;
+        const feature2 = ffs2.feature;
+
+        (feature1(feature2(noop)))();
         ffs1.expectToHaveWrapped(ffs2);
 
         ffs1.reset();
         ffs2.reset();
 
-        wrapped2();
+        (feature2(feature1(noop)))();
         ffs2.expectToHaveWrapped(ffs1);
     });
 
+    it('custom order works', () => {
+        const feature1 = ffs1.feature;
+        const feature2 = ffs2.feature;
 
-    // TODO test custom order
+        debugger;
+
+        (feature1(feature2(noop)))();
+        // baseline
+        ffs1.expectToHaveWrapped(ffs2);
+
+        ffs1.reset();
+        ffs2.reset();
+
+        (feature2(feature1(noop)))();
+        // reverse order of feature application, still feature1 wrapped feature2
+        ffs1.expectToHaveWrapped(ffs2);
+    });
 });

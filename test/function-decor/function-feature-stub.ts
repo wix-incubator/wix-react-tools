@@ -20,19 +20,20 @@ export class FunctionFeatureStub implements FunctionMetaData {
     public before: BeforeHook[] = [this.beforeSpy];
     public after: AfterHook<any>[] = [this.afterSpy];
 
-    public feature(): Feature<Function>{
-        return functionDecor.makeFeature(this);
-    }
+    public feature: Feature<Function> = functionDecor.makeFeature(this);
 
     constructor(public name = 'stub') {
     }
 
 
     reset(){
+        // reset spies memory
         this.middlewareBeforeSpy.reset();
         this.middlewareAfterSpy.reset();
         this.beforeSpy.reset();
         this.afterSpy.reset();
+        // also reset feature to new object
+        this.feature = functionDecor.makeFeature(this);
     }
 
     expectToHaveBeenCalledOnce(){
