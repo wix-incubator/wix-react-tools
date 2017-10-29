@@ -1,6 +1,7 @@
 import {AfterHook, BeforeHook, FunctionMetaData, mergeOptionalArrays, MiddlewareHook} from "./common";
-import {DecorApi, Feature} from "../wrappers/index";
+import {DecorApi} from "../wrappers/index";
 import {funcDecorWrapper} from "./logic";
+import {Feature} from "../wrappers/feature-manager";
 
 export {
     AfterHook, BeforeHook, MiddlewareHook, FunctionMetaData

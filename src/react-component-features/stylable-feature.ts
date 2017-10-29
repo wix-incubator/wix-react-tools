@@ -2,6 +2,7 @@ import {RuntimeStylesheet} from "stylable";
 import {makeReactDecoration, reactDecor} from "../react-decor/index";
 import {ElementArgs} from "../react-decor/common";
 import {properties} from "./properties-feature";
+import {featuresApi} from "../wrappers/index";
 
 export const stylable = reactDecor.makeFeatureFactory((sheet: RuntimeStylesheet) => {
     function classNameMapper(name: string) {
@@ -28,5 +29,5 @@ export const stylable = reactDecor.makeFeatureFactory((sheet: RuntimeStylesheet)
     return makeReactDecoration([stylableElementHook]);
 });
 
-reactDecor.forceFeatureOrder(stylable, reactDecor.onRootElement);
-reactDecor.forceFeatureOrder(stylable, properties);
+featuresApi.forceFeatureOrder(stylable, reactDecor.onRootElement);
+featuresApi.forceFeatureOrder(stylable, properties);

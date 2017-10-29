@@ -2,7 +2,7 @@ import {AfterHook, BeforeHook, FunctionMetaData, MiddlewareHook} from "../../src
 import {sinon} from "test-drive-react";
 import {expect} from "test-drive";
 import {functionDecor} from "../../src/functoin-decor/index";
-import {Feature} from "../../src/wrappers/index";
+import {Feature} from "../../src/wrappers/feature-manager";
 
 
 export class FunctionFeatureStub implements FunctionMetaData {

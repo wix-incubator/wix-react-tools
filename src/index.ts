@@ -11,6 +11,7 @@ export * from './core/disposers';
 export * from './react-util/global-id';
 
 // js decor
+export {featuresApi} from './wrappers';
 export {classDecor, ClassFeature} from './class-decor/index';
 export {functionDecor, cloneFunction} from "./functoin-decor/index";
 

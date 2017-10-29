@@ -2,6 +2,7 @@ import * as React from "react";
 import {expect, sinon} from "test-drive-react";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {ElementArgs, reactDecor, StatelessElementHook} from "../../src";
+import {featuresApi} from "../../src/wrappers/index";
 
 type PropsWithName = { name: string };
 
@@ -52,7 +53,7 @@ describe("react-decorator-reflection", () => {
             it("should work with custom symbols", () => {
                 const wrapper3 = reactDecor.makeFeature([hook]);
                 const symbol = {};
-                reactDecor.addSymbolToFeature(wrapper3, symbol);
+                featuresApi.addSymbolToFeature(wrapper3, symbol);
                 const anotherWrappedComp = wrapper3(Comp);
 
                 expect(reactDecor.isDecorated(anotherWrappedComp, symbol), 'isDecorated by known symbol').to.equal(true);

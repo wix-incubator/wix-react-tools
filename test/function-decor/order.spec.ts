@@ -1,6 +1,6 @@
 import {FunctionFeatureStub} from "./function-feature-stub";
 import {expect} from "test-drive";
-import {functionDecor} from "../../src/functoin-decor/index";
+import {featuresApi} from "../../src/wrappers/index";
 
 describe('function decor order', () => {
     const noop = () => {};
@@ -51,9 +51,9 @@ describe('function decor order', () => {
         const feature1 = ffs1.feature;
         const feature2 = ffs2.feature;
         const marker = {};
-        functionDecor.addSymbolToFeature(feature2, marker);
+        featuresApi.addSymbolToFeature(feature2, marker);
 
-        functionDecor.forceFeatureOrder(feature1, marker);
+        featuresApi.forceFeatureOrder(feature1, marker);
 
         (feature1(feature2(noop)))();
         // baseline
@@ -78,7 +78,7 @@ describe('function decor order', () => {
         const feature2 = ffs2.feature;
         const feature3 = ffs3.feature;
 
-        functionDecor.forceFeatureOrder(feature1, feature2);
+        featuresApi.forceFeatureOrder(feature1, feature2);
 
         (feature0(feature1(feature2(feature3(noop)))))();
         // baseline

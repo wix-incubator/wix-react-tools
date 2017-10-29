@@ -19,7 +19,7 @@ import {
 } from "react";
 import {Instance} from '../core/types';
 import {functionDecor} from "../functoin-decor/index";
-import {Feature} from "../wrappers/index";
+import {Feature} from "../wrappers/feature-manager";
 
 export type Element<P extends {}> = { type: ReactType } & (DOMElement<P, any> | ReactElement<P>);
 

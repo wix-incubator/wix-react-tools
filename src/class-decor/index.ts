@@ -1,4 +1,4 @@
-import {DecorClassApi, Feature} from "../wrappers/index";
+import {DecorClassApi} from "../wrappers/index";
 import {
     ClassMetaData,
     ConstructorHook,
@@ -9,6 +9,7 @@ import {
 } from "./logic";
 import {Class, TypedPropertyDescriptorMap} from "../core/types";
 import {mergeOptionalArrays} from "../functoin-decor/common";
+import {Feature} from "../wrappers/feature-manager";
 
 export type ClassFeature<T extends object> = Feature<Class<T>>;
 
