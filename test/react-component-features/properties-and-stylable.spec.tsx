@@ -23,30 +23,40 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @properties (r
 
     const comp: React.SFC<properties.Props> = (p: properties.Props) => (<div/>);
 
-    function suite(component: React.ComponentType<properties.Props>) {
-        it('supports empty elements', () => {
-            const Comp = stylable(runtime)(properties(component));
+    const stylableWrapper = stylable(runtime);
+    const wrapper = (component: React.ComponentType<properties.Props>) => stylableWrapper(properties(component));
+    const wrapper2 = (component: React.ComponentType<properties.Props>) => properties(stylableWrapper(component)); // same as wrapper, in reverse order
 
-            const {select, container} = clientRenderer.render(<Comp data-automation-id="Root"> </Comp>);
 
-            expect(select('Root')).to.have.class(runtime.root);
-            expect(select('Root')).to.have.attribute('class', runtime.root);
-            expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-        });
+    const suite = (wrapper: (component: React.ComponentType<properties.Props>) => React.ComponentType<properties.Props>) =>
+        (component: React.ComponentType<properties.Props>) => {
+            it('supports empty elements', () => {
+                const Comp = wrapper(component);
 
-        it('supports class names', () => {
-            const Comp = stylable(runtime)(properties(component));
+                const {select, container} = clientRenderer.render(<Comp data-automation-id="Root"> </Comp>);
 
-            const {select, container} = clientRenderer.render(<Comp data-automation-id="Root"
-                                                                    className="SomeClass External"> </Comp>);
+                expect(select('Root')).to.have.class(runtime.root);
+                expect(select('Root')).to.have.attribute('class', runtime.root);
+                expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
+            });
 
-            expect(select('Root')).to.have.class(runtime.root);
-            expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-            expect(select('Root')).to.have.class(runtime.SomeClass);
-            expect(select('Root')).to.have.class('External');
-            expect(container.querySelectorAll(`.${runtime.SomeClass}`)).to.have.length(1);
-        });
-    }
+            it('supports class names', () => {
+                const Comp = wrapper(component);
 
-    testWithBothComponentTypes(comp, suite);
+                const {select, container} = clientRenderer.render(<Comp data-automation-id="Root"
+                                                                        className="SomeClass External"> </Comp>);
+
+                expect(select('Root')).to.have.class(runtime.root);
+                expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
+                expect(select('Root')).to.have.class(runtime.SomeClass);
+                expect(select('Root')).to.have.class('External');
+                expect(container.querySelectorAll(`.${runtime.SomeClass}`)).to.have.length(1);
+            });
+        };
+
+
+    testWithBothComponentTypes(comp, suite(wrapper));
+    describe('reverse order', () => {
+        testWithBothComponentTypes(comp, suite(wrapper2));
+    });
 });
