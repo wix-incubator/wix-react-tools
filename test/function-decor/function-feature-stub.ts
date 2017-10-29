@@ -37,19 +37,19 @@ export class FunctionFeatureStub implements FunctionMetaData {
     }
 
     expectToHaveBeenCalledOnce(){
-        expect(this.middlewareBeforeSpy, 'this.middlewareBeforeSpy').to.have.callCount(1);
-        expect(this.middlewareAfterSpy, 'this.middlewareAfterSpy').to.have.callCount(1);
-        expect(this.beforeSpy, 'this.beforeSpy').to.have.callCount(1);
-        expect(this.afterSpy, 'this.afterSpy').to.have.callCount(1);
+        expect(this.middlewareBeforeSpy, `${this.name}.middlewareBeforeSpy`).to.have.callCount(1);
+        expect(this.middlewareAfterSpy, `${this.name}.middlewareAfterSpy`).to.have.callCount(1);
+        expect(this.beforeSpy, `${this.name}.beforeSpy`).to.have.callCount(1);
+        expect(this.afterSpy, `${this.name}.afterSpy`).to.have.callCount(1);
     }
 
-    expectToHaveWrapped(other: FunctionFeatureStub){
+    expectToHaveWrapped(other: FunctionFeatureStub, msg = ''){
         this.expectToHaveBeenCalledOnce();
         other.expectToHaveBeenCalledOnce();
 
-        expect(this.beforeSpy.firstCall.calledBefore(other.beforeSpy.firstCall), 'beforeSpy order').to.equal(true);
-        expect(this.middlewareBeforeSpy.firstCall.calledBefore(other.middlewareBeforeSpy.firstCall), 'middlewareBeforeSpy order').to.equal(true);
-        expect(this.middlewareAfterSpy.firstCall.calledAfter(other.middlewareAfterSpy.firstCall), 'middlewareAfterSpy order').to.equal(true);
-        expect(this.afterSpy.firstCall.calledAfter(other.afterSpy.firstCall), 'afterSpy order').to.equal(true);
+        expect(this.beforeSpy.firstCall.calledBefore(other.beforeSpy.firstCall), `${msg} : ${this.name}.beforeSpy before ${other.name}.beforeSpy`).to.equal(true);
+        expect(this.middlewareBeforeSpy.firstCall.calledBefore(other.middlewareBeforeSpy.firstCall), `${msg} : ${this.name}.middlewareBeforeSpy before ${other.name}.middlewareBeforeSpy`).to.equal(true);
+        expect(this.middlewareAfterSpy.firstCall.calledAfter(other.middlewareAfterSpy.firstCall), `${msg} : ${this.name}.middlewareAfterSpy after ${other.name}.middlewareAfterSp`).to.equal(true);
+        expect(this.afterSpy.firstCall.calledAfter(other.afterSpy.firstCall), `${msg} : ${this.name}.afterSpy after ${other.name}.afterSpy`).to.equal(true);
     }
 }

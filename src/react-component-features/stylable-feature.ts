@@ -26,3 +26,5 @@ export const stylable = reactDecor.makeFeatureFactory((sheet: RuntimeStylesheet)
 
     return makeReactDecoration([stylableElementHook]);
 });
+
+reactDecor.forceFeatureOrder(stylable, reactDecor.onRootElement);

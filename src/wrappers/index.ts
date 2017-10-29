@@ -4,43 +4,70 @@ import {addClassMethodsToPrivateState, InheritedClassStateProvider} from "../cor
 
 
 export interface Metadata<D, T extends object> {
-    features: Array<Feature<T>>; // TODO: Set<Feature<T>>?
+    features: Array<Feature<T>>;
     original: T;
     decoration: D;
+    symbols: any[]; // TODO: WeakSet
 }
 
-export interface FeatureMetadata<T extends object> {
+export interface FeatureMetadata<D, T extends object> {
+    feature: Feature<T>;
+    decoration: D;
     forceBefore: Array<FeatureOrFactory<T>>;
-    symbols: any[]; // TODO: Set<any>? , also better name - taggedWith?
+    symbols: any[];  // TODO: WeakSet
 }
 
 export type Feature<T extends object> = <T1 extends T>(subj: T1) => T1
 
-export type FeatureFactory<T extends object, C> = (config : C) => <T1 extends T>(subj: T1) => T1
+export type FeatureFactory<T extends object, C> = (config: C) => <T1 extends T>(subj: T1) => T1
 
-export type FeatureOrFactory<T extends object>  = Feature<T> | FeatureFactory<T, any>
+export type FeatureOrFactory<T extends object> = Feature<T> | FeatureFactory<T, any>
+
 
 /**
  * an instance of this class is a wrapping API for a specific domain
  */
 export abstract class DecorApi<D, T extends object> {
     protected readonly metadataProvider: StateProvider<Metadata<D, T>, T>;
-    protected readonly featureMetadataProvider: StateProvider<FeatureMetadata<T>, FeatureOrFactory<T>>;
+    protected readonly featureMetadataProvider: StateProvider<FeatureMetadata<D, T>, FeatureOrFactory<T>>;
 
     constructor(private id: string) {
         this.metadataProvider = privateState<Metadata<D, T>, T>(id + '-metadata', (targetObj: T) => ({
             original: null as any,
             features: [],
-            decoration: null as any
-        }));
-        this.featureMetadataProvider = privateState<FeatureMetadata<T>, Feature<T>>(id + '-feature-metadata', (feature: Feature<T>) => ({
-            forceBefore : [],
             symbols: [],
+            decoration: null as any,
+        }));
+        this.featureMetadataProvider = privateState<FeatureMetadata<D, T>, Feature<T>>(id + '-feature-metadata', (feature: Feature<T>) => ({
+            feature: feature,
+            decoration: null as any,
+            forceBefore: [],
+            symbols: [feature],
         }));
     }
 
-    forceFeatureOrder(before: FeatureOrFactory<T>, after: FeatureOrFactory<T>){
+    private featureSymbolsReducer = (symbols: any[], feature: Feature<T>) => symbols.concat(this.featureMetadataProvider(feature).symbols);
 
+    private featuresMetaOrderComparator(originalOrder: Array<Feature<T>>) {
+        return (aMeta: FeatureMetadata<D, T>, bMeta: FeatureMetadata<D, T>) => {
+            for (let i = 0; i < aMeta.forceBefore.length; i++) {
+                const forceBefore = aMeta.forceBefore[i];
+                if (bMeta.symbols.indexOf(forceBefore) >= 0) {
+                    return -1;
+                }
+            }
+            for (let i = 0; i < bMeta.forceBefore.length; i++) {
+                const forceBefore = bMeta.forceBefore[i];
+                if (aMeta.symbols.indexOf(forceBefore) >= 0) {
+                    return 1;
+                }
+            }
+            return originalOrder.indexOf(bMeta.feature) - originalOrder.indexOf(aMeta.feature);
+        };
+    }
+
+    forceFeatureOrder(before: FeatureOrFactory<T>, after: any) {
+        this.featureMetadataProvider(before).forceBefore.push(after);
     }
 
     addSymbolToFeature(feature: FeatureOrFactory<T>, symbol: any): void {
@@ -49,13 +76,17 @@ export abstract class DecorApi<D, T extends object> {
 
     makeFeatureFactory<C>(getDecoration: (config: C) => D): FeatureFactory<T, C> {
         const that = this;
+
         function factory(): Feature<T> {
             const decoration = getDecoration.apply(null, arguments);
             const feature = that.makeFeature(decoration);
-            that.addSymbolToFeature(feature, factory);
+            const featureMetadata = that.featureMetadataProvider(feature);
+            featureMetadata.symbols.push(factory);
+            featureMetadata.forceBefore.push(...factoryMetadata.forceBefore);
             return feature;
         }
-        this.addSymbolToFeature(factory, factory);
+        const factoryMetadata = that.featureMetadataProvider(factory);
+        factoryMetadata.symbols.push(factory);
         return factory;
     }
 
@@ -64,25 +95,15 @@ export abstract class DecorApi<D, T extends object> {
             return this.decorate(wrapperArgs, features, subj);
         };
         const features = [feature]; // save creating an extra array on each invocation of feature
-        this.addSymbolToFeature(feature, feature);
+        const featureMetadata = this.featureMetadataProvider(feature);
+        featureMetadata.decoration = wrapperArgs;
         return feature;
     }
 
     isDecorated(subj: T, featureSymbol?: any): boolean {
         const metadata = this.getMetadata(subj);
         if (metadata) {
-            if (!featureSymbol) {
-                return metadata.features.length > 0;
-            } else {
-                for (let i = 0; i < metadata.features.length; i++) {
-                    const symbols = this.featureMetadataProvider(metadata.features[i]).symbols;
-                    for (let i = 0; i < symbols.length; i++) {
-                        if (symbols[i] === featureSymbol) {
-                            return true;
-                        }
-                    }
-                }
-            }
+            return !featureSymbol || metadata.symbols.indexOf(featureSymbol) >= 0;
         }
         return false;
     }
@@ -111,14 +132,44 @@ export abstract class DecorApi<D, T extends object> {
         return null;
     }
 
+    private isConstrained(features: Array<Feature<T>>, symbols: Array<any>) {
+        for (let i = 0; i < features.length; i++) {
+            const featureMetadata = this.featureMetadataProvider(features[i]);
+            for (let j = 0; j < featureMetadata.forceBefore.length; j++) {
+                const forceBefore = featureMetadata.forceBefore[j];
+                if (symbols.indexOf(forceBefore) >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
     protected decorate<T1 extends T>(decoration: D, features: Array<Feature<T>>, subj: T1): T1 {
+        let symbols = features.reduce(this.featureSymbolsReducer, []);
         if (this.metadataProvider.hasState(subj)) {
             // subj is already a product of this wrapping API
             // deconstruct it, merge with arguments and re-wrap the original
             const subjMetadata = this.metadataProvider(subj) as Metadata<D, T1>;
-            decoration = this.mergeDecorations(subjMetadata.decoration, decoration);
             subj = subjMetadata.original;
-            features = features.concat(subjMetadata.features);
+            if (this.isConstrained(features, subjMetadata.symbols) || this.isConstrained(subjMetadata.features, symbols)) {
+                // order constraints are in play. apply all features by order
+                const newFeatures = [...subjMetadata.features, ...features];
+                const orderedFeaturesMeta = newFeatures.map(this.featureMetadataProvider).sort(this.featuresMetaOrderComparator(newFeatures));
+                decoration = orderedFeaturesMeta[0].decoration;
+                features = [orderedFeaturesMeta[0].feature];
+                symbols = orderedFeaturesMeta[0].symbols;
+                for (let i = 1; i < orderedFeaturesMeta.length; i++) {
+                    decoration = this.mergeDecorations(orderedFeaturesMeta[i].decoration, decoration);
+                    features.push(orderedFeaturesMeta[i].feature);
+                    symbols = orderedFeaturesMeta[i].symbols.concat(symbols);
+                }
+            } else {
+                decoration = this.mergeDecorations(subjMetadata.decoration, decoration);
+                features = subjMetadata.features.concat(features);
+                symbols = subjMetadata.symbols.concat(symbols);
+            }
             if (subjMetadata.features.length > 0 || features.length > 0) {
                 // de-dupe featureSymbols array
                 features = Array.from(new Set(features));
@@ -131,6 +182,7 @@ export abstract class DecorApi<D, T extends object> {
         metadata.original = subj;
         metadata.features = features;
         metadata.decoration = decoration;
+        metadata.symbols = symbols;
         return wrapped;
     }
 
