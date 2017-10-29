@@ -9,18 +9,23 @@ export interface Metadata<D, T extends object> {
     decoration: D;
 }
 
-export interface FeatureMetadata {
+export interface FeatureMetadata<T extends object> {
+    forceBefore: Array<FeatureOrFactory<T>>;
     symbols: any[]; // TODO: Set<any>? , also better name - taggedWith?
 }
 
 export type Feature<T extends object> = <T1 extends T>(subj: T1) => T1
+
+export type FeatureFactory<T extends object, C> = (config : C) => <T1 extends T>(subj: T1) => T1
+
+export type FeatureOrFactory<T extends object>  = Feature<T> | FeatureFactory<T, any>
 
 /**
  * an instance of this class is a wrapping API for a specific domain
  */
 export abstract class DecorApi<D, T extends object> {
     protected readonly metadataProvider: StateProvider<Metadata<D, T>, T>;
-    protected readonly featureMetadataProvider: StateProvider<FeatureMetadata, Feature<T>>;
+    protected readonly featureMetadataProvider: StateProvider<FeatureMetadata<T>, FeatureOrFactory<T>>;
 
     constructor(private id: string) {
         this.metadataProvider = privateState<Metadata<D, T>, T>(id + '-metadata', (targetObj: T) => ({
@@ -28,22 +33,29 @@ export abstract class DecorApi<D, T extends object> {
             features: [],
             decoration: null as any
         }));
-        this.featureMetadataProvider = privateState<FeatureMetadata, Feature<T>>(id + '-feature-metadata', (feature: Feature<T>) => ({
+        this.featureMetadataProvider = privateState<FeatureMetadata<T>, Feature<T>>(id + '-feature-metadata', (feature: Feature<T>) => ({
+            forceBefore : [],
             symbols: [],
         }));
     }
 
-    addSymbolToFeature(feature: Feature<T>, symbol: any): void {
+    forceFeatureOrder(before: FeatureOrFactory<T>, after: FeatureOrFactory<T>){
+
+    }
+
+    addSymbolToFeature(feature: FeatureOrFactory<T>, symbol: any): void {
         this.featureMetadataProvider(feature).symbols.push(symbol);
     }
 
-    makeFeatureFactory<C>(getDecoration: (config: C) => D): (config: C) => Feature<T> {
-        const factory = (config: C): Feature<T> => {
-            const decoration = getDecoration(config);
-            const feature = this.makeFeature(decoration);
-            this.addSymbolToFeature(feature, factory);
+    makeFeatureFactory<C>(getDecoration: (config: C) => D): FeatureFactory<T, C> {
+        const that = this;
+        function factory(): Feature<T> {
+            const decoration = getDecoration.apply(null, arguments);
+            const feature = that.makeFeature(decoration);
+            that.addSymbolToFeature(feature, factory);
             return feature;
-        };
+        }
+        this.addSymbolToFeature(factory, factory);
         return factory;
     }
 

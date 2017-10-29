@@ -39,6 +39,9 @@ export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentTyp
     private sfcFeature: ReactFeature<StatelessComponent>;
     private classComponentFeature: ClassFeature<Component>;
 
+    public readonly onRootElement : <P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>) => ReactFeature<P>;
+    public readonly onEachElement : <P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>) => ReactFeature<P>;
+
     // singleton
     private constructor() {
         if (ReactDecor.instance) {
@@ -49,6 +52,14 @@ export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentTyp
         this.sfcFeature = process.env.NODE_ENV === 'production' ? renderWrapper : translateName(renderWrapper);
         const rawCompClassFeature = classDecor.method<Component>('render', renderWrapper);
         this.classComponentFeature = process.env.NODE_ENV === 'production' ? rawCompClassFeature : translateName(rawCompClassFeature);
+        this.onRootElement = this.makeFeatureFactory(
+            (statelessHook: StatelessElementHook<any>, classHook?: StatefulElementHook<any>) =>
+                makeReactDecoration([asRootOnly(statelessHook)], classHook && [asRootOnly(classHook)])
+        );
+        this.onEachElement = this.makeFeatureFactory(
+            (statelessHook: StatelessElementHook<any>, classHook?: StatefulElementHook<any>) =>
+                makeReactDecoration([statelessHook], classHook && [classHook])
+        );
     }
 
     makeFeature<P extends object, T extends Component<P> = Component<P>>(wrapperArgs: ReactDecoration<P, T>): ReactFeature<P> ;
@@ -60,22 +71,6 @@ export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentTyp
             return super.makeFeature(makeReactDecoration(statelessHooks, classHooks));
         } else {
             return super.makeFeature(statelessHooks);
-        }
-    }
-
-    onRootElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): ReactFeature<P> {
-        if (classHook) {
-            return this.makeFeature([asRootOnly(statelessHook)], [asRootOnly(classHook)]);
-        } else {
-            return this.makeFeature([asRootOnly(statelessHook)]);
-        }
-    }
-
-    onEachElement<P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>): ReactFeature<P> {
-        if (classHook) {
-            return this.makeFeature([statelessHook], [classHook]);
-        } else {
-            return this.makeFeature([statelessHook]);
         }
     }
 
