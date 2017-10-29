@@ -4,7 +4,7 @@ export interface FeatureMetadata<D, T extends object> {
     feature: Feature<T>;
     decoration: D;
     forceBefore: Array<FeatureOrFactory<T>>;
-    symbols: any[];  // TODO: WeakSet
+    symbols: any[];
 }
 
 export type Feature<T extends object> = <T1 extends T>(subj: T1) => T1

@@ -53,7 +53,7 @@ describe("react-decorator-reflection", () => {
             it("should work with custom symbols", () => {
                 const wrapper3 = reactDecor.makeFeature([hook]);
                 const symbol = {};
-                featuresApi.addSymbolToFeature(wrapper3, symbol);
+                featuresApi.markFeatureWith(wrapper3, symbol);
                 const anotherWrappedComp = wrapper3(Comp);
 
                 expect(reactDecor.isDecorated(anotherWrappedComp, symbol), 'isDecorated by known symbol').to.equal(true);

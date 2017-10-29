@@ -16,9 +16,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
    - getDecoration
    - makeFeature (replaces previous `decor*` functions)
    - makeFeatureFactory
+- meta API for features
+   - forceFeatureOrder
+   - markFeatureWith
 - function hooks now gets the wrapped function as an extra argument 
 
 ### Changed
+- stylable now gracefully works with root decorators in any order
 - naming changed in effort to have single terminology
 - all decor APIs uses same type of resiult : `Feature<T>`
 - class decor uses function decor hooks type

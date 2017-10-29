@@ -51,7 +51,7 @@ describe('function decor order', () => {
         const feature1 = ffs1.feature;
         const feature2 = ffs2.feature;
         const marker = {};
-        featuresApi.addSymbolToFeature(feature2, marker);
+        featuresApi.markFeatureWith(feature2, marker);
 
         featuresApi.forceFeatureOrder(feature1, marker);
 

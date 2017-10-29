@@ -17,10 +17,11 @@ export const featuresApi = {
         FeatureManager.instance.featureMetadataProvider(before).forceBefore.push(after);
     },
 
-    addSymbolToFeature(feature: FeatureOrFactory<any>, symbol: any): void {
+    markFeatureWith(feature: FeatureOrFactory<any>, symbol: any): void {
         FeatureManager.instance.featureMetadataProvider(feature).symbols.push(symbol);
     },
 };
+
 /**
  * an instance of this class is a wrapping API for a specific domain
  */
@@ -37,10 +38,10 @@ export abstract class DecorApi<D, T extends object> {
     }
 
     makeFeatureFactory<C>(getDecoration: (config: C) => D): FeatureFactory<T, C> {
-        const that = this;
+        const decor = this;
         const factory = function factory(): Feature<T> {
             const decoration = getDecoration.apply(null, arguments);
-            const feature = that.makeFeature(decoration);
+            const feature = decor.makeFeature(decoration);
             const featureMetadata = FeatureManager.instance.featureMetadataProvider(feature);
             featureMetadata.symbols.push(factory);
             featureMetadata.forceBefore.push(...factoryMetadata.forceBefore);
