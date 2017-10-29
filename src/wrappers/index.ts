@@ -10,7 +10,7 @@ export interface Metadata<D, T extends object> {
 }
 
 export interface FeatureMetadata {
-    symbols: Function[]; // TODO: Set<Function>? , also better name - taggedWith?
+    symbols: any[]; // TODO: Set<any>? , also better name - taggedWith?
 }
 
 export type Feature<T extends object> = <T1 extends T>(subj: T1) => T1
@@ -33,7 +33,7 @@ export abstract class DecorApi<D, T extends object> {
         }));
     }
 
-    addSymbolToFeature(feature: Feature<T>, symbol: Function): void {
+    addSymbolToFeature(feature: Feature<T>, symbol: any): void {
         this.featureMetadataProvider(feature).symbols.push(symbol);
     }
 
