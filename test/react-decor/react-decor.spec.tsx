@@ -4,7 +4,7 @@ import {ClientRenderer, expect, sinon} from "test-drive-react";
 import {resetAll, spyAll, testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {inBrowser} from "mocha-plugin-env/dist/src";
 import {devMode, ElementArgs, reactDecor, resetReactMonkeyPatches, runInContext} from "../../src";
-import {asRootOnly, makeRootOnly} from "../../src/react-decor/index";
+import {asRootOnly, makeReactDecoration, makeRootOnly} from "../../src/react-decor/index";
 import {ElementHook, Maybe, StatelessElementHook} from "../../src/react-decor/common";
 
 describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
@@ -191,22 +191,22 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
         it('.onRootElement calls .makeFeature with root-only version of both hooks (class and sfc)', () => {
             reactDecor.onRootElement(func1, func2);
-            expect(reactDecor.makeFeature).to.have.been.calledWithExactly([asRootOnly(func1)], [asRootOnly(func2)]);
+            expect(reactDecor.makeFeature).to.have.been.calledWithExactly(makeReactDecoration([asRootOnly(func1)], [asRootOnly(func2)]));
         });
 
         it('.onRootElement calls .makeFeature with root-only version of the hook (sfc only)', () => {
             reactDecor.onRootElement(func1);
-            expect(reactDecor.makeFeature).to.have.been.calledWithExactly([asRootOnly(func1)]);
+            expect(reactDecor.makeFeature).to.have.been.calledWithExactly(makeReactDecoration([asRootOnly(func1)]));
         });
 
         it('.onEachElement calls .makeFeature with both hooks (class and sfc)', () => {
             reactDecor.onEachElement(func1, func2);
-            expect(reactDecor.makeFeature).to.have.been.calledWithExactly([func1], [func2]);
+            expect(reactDecor.makeFeature).to.have.been.calledWithExactly(makeReactDecoration([func1], [func2]));
         });
 
         it('.onEachElement calls .makeFeature with the hook (sfc only)', () => {
             reactDecor.onEachElement(func1);
-            expect(reactDecor.makeFeature).to.have.been.calledWithExactly([func1]);
+            expect(reactDecor.makeFeature).to.have.been.calledWithExactly(makeReactDecoration([func1]));
         });
     });
 

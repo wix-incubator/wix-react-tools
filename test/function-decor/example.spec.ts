@@ -66,6 +66,24 @@ describe('function-decor documentation examples', () => {
         expect(result).to.eql('message printed: goodbye');
     });
 
+    it('.before (change arguments in-place)', () => {
+        function preMethod(methodArguments: [string]) {
+            console.log('called before method with ' + methodArguments[0]);
+            methodArguments.length = 1;
+            methodArguments[0] = 'goodbye';
+        }
+
+        const wrap = functionDecor.before(preMethod);
+        const printMessage = wrap(original);
+
+        const result = printMessage('hello');
+        expectLog(
+            `called before method with hello`,
+            `goodbye`
+        );
+        expect(result).to.eql('message printed: goodbye');
+    });
+
     it('.after', () => {
         function postMethod(methodReturn: string) {
             console.log(methodReturn);

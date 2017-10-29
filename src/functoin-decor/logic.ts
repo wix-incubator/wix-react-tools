@@ -1,12 +1,12 @@
 import {FunctionMetaData, isArrayLikeObject, MiddlewareHook} from "./common";
 
-function errorBeforeDidNotReturnedArray(methodArgs: any[]) {
+function errorBeforeReturnedNonArray(methodArgs: any[]) {
     let serialized = '(unSerializable)';
     try {
         serialized = JSON.stringify(methodArgs)
     } catch (e) {
     }
-    throw new Error('before hook did not return an array-like object: ' + serialized)
+    throw new Error('before hook return a non-array-like object: ' + serialized)
 }
 
 class MiddlewareTracker {
@@ -41,9 +41,13 @@ export function funcDecorWrapper<T extends Function>(target: T, args: FunctionMe
         let methodArgs: any[] = Array.prototype.slice.call(arguments);
         if (args.before) {
             for (let i = 0; i < args.before.length; i++) {
-                methodArgs = args.before[i].call(this, methodArgs, wrappedFunction);
-                if (!isArrayLikeObject(methodArgs)) {
-                    errorBeforeDidNotReturnedArray(methodArgs);
+                const returnedMethodArgs = args.before[i].call(this, methodArgs, wrappedFunction);
+                if (returnedMethodArgs) {
+                    if (isArrayLikeObject(returnedMethodArgs)) {
+                        methodArgs = returnedMethodArgs;
+                    } else {
+                        errorBeforeReturnedNonArray(returnedMethodArgs);
+                    }
                 }
             }
         }

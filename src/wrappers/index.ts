@@ -1,15 +1,26 @@
 import {privateState, StateProvider} from "../core/private-state";
 import {Class, isAnyClass} from "../core/types";
 import {addClassMethodsToPrivateState, InheritedClassStateProvider} from "../core/class-private-state";
+import {Feature, FeatureFactory, FeatureManager, FeatureOrFactory} from "./feature-manager";
 
 
 export interface Metadata<D, T extends object> {
-    symbols: Function[]; // TODO: Set<Function>? , also better name - taggedWith?
+    features: Array<Feature<T>>;
     original: T;
     decoration: D;
+    symbols: any[]; // TODO: WeakSet
 }
 
-export type Feature<T extends object> = <T1 extends T>(subj: T1) => T1
+export const featuresApi = {
+
+    forceFeatureOrder(before: FeatureOrFactory<any>, after: any) {
+        FeatureManager.instance.featureMetadataProvider(before).forceBefore.push(after);
+    },
+
+    markFeatureWith(feature: FeatureOrFactory<any>, symbol: any): void {
+        FeatureManager.instance.featureMetadataProvider(feature).symbols.push(symbol);
+    },
+};
 
 /**
  * an instance of this class is a wrapping API for a specific domain
@@ -20,43 +31,41 @@ export abstract class DecorApi<D, T extends object> {
     constructor(private id: string) {
         this.metadataProvider = privateState<Metadata<D, T>, T>(id + '-metadata', (targetObj: T) => ({
             original: null as any,
+            features: [],
             symbols: [],
-            decoration: null as any
+            decoration: null as any,
         }));
     }
 
-    makeFeatureFactory<C>(getDecoration: (config: C) => D): (config: C) => Feature<T> {
-        const factory = (config: C): Feature<T> => {
-            const decoration = getDecoration(config);
-            const wrapper = <T1 extends T>(subj: T1): T1 => {
-                return this.decorate(decoration, wrappers, subj);
-            };
-            const wrappers = [factory, wrapper];
-            return wrapper;
-        };
+    makeFeatureFactory<C>(getDecoration: (config: C) => D): FeatureFactory<T, C> {
+        const decor = this;
+        const factory = function factory(): Feature<T> {
+            const decoration = getDecoration.apply(null, arguments);
+            const feature = decor.makeFeature(decoration);
+            const featureMetadata = FeatureManager.instance.featureMetadataProvider(feature);
+            featureMetadata.symbols.push(factory);
+            featureMetadata.forceBefore.push(...factoryMetadata.forceBefore);
+            return feature;
+        } as FeatureFactory<T, C>;
+        const factoryMetadata = FeatureManager.instance.featureMetadataProvider(factory);
+        factoryMetadata.symbols.push(factory);
         return factory;
     }
 
     makeFeature(wrapperArgs: D): Feature<T> {
-        const wrapper = <T1 extends T>(subj: T1): T1 => {
-            return this.decorate(wrapperArgs, wrappers, subj);
+        const feature = <T1 extends T>(subj: T1): T1 => {
+            return this.decorate(wrapperArgs, features, subj);
         };
-        const wrappers = [wrapper];
-        return wrapper;
+        const features = [feature]; // save creating an extra array on each invocation of feature
+        const featureMetadata = FeatureManager.instance.featureMetadataProvider(feature);
+        featureMetadata.decoration = wrapperArgs;
+        return feature;
     }
 
     isDecorated(subj: T, featureSymbol?: any): boolean {
         const metadata = this.getMetadata(subj);
         if (metadata) {
-            if (!featureSymbol) {
-                return metadata.symbols.length > 0;
-            } else {
-                for (let i = 0; i < metadata.symbols.length; i++) {
-                    if (metadata.symbols[i] === featureSymbol) {
-                        return true;
-                    }
-                }
-            }
+            return !featureSymbol || metadata.symbols.indexOf(featureSymbol) >= 0;
         }
         return false;
     }
@@ -85,26 +94,43 @@ export abstract class DecorApi<D, T extends object> {
         return null;
     }
 
-    protected decorate<T1 extends T>(decoration: D, featureSymbols: Function[], subj: T1): T1 {
+    protected decorate<T1 extends T>(decoration: D, features: Array<Feature<T>>, subj: T1): T1 {
+        let symbols = features.reduce<Array<any>>(FeatureManager.instance.featureSymbolsReducer, []);
         if (this.metadataProvider.hasState(subj)) {
             // subj is already a product of this wrapping API
             // deconstruct it, merge with arguments and re-wrap the original
             const subjMetadata = this.metadataProvider(subj) as Metadata<D, T1>;
-            decoration = this.mergeDecorations(subjMetadata.decoration, decoration);
             subj = subjMetadata.original;
-            featureSymbols = subjMetadata.symbols.concat(featureSymbols);
-            if (subjMetadata.symbols.length > 0 || featureSymbols.length > 0) {
-                // de-dupe featureSymbols array
-                featureSymbols = Array.from(new Set(featureSymbols));
+            if (FeatureManager.instance.isConstrained(features, subjMetadata.symbols) || FeatureManager.instance.isConstrained(subjMetadata.features, symbols)) {
+                // order constraints are in play. apply all features by order
+                const newFeatures = [...subjMetadata.features, ...features];
+                const orderedFeaturesMeta = newFeatures.map(FeatureManager.instance.featureMetadataProvider).sort(FeatureManager.instance.featuresMetaOrderComparator(newFeatures));
+                decoration = orderedFeaturesMeta[0].decoration;
+                features = [orderedFeaturesMeta[0].feature];
+                symbols = orderedFeaturesMeta[0].symbols;
+                for (let i = 1; i < orderedFeaturesMeta.length; i++) {
+                    decoration = this.mergeDecorations(orderedFeaturesMeta[i].decoration, decoration);
+                    features.push(orderedFeaturesMeta[i].feature);
+                    symbols = orderedFeaturesMeta[i].symbols.concat(symbols);
+                }
+            } else {
+                decoration = this.mergeDecorations(subjMetadata.decoration, decoration);
+                features = subjMetadata.features.concat(features);
+                symbols = subjMetadata.symbols.concat(symbols);
             }
-            // TODO: if featureSymbols (and / or decoration?) are same as before, return subj (it's already wrapped correctly). opt out (force unique wrapping) with metadata flag.
+            if (subjMetadata.features.length > 0 || features.length > 0) {
+                // de-dupe featureSymbols array
+                features = Array.from(new Set(features));
+            }
+            // TODO: if features (and / or decoration?) are same as before, return subj (it's already wrapped correctly). opt out (force unique wrapping) with metadata flag.
         }
         const wrapped = this.decorationLogic(subj, decoration);
         // TODO if wrapped === subj, continue? should be declarative configurable?
         const metadata = this.metadataProvider(wrapped);
         metadata.original = subj;
-        metadata.symbols = featureSymbols;
+        metadata.features = features;
         metadata.decoration = decoration;
+        metadata.symbols = symbols;
         return wrapped;
     }
 
@@ -135,21 +161,21 @@ export abstract class DecorApi<D, T extends object> {
 export abstract class DecorClassApi<D, T extends object> extends DecorApi<D, T> {
     protected readonly inheritedMetadataProvider: InheritedClassStateProvider<Metadata<D, T>, T & Class<any>> = addClassMethodsToPrivateState<Metadata<D, T>, T & Class<any>>(this.metadataProvider).inherited;
 
-    protected decorate<T1 extends T>(wrapperArgs: D, wrapperSymbols: Function[], subj: T1): T1 {
+    protected decorate<T1 extends T>(wrapperArgs: D, features: Array<Feature<T>>, subj: T1): T1 {
         if (isAnyClass(subj) && !this.metadataProvider.hasState(subj)) {
             const parentClass = Object.getPrototypeOf(subj.prototype).constructor;
             const ancestorMetaData = this.inheritedMetadataProvider(parentClass);
             if (ancestorMetaData) {
                 wrapperArgs = this.mergeDecorations(ancestorMetaData.decoration, wrapperArgs);
-                wrapperSymbols = ancestorMetaData.symbols.concat(wrapperSymbols);
+                features = ancestorMetaData.features.concat(features);
             }
         }
-        return super.decorate(wrapperArgs, wrapperSymbols, subj);
+        return super.decorate(wrapperArgs, features, subj);
     }
 
     protected isThisDecorated(subj: T): boolean {
         const metadata = super.getMetadata(subj);
-        return !!(metadata && metadata.symbols.length > 0);
+        return !!(metadata && metadata.features.length > 0);
     }
 
     protected getMetadata(subj: T): Metadata<D, T> | null {

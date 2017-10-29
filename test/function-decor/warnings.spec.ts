@@ -12,6 +12,8 @@ describe("function-decor dev mode warnings", () => {
         console.warn = warn;
     });
 
+    // TODO: error when before hook returns truthy non-array result
+
     describe("after", () => {
         function overrideMethodReturnedValueWithUndefined() {
             const func = functionDecor.after(() => {
@@ -25,7 +27,7 @@ describe("function-decor dev mode warnings", () => {
             expect(res).to.equal(undefined);
         }
 
-        it("prompts a warning when in dev mode", () => {
+        it("prompts a warning when after hook transformed returned value to undefined in dev mode", () => {
             runInContext(devMode.ON, overrideMethodReturnedValueWithUndefined);
 
             expect(console.warn).to.have.callCount(1);

@@ -2,6 +2,7 @@ import * as React from "react";
 import {expect, sinon} from "test-drive-react";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {ElementArgs, reactDecor, StatelessElementHook} from "../../src";
+import {featuresApi} from "../../src/wrappers/index";
 
 type PropsWithName = { name: string };
 
@@ -47,6 +48,16 @@ describe("react-decorator-reflection", () => {
 
                 expect(reactDecor.isDecorated(WrappedComp2, wrapper)).to.equal(true);
                 expect(reactDecor.isDecorated(WrappedComp2, wrapper2)).to.equal(true);
+            });
+
+            it("should work with custom symbols", () => {
+                const wrapper3 = reactDecor.makeFeature([hook]);
+                const symbol = {};
+                featuresApi.markFeatureWith(wrapper3, symbol);
+                const anotherWrappedComp = wrapper3(Comp);
+
+                expect(reactDecor.isDecorated(anotherWrappedComp, symbol), 'isDecorated by known symbol').to.equal(true);
+                expect(reactDecor.isDecorated(anotherWrappedComp, {}), 'isDecorated by unknown symbol').to.equal(false);
             });
 
             describe("with console stubbing", () => {

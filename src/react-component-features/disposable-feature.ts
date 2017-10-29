@@ -20,13 +20,14 @@ export namespace disposable {
     }
 }
 
-const hookUnmount = classDecor.forceMethod<React.Component>("componentWillUnmount",
-    functionDecor.after(function (methodReturn) {
-        if (privateDisposers.hasState(this)) {
-            privateDisposers(this).disposeAll();
-        }
-        return methodReturn;
-    }));
+const functionDecorators = functionDecor.after(function (methodReturn) {
+    if (privateDisposers.hasState(this)) {
+        privateDisposers(this).disposeAll();
+    }
+    return methodReturn;
+});
+
+const hookUnmount = classDecor.forceMethod<React.Component>("componentWillUnmount", functionDecorators);
 
 const addDisposerGetter = classDecor.defineProperties<any>({
     disposer: {

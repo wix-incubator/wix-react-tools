@@ -1,8 +1,8 @@
 import {Class, TypedPropertyDescriptorMap} from "../core/types";
 import {privateState} from "../core/private-state";
 import {functionDecor} from "../functoin-decor/index";
-import {Feature} from "../wrappers/index";
 import {ClassDecor} from "./index";
+import {Feature} from "../wrappers/feature-manager";
 
 export type MethodWrapper = Feature<Function>;
 
