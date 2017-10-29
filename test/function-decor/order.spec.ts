@@ -51,8 +51,6 @@ describe('function decor order', () => {
         const feature1 = ffs1.feature;
         const feature2 = ffs2.feature;
 
-        debugger;
-
         (feature1(feature2(noop)))();
         // baseline
         ffs1.expectToHaveWrapped(ffs2);
