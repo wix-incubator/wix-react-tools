@@ -67,7 +67,7 @@ export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentTyp
         if (classHook) {
             return this.makeFeature([asRootOnly(statelessHook)], [asRootOnly(classHook)]);
         } else {
-            return this.makeFeature([asRootOnly(statelessHook)],);
+            return this.makeFeature([asRootOnly(statelessHook)]);
         }
     }
 
@@ -75,7 +75,7 @@ export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentTyp
         if (classHook) {
             return this.makeFeature([statelessHook], [classHook]);
         } else {
-            return this.makeFeature([statelessHook],);
+            return this.makeFeature([statelessHook]);
         }
     }
 

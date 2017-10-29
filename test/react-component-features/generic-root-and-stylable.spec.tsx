@@ -45,7 +45,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
     }
 
     const customWrapper = reactDecor.onRootElement<Props>((props: Props, args: ElementArgs<any>) => {
-        const styleState = {
+        const styleState: StateMap = {
             byDecorator: !!props.byDecorator,
             noRightBorderRadius: !!props.byRender
         };
@@ -54,55 +54,58 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
     });
     const stylableWrapper = stylable(runtime);
     const wrapper = (component: React.ComponentType<Props>) => stylableWrapper(customWrapper(component));
+    const wrapper2 = (component: React.ComponentType<Props>) => customWrapper(stylableWrapper(component)); // same as wrapper, in reverse order
 
-    function suite(component: React.ComponentType<Props>) {
-        it('supports empty elements', () => {
-            const Comp = wrapper(component);
+    const suite = (wrapper: (component: React.ComponentType<Props>) => React.ComponentType<Props>) =>
+        (component: React.ComponentType<Props>) => {
+            it('supports empty elements', () => {
+                const Comp = wrapper(component);
 
-            const {select, container} = clientRenderer.render(<Comp/>);
+                const {select, container} = clientRenderer.render(<Comp/>);
 
-            expect(select('Root')).to.have.class(runtime.root);
-            expect(select('Root')).to.have.attribute('class', runtime.root);
-            expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {})}`)).to.have.length(1);
-        });
+                expect(select('Root')).to.have.class(runtime.root);
+                expect(select('Root')).to.have.attribute('class', runtime.root);
+                expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
+                expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {})}`)).to.have.length(1);
+            });
 
-        it('supports injecting style-state by onRootElement', () => {
-            const Comp = wrapper(component);
+            it('supports injecting style-state by onRootElement', () => {
+                const Comp = wrapper(component);
 
-            const {select, container} = clientRenderer.render(<Comp byDecorator={true}/>);
+                const {select, container} = clientRenderer.render(<Comp byDecorator={true}/>);
 
-            expect(select('Root')).to.have.class(runtime.root);
-            expect(select('Root')).to.have.attribute('class', runtime.root);
-            expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byDecorator: true})}`)).to.have.length(1);
-        });
+                expect(select('Root')).to.have.class(runtime.root);
+                expect(select('Root')).to.have.attribute('class', runtime.root);
+                expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
+                expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byDecorator: true})}`)).to.have.length(1);
+            });
 
-        it('supports injecting style-state by component', () => {
-            const Comp = wrapper(component);
+            it('supports injecting style-state by component', () => {
+                const Comp = wrapper(component);
 
-            const {select, container} = clientRenderer.render(<Comp byRender={true}/>);
+                const {select, container} = clientRenderer.render(<Comp byRender={true}/>);
 
-            expect(select('Root')).to.have.class(runtime.root);
-            expect(select('Root')).to.have.attribute('class', runtime.root);
-            expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byRender: true})}`)).to.have.length(1);
-        });
+                expect(select('Root')).to.have.class(runtime.root);
+                expect(select('Root')).to.have.attribute('class', runtime.root);
+                expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
+                expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {byRender: true})}`)).to.have.length(1);
+            });
 
-        it('supports injecting style-state by onRootElement and component', () => {
-            const Comp = wrapper(component);
+            it('supports injecting style-state by onRootElement and component', () => {
+                const Comp = wrapper(component);
 
-            const {select, container} = clientRenderer.render(<Comp byDecorator={true} byRender={true}/>);
+                const {select, container} = clientRenderer.render(<Comp byDecorator={true} byRender={true}/>);
 
-            expect(select('Root')).to.have.class(runtime.root);
-            expect(select('Root')).to.have.attribute('class', runtime.root);
-            expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
-            expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {
-                byDecorator: true,
-                byRender: true
-            })}`)).to.have.length(1);
-        });
-    }
+                expect(select('Root')).to.have.class(runtime.root);
+                expect(select('Root')).to.have.attribute('class', runtime.root);
+                expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
+                expect(container.querySelectorAll(`.${runtime.root}${stateSelector(runtime.$stylesheet, {
+                    byDecorator: true,
+                    byRender: true
+                })}`)).to.have.length(1);
+            });
+        };
 
-    testWithBothComponentTypes(comp, suite);
+    testWithBothComponentTypes(comp, suite(wrapper));
+    testWithBothComponentTypes(comp, suite(wrapper2));
 });
