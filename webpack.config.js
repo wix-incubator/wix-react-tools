@@ -31,6 +31,7 @@ module.exports = {
             test: /\.js$/,
             include: [
                 path.join(__dirname, 'node_modules', 'postcss-nested' , 'node_modules' , 'chalk'),
+                path.join(__dirname, 'node_modules', 'postcss-safe-parser' , 'node_modules' , 'chalk'),
                 path.join(__dirname, 'node_modules', 'ansi-styles'),
             ],
             loader: 'ts-loader',
