@@ -11,7 +11,7 @@ const testsSetup = polyfills.concat([path.join(__dirname, 'dist', 'test', 'setup
 module.exports = {
     devtool: 'eval',
     entry: {
-        test : testsSetup.concat(testFiles),
+        test: testsSetup.concat(testFiles),
         webtest: testsSetup.concat(testFiles.map(fileName => `mocha-loader!${fileName}`))
     },
     output: {
@@ -26,6 +26,16 @@ module.exports = {
         hot: false
     },
     module: {
-        noParse: [/\.min\.js$/, /\.bundle\.js$/]
+        noParse: [/\.min\.js$/, /\.bundle\.js$/],
+        rules: [{
+            test: /\.js$/,
+            include: [path.dirname(require.resolve('chalk'))],
+            loader: 'ts-loader',
+            options: {
+                // needed so it has a separate transpilation instance
+                instance: 'lib-compat',
+                transpileOnly: true
+            }
+        }]
     }
 };
