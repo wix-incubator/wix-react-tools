@@ -54,8 +54,11 @@ export class FeatureManager {
     isBefore(aMeta: FeatureMetadata<any, any>, bMeta: FeatureMetadata<any, any>): boolean {
         for (let i = 0; i < aMeta.forceBefore.length; i++) {
             const forceBefore = aMeta.forceBefore[i];
-            if (bMeta.symbols.indexOf(forceBefore) >= 0) {
-                return true;
+            // instead of indexOf
+            for (let j = 0; j < bMeta.symbols.length; j++) {
+                if (bMeta.symbols[j] === forceBefore){
+                    return true;
+                }
             }
         }
         return false;
