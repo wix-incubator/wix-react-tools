@@ -69,7 +69,7 @@ describe('function decor order', () => {
         ffs1.expectToHaveWrapped(ffs2, 'custom order');
     });
 
-    it('custom order works', () => {
+    it('custom order does not mess with other features', () => {
 
         const ffs0 = new FunctionFeatureStub('0');
         const ffs3 = new FunctionFeatureStub('3');
