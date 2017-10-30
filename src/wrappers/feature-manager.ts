@@ -33,22 +33,32 @@ export class FeatureManager {
         }));
     }
 
-    featuresMetaOrderComparator<T extends object>(originalOrder: Array<Feature<T>>) {
-        return (aMeta: FeatureMetadata<any, any>, bMeta: FeatureMetadata<any, any>) => {
-            for (let i = 0; i < aMeta.forceBefore.length; i++) {
-                const forceBefore = aMeta.forceBefore[i];
-                if (bMeta.symbols.indexOf(forceBefore) >= 0) {
-                    return -1;
+    getSortedMetadata<T extends object>(features: Array<Feature<T>>): Array<FeatureMetadata<any, T>> {
+        // bubble sort
+        const result : Array<FeatureMetadata<any, T>> = [];
+        for (let i = features.length - 1; i >= 0; i--) {
+            const aMeta = this.featureMetadataProvider(features[i]);
+            let j = 0;
+            for (; j < result.length; j++) {
+                const bMeta = result[j];
+                if(aMeta.forceBefore.length && this.isBefore(aMeta, bMeta)){
+                    break;
                 }
             }
-            for (let i = 0; i < bMeta.forceBefore.length; i++) {
-                const forceBefore = bMeta.forceBefore[i];
-                if (aMeta.symbols.indexOf(forceBefore) >= 0) {
-                    return 1;
-                }
+            // insert aMeta before position j;
+            result.splice(j,0,aMeta);
+        }
+        return result;
+    }
+
+    isBefore(aMeta: FeatureMetadata<any, any>, bMeta: FeatureMetadata<any, any>): boolean {
+        for (let i = 0; i < aMeta.forceBefore.length; i++) {
+            const forceBefore = aMeta.forceBefore[i];
+            if (bMeta.symbols.indexOf(forceBefore) >= 0) {
+                return true;
             }
-            return originalOrder.indexOf(bMeta.feature) - originalOrder.indexOf(aMeta.feature);
-        };
+        }
+        return false;
     }
 
     isConstrained<T extends object>(features: Array<Feature<T>>, symbols: Array<any>) {

@@ -69,7 +69,7 @@ describe('function decor order', () => {
         ffs1.expectToHaveWrapped(ffs2, 'custom order');
     });
 
-    it('custom order does not mess with other features', () => {
+    it('custom order does not mess with external features', () => {
 
         const ffs0 = new FunctionFeatureStub('0');
         const ffs3 = new FunctionFeatureStub('3');
@@ -99,5 +99,44 @@ describe('function decor order', () => {
         ffs1.expectToHaveWrapped(ffs2, 'custom order');
         ffs2.expectToHaveWrapped(ffs0, 'custom order');
 
+    });
+
+    it('custom order does not mess with internal features', () => {
+
+        const ffs0 = new FunctionFeatureStub('0');
+        const ffs3 = new FunctionFeatureStub('3');
+
+        const feature0 = ffs0.feature;
+        const feature1 = ffs1.feature;
+        const feature2 = ffs2.feature;
+        const feature3 = ffs3.feature;
+
+        featuresApi.forceFeatureOrder(feature0, feature3);
+
+        (feature0(feature1(feature2(feature3(noop)))))();
+        // baseline
+        ffs0.expectToHaveWrapped(ffs1, 'baseline');
+        ffs1.expectToHaveWrapped(ffs2, 'baseline');
+        ffs2.expectToHaveWrapped(ffs3, 'baseline');
+
+        ffs0.reset();
+        ffs1.reset();
+        ffs2.reset();
+        ffs3.reset();
+
+        (feature3(feature2(feature1(feature0(noop)))))();
+
+
+        ffs0.expectToHaveWrapped(ffs3, 'custom order');
+        ffs3.expectToHaveWrapped(ffs2, 'custom order');
+        ffs2.expectToHaveWrapped(ffs1, 'custom order');
+
+
+        /*
+        // another acceptable form (though breaking backwards compatibility)
+        ffs2.expectToHaveWrapped(ffs1, 'custom order');
+        ffs1.expectToHaveWrapped(ffs0, 'custom order');
+        ffs0.expectToHaveWrapped(ffs3, 'custom order');
+        */
     });
 });
