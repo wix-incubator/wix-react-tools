@@ -33,6 +33,7 @@ module.exports = {
                 path.join(__dirname, 'node_modules', 'postcss-nested' , 'node_modules' , 'chalk'),
                 path.join(__dirname, 'node_modules', 'postcss-safe-parser' , 'node_modules' , 'chalk'),
                 path.join(__dirname, 'node_modules', 'postcss-selector-matches' , 'dist'),
+                path.join(__dirname, 'node_modules', 'enhanced-resolve' , 'lib'),
                 path.join(__dirname, 'node_modules', 'ansi-styles'),
             ],
             loader: 'ts-loader',
