@@ -6,6 +6,10 @@
 
 This library provides helpful utilities and features for React components.
 
+### Notice
+Current documentation (including this file) contains information matching the 3.1.x release, while the code is an advanced release candidate of 4.0.0.
+the changes between 3.1.x and 4.0.0 are yet only roughly documented in the [Changelog](./CHANGELOG.md). 
+
 ## Installation
 
 Install **wix-react-tools** as a dependency in your local project.
@@ -20,6 +24,12 @@ Using yarn:
 
 ```bash
 yarn add wix-react-tools
+```
+### @next version
+To obtain the latest beta version, use the `@next` tag: 
+
+```bash
+npm install wix-react-tools@next --save
 ```
 
 ## React Component Features
