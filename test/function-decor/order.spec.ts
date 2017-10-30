@@ -3,7 +3,8 @@ import {expect} from "test-drive";
 import {featuresApi} from "../../src/wrappers/index";
 
 describe('function decor order', () => {
-    const noop = () => {};
+    const noop = () => {
+    };
     const ffs1 = new FunctionFeatureStub('1');
     const ffs2 = new FunctionFeatureStub('2');
     beforeEach('reset features', () => {

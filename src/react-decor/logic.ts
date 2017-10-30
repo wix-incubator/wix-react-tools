@@ -2,8 +2,8 @@ import {Attributes, Component, HTMLAttributes, ReactElement, ReactNode, ReactTyp
 import {functionDecor} from "../functoin-decor/index";
 import {DecorReactHooks, Element, ElementArgs, ElementType} from "./common";
 import {ReactDecor} from "./index";
-import React = require('react');
 import {Feature} from "../wrappers/feature-manager";
+import React = require('react');
 
 declare const process: { env: { [k: string]: any } };
 

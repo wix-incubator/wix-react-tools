@@ -34,12 +34,10 @@ export {
 export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentType<any>> {
 
     static readonly instance = new ReactDecor();
-
-    private sfcFeature: ReactFeature<StatelessComponent>;
-    private classComponentFeature: ClassFeature<Component>;
-
     public readonly onRootElement: <P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>) => ReactFeature<P>;
     public readonly onEachElement: <P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>) => ReactFeature<P>;
+    private sfcFeature: ReactFeature<StatelessComponent>;
+    private classComponentFeature: ClassFeature<Component>;
 
     // singleton
     private constructor() {
