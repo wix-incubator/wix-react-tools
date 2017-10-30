@@ -69,6 +69,29 @@ describe('function decor order', () => {
         ffs1.expectToHaveWrapped(ffs2, 'custom order');
     });
 
+    it('many features work correctly', () => {
+        const ffs0 = new FunctionFeatureStub('0');
+        const ffs3 = new FunctionFeatureStub('3');
+        const ffs4 = new FunctionFeatureStub('4');
+        const ffs5 = new FunctionFeatureStub('5');
+
+        const feature0 = ffs0.feature;
+        const feature1 = ffs1.feature;
+        const feature2 = ffs2.feature;
+        const feature3 = ffs3.feature;
+        const feature4 = ffs4.feature;
+        const feature5 = ffs5.feature;
+
+
+        (feature0(feature1(feature2(feature3(feature4(feature5(noop)))))))();
+        // baseline
+        ffs0.expectToHaveWrapped(ffs1, 'baseline');
+        ffs1.expectToHaveWrapped(ffs2, 'baseline');
+        ffs2.expectToHaveWrapped(ffs3, 'baseline');
+        ffs3.expectToHaveWrapped(ffs4, 'baseline');
+        ffs4.expectToHaveWrapped(ffs5, 'baseline');
+    });
+
     it('custom order does not mess with external features', () => {
 
         const ffs0 = new FunctionFeatureStub('0');
