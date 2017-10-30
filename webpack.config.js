@@ -5,9 +5,10 @@ const testFiles = glob.sync(testGlob);
 const webpack = require('webpack');
 
 const distPath = path.join(__dirname, 'dist');
+const polyfills = ['core-js/es6/array', 'core-js/es6/number', 'core-js/es6/promise', 'core-js/es6/symbol'];
 
 
-const testsSetup = [path.join(__dirname, 'dist', 'test', 'setup.js')];
+const testsSetup = polyfills.concat([path.join(__dirname, 'dist', 'test', 'setup.js')]);
 module.exports = {
     devtool: 'eval',
     entry: {
