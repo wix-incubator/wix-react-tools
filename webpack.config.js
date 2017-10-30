@@ -29,7 +29,10 @@ module.exports = {
         noParse: [/\.min\.js$/, /\.bundle\.js$/],
         rules: [{
             test: /\.js$/,
-            include: [path.join(__dirname, 'node_modules', 'postcss-nested' , 'node_modules' , 'chalk')],
+            include: [
+                path.join(__dirname, 'node_modules', 'postcss-nested' , 'node_modules' , 'chalk'),
+                path.join(__dirname, 'node_modules', 'ansi-styles'),
+            ],
             loader: 'ts-loader',
             options: {
                 // needed so it has a separate transpilation instance
