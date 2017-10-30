@@ -36,9 +36,9 @@ export class FunctionFeatureStub implements FunctionMetaData {
     }
 
     expectToHaveBeenCalledOnce(msg = '') {
+        expect(this.beforeSpy, `${msg} : ${this.name}.beforeSpy`).to.have.callCount(1);
         expect(this.middlewareBeforeSpy, `${msg} : ${this.name}.middlewareBeforeSpy`).to.have.callCount(1);
         expect(this.middlewareAfterSpy, `${msg} : ${this.name}.middlewareAfterSpy`).to.have.callCount(1);
-        expect(this.beforeSpy, `${msg} : ${this.name}.beforeSpy`).to.have.callCount(1);
         expect(this.afterSpy, `${msg} : ${this.name}.afterSpy`).to.have.callCount(1);
     }
 

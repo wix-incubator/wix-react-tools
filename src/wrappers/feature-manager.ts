@@ -35,14 +35,18 @@ export class FeatureManager {
 
     getSortedMetadata<T extends object>(features: Array<Feature<T>>): Array<FeatureMetadata<any, T>> {
         // bubble sort
+        // you have reached the drakest part of the code. as far as dark code go, I think this one is pretty harmless
         const result : Array<FeatureMetadata<any, T>> = [];
         for (let i = features.length - 1; i >= 0; i--) {
             const aMeta = this.featureMetadataProvider(features[i]);
             let j = 0;
-            for (; j < result.length; j++) {
+            let searching = true;
+            while (searching && (j < result.length)) {
                 const bMeta = result[j];
                 if(aMeta.forceBefore.length && this.isBefore(aMeta, bMeta)){
-                    break;
+                    searching = false;
+                } else {
+                    j++;
                 }
             }
             // insert aMeta before position j;
@@ -54,11 +58,8 @@ export class FeatureManager {
     isBefore(aMeta: FeatureMetadata<any, any>, bMeta: FeatureMetadata<any, any>): boolean {
         for (let i = 0; i < aMeta.forceBefore.length; i++) {
             const forceBefore = aMeta.forceBefore[i];
-            // instead of indexOf
-            for (let j = 0; j < bMeta.symbols.length; j++) {
-                if (bMeta.symbols[j] === forceBefore){
-                    return true;
-                }
+            if (bMeta.symbols.indexOf(forceBefore) >= 0) {
+                return true;
             }
         }
         return false;
