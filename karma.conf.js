@@ -22,13 +22,6 @@ module.exports = function (config) {
         exclude: [
         ],
 
-        client: {
-            mocha: {
-                reporter: 'html', // change Karma's debug.html to the mocha web reporter
-                ui: 'bdd'
-            }
-        },
-
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
@@ -57,11 +50,9 @@ module.exports = function (config) {
         // enable / disable watching file and executing tests whenever any file changes
         autoWatch: true,
 
-
         // start these browsers
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: ['Chrome'],
-
+        browsers: process.env.APPVEYOR ? ['ChromeHeadless', 'Firefox', 'IE'] : ['ChromeHeadless', 'Firefox'],
 
         // Continuous Integration mode
         // if true, Karma captures browsers, runs the tests and exits
@@ -70,17 +61,7 @@ module.exports = function (config) {
         // Concurrency level
         // how many browser should be started simultaneous
         concurrency: Infinity,
-
-        customLaunchers: {
-            chrome_travis_ci: {
-                base: 'Chrome',
-                flags: ['--no-sandbox']
-            }
-        }
     };
 
-    if (process.env.TRAVIS) {
-        karmaConfig.browsers = ['chrome_travis_ci']; // ['chrome_travis_ci', 'Firefox'];
-    }
     config.set(karmaConfig)
 };

@@ -9,7 +9,7 @@ export const stylable = reactDecor.makeFeatureFactory((sheet: RuntimeStylesheet)
         return sheet.$stylesheet.get(name) || name;
     }
 
-    function stylableElementHook(_props: any, args: ElementArgs<any>, isRoot: boolean){
+    function stylableElementHook(_props: any, args: ElementArgs<any>, isRoot: boolean) {
         if (typeof args.newProps.className === 'string') {
             args.newProps.className = args.newProps.className.split(' ').map(classNameMapper).join(' ');
         }
