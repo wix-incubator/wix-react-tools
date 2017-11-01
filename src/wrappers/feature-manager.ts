@@ -3,7 +3,7 @@ import {privateState, StateProvider} from "../core/private-state";
 export interface FeatureMetadata<D, T extends object> {
     feature: Feature<T>;
     decoration: D;
-    forceBefore: Array<FeatureOrFactory<T>>;
+    forceAround: Array<FeatureOrFactory<T>>;
     symbols: any[];
 }
 
@@ -28,48 +28,53 @@ export class FeatureManager {
         this.featureMetadataProvider = privateState<FeatureMetadata<any, any>, FeatureOrFactory<any>>('feature-metadata', (feature: Feature<any>) => ({
             feature: feature,
             decoration: null as any,
-            forceBefore: [],
+            forceAround: [],
             symbols: [feature],
         }));
     }
 
-    getSortedMetadata<T extends object>(features: Array<Feature<T>>): Array<FeatureMetadata<any, T>> {
+    /**
+     * return the metadata of the supplied features, by the order they should apply
+     * (reverse the argument's order, and apply constraints)
+     */
+    getReverseSortedMetadata<T extends object>(features: Array<Feature<T>>): Array<FeatureMetadata<any, T>> {
         // bubble sort
         // you have reached the drakest part of the code. as far as dark code go, I think this one is pretty harmless
-        const result : Array<FeatureMetadata<any, T>> = [];
+        const result: Array<FeatureMetadata<any, T>> = [];
+        // go over each feature ans add them to the result
         for (let i = features.length - 1; i >= 0; i--) {
-            const aMeta = this.featureMetadataProvider(features[i]);
-            let j = 0;
-            let searching = true;
-            while (searching && (j < result.length)) {
-                const bMeta = result[j];
-                if(aMeta.forceBefore.length && this.isBefore(aMeta, bMeta)){
-                    searching = false;
-                } else {
-                    j++;
+            const featureToAdd = this.featureMetadataProvider(features[i]);
+            // most features have no special constraints
+            if (featureToAdd.forceAround.length) {
+                let destinationIdx = 0;
+                let searching = true;
+                while (searching && (destinationIdx < result.length)) {
+                    const otherFeature = result[destinationIdx];
+                    let shouldAddBeforeOther = false;
+                    for (let k = 0; !shouldAddBeforeOther && k < featureToAdd.forceAround.length; k++) {
+                        const forceBefore = featureToAdd.forceAround[k];
+                        shouldAddBeforeOther = otherFeature.symbols.indexOf(forceBefore) >= 0;
+                    }
+                    if (shouldAddBeforeOther) {
+                        searching = false;
+                    } else {
+                        destinationIdx++;
+                    }
                 }
+                // insert featureToAdd before destinationIdx;
+                result.splice(destinationIdx, 0, featureToAdd);
+            } else {
+                result.push(featureToAdd);
             }
-            // insert aMeta before position j;
-            result.splice(j,0,aMeta);
         }
         return result;
-    }
-
-    isBefore(aMeta: FeatureMetadata<any, any>, bMeta: FeatureMetadata<any, any>): boolean {
-        for (let i = 0; i < aMeta.forceBefore.length; i++) {
-            const forceBefore = aMeta.forceBefore[i];
-            if (bMeta.symbols.indexOf(forceBefore) >= 0) {
-                return true;
-            }
-        }
-        return false;
     }
 
     isConstrained<T extends object>(features: Array<Feature<T>>, symbols: Array<any>) {
         for (let i = 0; i < features.length; i++) {
             const featureMetadata = this.featureMetadataProvider(features[i]);
-            for (let j = 0; j < featureMetadata.forceBefore.length; j++) {
-                const forceBefore = featureMetadata.forceBefore[j];
+            for (let j = 0; j < featureMetadata.forceAround.length; j++) {
+                const forceBefore = featureMetadata.forceAround[j];
                 if (symbols.indexOf(forceBefore) >= 0) {
                     return true;
                 }

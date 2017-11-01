@@ -14,7 +14,7 @@ export interface Metadata<D, T extends object> {
 export const featuresApi = {
 
     forceFeatureOrder(before: FeatureOrFactory<any>, after: any) {
-        FeatureManager.instance.featureMetadataProvider(before).forceBefore.push(after);
+        FeatureManager.instance.featureMetadataProvider(before).forceAround.push(after);
     },
 
     markFeatureWith(feature: FeatureOrFactory<any>, symbol: any): void {
@@ -44,7 +44,7 @@ export abstract class DecorApi<D, T extends object> {
             const feature = decor.makeFeature(decoration);
             const featureMetadata = FeatureManager.instance.featureMetadataProvider(feature);
             featureMetadata.symbols.push(factory);
-            featureMetadata.forceBefore.push(...factoryMetadata.forceBefore);
+            featureMetadata.forceAround.push(...factoryMetadata.forceAround);
             return feature;
         } as FeatureFactory<T, C>;
         const factoryMetadata = FeatureManager.instance.featureMetadataProvider(factory);
@@ -104,7 +104,7 @@ export abstract class DecorApi<D, T extends object> {
             if (FeatureManager.instance.isConstrained(features, subjMetadata.symbols) || FeatureManager.instance.isConstrained(subjMetadata.features, symbols)) {
                 // order constraints are in play. apply all features by order
                 const newFeatures = [...subjMetadata.features, ...features];
-                const orderedFeaturesMeta = FeatureManager.instance.getSortedMetadata(newFeatures);
+                const orderedFeaturesMeta = FeatureManager.instance.getReverseSortedMetadata(newFeatures);
                 decoration = orderedFeaturesMeta[0].decoration;
                 features = [orderedFeaturesMeta[0].feature];
                 symbols = orderedFeaturesMeta[0].symbols;
