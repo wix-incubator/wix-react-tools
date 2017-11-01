@@ -37,7 +37,7 @@ export class FeatureManager {
      * return the metadata of the supplied features, by the order they should apply
      * (reverse the argument's order, and apply constraints)
      */
-    getReverseSortedMetadata<T extends object>(features: Array<Feature<T>>): Array<FeatureMetadata<any, T>> {
+    getOrderedMetadata<T extends object>(features: Array<Feature<T>>): Array<FeatureMetadata<any, T>> {
         // bubble sort
         // you have reached the drakest part of the code. as far as dark code go, I think this one is pretty harmless
         const result: Array<FeatureMetadata<any, T>> = [];

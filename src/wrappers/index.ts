@@ -104,7 +104,7 @@ export abstract class DecorApi<D, T extends object> {
             if (FeatureManager.instance.isConstrained(features, subjMetadata.symbols) || FeatureManager.instance.isConstrained(subjMetadata.features, symbols)) {
                 // order constraints are in play. apply all features by order
                 const newFeatures = [...subjMetadata.features, ...features];
-                const orderedFeaturesMeta = FeatureManager.instance.getReverseSortedMetadata(newFeatures);
+                const orderedFeaturesMeta = FeatureManager.instance.getOrderedMetadata(newFeatures);
                 decoration = orderedFeaturesMeta[0].decoration;
                 features = [orderedFeaturesMeta[0].feature];
                 symbols = orderedFeaturesMeta[0].symbols;
