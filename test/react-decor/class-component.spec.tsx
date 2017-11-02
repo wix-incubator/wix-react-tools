@@ -76,6 +76,54 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
         expect(select('1')).to.have.attribute('data-bar', 'bar');
     });
 
+    it('works also when render method is wrapped', () => {
+        @fooDecorator
+        @barDecorator
+        class Parent extends React.Component {
+            render() {
+                return <div data-automation-id="1"/>
+            }
+        }
+
+        class MyComp extends Parent {
+            constructor() {
+                super();
+                this.render = this.render.bind(this);
+            }
+        }
+
+        expect(reactDecor.isDecorated(MyComp)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp, fooDecorator)).to.eql(true);
+        expect(reactDecor.isDecorated(MyComp, barDecorator)).to.eql(true);
+        const {select} = clientRenderer.render(<MyComp/>);
+        expect(select('1')).to.have.attribute('data-foo', 'foo');
+        expect(select('1')).to.have.attribute('data-bar', 'bar');
+    });
+
+    it('works also with SFC that is wrapped by a class', () => {
+        const Sfc =
+            fooDecorator(
+                barDecorator(
+                    function Sfc(props: any) {
+                        return <div data-automation-id="1"/>
+                    }));
+
+
+        class MyComp extends React.Component {
+            render(){
+                return Sfc.apply(this, [this.props]);
+            }
+        }
+
+        // I dont think it's possible to support this
+        // expect(reactDecor.isDecorated(MyComp)).to.eql(true);
+        // expect(reactDecor.isDecorated(MyComp, fooDecorator)).to.eql(true);
+        // expect(reactDecor.isDecorated(MyComp, barDecorator)).to.eql(true);
+        const {select} = clientRenderer.render(<MyComp/>);
+        expect(select('1')).to.have.attribute('data-foo', 'foo');
+        expect(select('1')).to.have.attribute('data-bar', 'bar');
+    });
+
     it('multiple hooks work together on multiple levels', () => {
         @fooDecorator
         class Parent extends React.Component {
