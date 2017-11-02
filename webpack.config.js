@@ -4,7 +4,7 @@ const {testGlob} = require('./package.json');
 const testFiles = glob.sync(testGlob);
 
 const distPath = path.join(__dirname, 'dist');
-const polyfills = ['core-js/es6/array', 'core-js/modules/es6.object.assign', 'core-js/es6/number', 'core-js/es6/promise', 'core-js/es6/symbol'];
+const polyfills = ['core-js/es6/array', 'core-js/modules/es6.function.name', 'core-js/modules/es6.object.assign', 'core-js/modules/es6.set', 'core-js/modules/es6.string.starts-with', 'core-js/es6/number', 'core-js/es6/promise', 'core-js/es6/symbol'];
 
 
 const testsSetup = polyfills.concat([path.join(__dirname, 'dist', 'test', 'setup.js')]);
