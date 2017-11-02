@@ -1,7 +1,7 @@
 import {privateState, StateProvider} from "../core/private-state";
 
 export interface FeatureMetadata<D, T extends object> {
-    feature: Feature<T>;
+    feature: FeatureOrFactory<T>;
     decoration: D;
     forceAround: Array<FeatureOrFactory<T>>;
     symbols: any[];
@@ -25,7 +25,7 @@ export class FeatureManager {
         if (FeatureManager.instance) {
             return FeatureManager.instance;
         }
-        this.featureMetadataProvider = privateState<FeatureMetadata<any, any>, FeatureOrFactory<any>>('feature-metadata', (feature: Feature<any>) => ({
+        this.featureMetadataProvider = privateState<FeatureMetadata<any, any>, FeatureOrFactory<any>>('feature-metadata', (feature: FeatureOrFactory<any>) => ({
             feature: feature,
             decoration: null as any,
             forceAround: [],

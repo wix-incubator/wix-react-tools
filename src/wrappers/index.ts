@@ -106,11 +106,11 @@ export abstract class DecorApi<D, T extends object> {
                 const newFeatures = [...subjMetadata.features, ...features];
                 const orderedFeaturesMeta = FeatureManager.instance.getOrderedMetadata(newFeatures);
                 decoration = orderedFeaturesMeta[0].decoration;
-                features = [orderedFeaturesMeta[0].feature];
+                features = [orderedFeaturesMeta[0].feature as Feature<T>];
                 symbols = orderedFeaturesMeta[0].symbols;
                 for (let i = 1; i < orderedFeaturesMeta.length; i++) {
                     decoration = this.mergeDecorations(orderedFeaturesMeta[i].decoration, decoration);
-                    features.push(orderedFeaturesMeta[i].feature);
+                    features.push(orderedFeaturesMeta[i].feature as Feature<T>);
                     symbols = orderedFeaturesMeta[i].symbols.concat(symbols);
                 }
             } else {

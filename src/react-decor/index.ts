@@ -6,7 +6,6 @@ import {
     isReactClassComponent,
     ReactDecoration,
     ReactFeature,
-    Stateful,
     StatefulElementHook,
     StatelessDecorReactHooks,
     StatelessElementHook,
@@ -98,11 +97,11 @@ export function makeReactDecoration<P extends object, T extends Component<P> = C
     };
 }
 
-export const asRootOnly = memoize(function asRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
+export const asRootOnly = memoize(function asRootOnly<H extends ElementHook<any>>(hook: H): H {
     return hook.rootOnly ? hook : makeRootOnly(cloneFunction(hook));
 });
 
-export function makeRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
+export function makeRootOnly<H extends ElementHook<any>>(hook: H): H {
     hook.rootOnly = true;
     return hook;
 }

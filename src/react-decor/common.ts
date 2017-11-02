@@ -69,11 +69,7 @@ export interface ReactDecoration<P extends object, T extends Component<P> = Comp
     classHooks: Array<StatefulElementHook<P, T> | StatelessElementHook<P>>;
 }
 
-export type Stateful = 'T' | 'F';
-export type ElementHook<S extends Stateful, P extends object> = {
-    T: StatefulElementHook<P>;
-    F: StatelessElementHook<P>;
-}[S];
+export type ElementHook<P extends object> = StatefulElementHook<P, any>;
 
 export const translateName = functionDecor.middleware((next: (args: [React.ComponentType]) => React.ComponentType, args: [React.ComponentType]) => {
     const result: React.ComponentType = next(args);
