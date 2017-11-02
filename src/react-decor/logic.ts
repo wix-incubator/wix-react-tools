@@ -121,7 +121,6 @@ export function makeRenderFeature(reactDecor: ReactDecor): Feature<Function> {
                 React.createElement = wrappedCreateElement;
                 React.cloneElement = wrappedReactCloneElement;
             } else {
-                debugger;
                 throw new Error(`Cannot extract decoration information during render of '${decorated.displayName || decorated.name || decorated}'`);
             }
         }
