@@ -35,6 +35,8 @@ module.exports = {
                 path.join(__dirname, 'node_modules', 'postcss-selector-matches' , 'dist'),
                 path.join(__dirname, 'node_modules', 'enhanced-resolve' , 'lib'),
                 path.join(__dirname, 'node_modules', 'ansi-styles'),
+                path.join(__dirname, 'node_modules', 'chai-style'),
+                path.join(__dirname, 'node_modules', 'chai-as-promised'),
             ],
             loader: 'ts-loader',
             options: {
