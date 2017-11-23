@@ -7,7 +7,7 @@ interface CompProps {
 // assume stylesheet is not typed
 declare const style: any;
 
-// $ExpectType (props: any) => Element
+// $ExpectType (props: { children?: ReactNode; }) => Element
 stylable(style)(props => {
     return <div/>;
 });
