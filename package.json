@@ -17,6 +17,7 @@
   "testGlob": "./dist/test/**/*.spec.js?(x)",
   "homepage": "https://github.com/wix/wix-react-tools#readme",
   "keywords": [
+    "stylable",
     "react",
     "disposable",
     "tools",

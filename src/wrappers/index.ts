@@ -43,7 +43,7 @@ export abstract class DecorApi<D, T extends object> {
             const decoration = getDecoration.apply(null, arguments);
             const feature = decor.makeFeature(decoration);
             const featureMetadata = FeatureManager.instance.featureMetadataProvider(feature);
-            featureMetadata.symbols.push(factory);
+            featureMetadata.symbols.push(...factoryMetadata.symbols);
             featureMetadata.forceAround.push(...factoryMetadata.forceAround);
             return feature;
         } as FeatureFactory<T, C>;

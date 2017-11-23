@@ -3,8 +3,14 @@ import {makeReactDecoration, reactDecor} from "../react-decor/index";
 import {ElementArgs} from "../react-decor/common";
 import {properties} from "./properties-feature";
 import {featuresApi} from "../wrappers/index";
+import {FeatureFactory, FeatureManager} from "../wrappers/feature-manager";
+import {ComponentType, ReactElement} from "react";
 
-export const stylable = reactDecor.makeFeatureFactory((sheet: RuntimeStylesheet) => {
+export interface Fragment {
+    (...args: any[]): ReactElement<any> | null;
+}
+
+function featureGenerator(isFragment: boolean, sheet: RuntimeStylesheet) {
     function classNameMapper(name: string) {
         return sheet.$stylesheet.get(name) || name;
     }
@@ -17,7 +23,7 @@ export const stylable = reactDecor.makeFeatureFactory((sheet: RuntimeStylesheet)
         if (cssStates) {
             args.newProps = {...rest, ...sheet.$stylesheet.cssStates(cssStates)};
         }
-        if (isRoot) {
+        if (!isFragment && isRoot) {
             if (args.newProps.className) {
                 args.newProps.className = sheet.$stylesheet.get(sheet.$stylesheet.root) + ' ' + args.newProps.className;
             } else {
@@ -27,7 +33,15 @@ export const stylable = reactDecor.makeFeatureFactory((sheet: RuntimeStylesheet)
     }
 
     return makeReactDecoration([stylableElementHook]);
-});
+}
 
+export type StylableFeature = FeatureFactory<ComponentType, RuntimeStylesheet> & {
+    fragment: FeatureFactory<ComponentType | Fragment, RuntimeStylesheet>
+}
+
+export const stylable = reactDecor.makeFeatureFactory(featureGenerator.bind(null, false)) as StylableFeature;
 featuresApi.forceFeatureOrder(stylable, reactDecor.onRootElement);
 featuresApi.forceFeatureOrder(stylable, properties);
+
+stylable.fragment = reactDecor.makeFeatureFactory(featureGenerator.bind(null, true));
+FeatureManager.instance.featureMetadataProvider(stylable.fragment).symbols.push(stylable);
