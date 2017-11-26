@@ -6,7 +6,6 @@ import {
     isReactClassComponent,
     ReactDecoration,
     ReactFeature,
-    Stateful,
     StatefulElementHook,
     StatelessDecorReactHooks,
     StatelessElementHook,
@@ -15,7 +14,6 @@ import {
 import {cloneFunction} from "../functoin-decor/index";
 import {DecorClassApi} from "../wrappers/index";
 import {classDecor, ClassFeature} from "../class-decor/index";
-import {isArray} from "util";
 import {makeRenderFeature} from "./logic";
 import memoize = require('memoize-weak');
 
@@ -35,12 +33,10 @@ export {
 export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentType<any>> {
 
     static readonly instance = new ReactDecor();
-
+    public readonly onRootElement: <P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>) => ReactFeature<P>;
+    public readonly onEachElement: <P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>) => ReactFeature<P>;
     private sfcFeature: ReactFeature<StatelessComponent>;
     private classComponentFeature: ClassFeature<Component>;
-
-    public readonly onRootElement : <P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>) => ReactFeature<P>;
-    public readonly onEachElement : <P extends object, T extends Component<P> = Component<P>>(statelessHook: StatelessElementHook<P>, classHook?: StatefulElementHook<P, T>) => ReactFeature<P>;
 
     // singleton
     private constructor() {
@@ -67,7 +63,7 @@ export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentTyp
     makeFeature<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): ReactFeature<P> ;
 
     makeFeature<P extends object, T extends Component<P> = Component<P>>(statelessHooks: ReactDecoration<P, T> | StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): ReactFeature<P> {
-        if (isArray(statelessHooks)) {
+        if (Array.isArray(statelessHooks)) {
             return super.makeFeature(makeReactDecoration(statelessHooks, classHooks));
         } else {
             return super.makeFeature(statelessHooks);
@@ -101,11 +97,11 @@ export function makeReactDecoration<P extends object, T extends Component<P> = C
     };
 }
 
-export const asRootOnly = memoize(function asRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
+export const asRootOnly = memoize(function asRootOnly<H extends ElementHook<any>>(hook: H): H {
     return hook.rootOnly ? hook : makeRootOnly(cloneFunction(hook));
 });
 
-export function makeRootOnly<S extends Stateful, P extends object>(hook: ElementHook<S, P>): ElementHook<S, P> {
+export function makeRootOnly<H extends ElementHook<any>>(hook: H): H {
     hook.rootOnly = true;
     return hook;
 }

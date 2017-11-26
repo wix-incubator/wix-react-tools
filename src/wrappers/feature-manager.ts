@@ -1,9 +1,9 @@
 import {privateState, StateProvider} from "../core/private-state";
 
 export interface FeatureMetadata<D, T extends object> {
-    feature: Feature<T>;
+    feature: FeatureOrFactory<T>;
     decoration: D;
-    forceBefore: Array<FeatureOrFactory<T>>;
+    forceAround: Array<FeatureOrFactory<T>>;
     symbols: any[];
 }
 
@@ -25,37 +25,56 @@ export class FeatureManager {
         if (FeatureManager.instance) {
             return FeatureManager.instance;
         }
-        this.featureMetadataProvider = privateState<FeatureMetadata<any, any>, FeatureOrFactory<any>>('feature-metadata', (feature: Feature<any>) => ({
+        this.featureMetadataProvider = privateState<FeatureMetadata<any, any>, FeatureOrFactory<any>>('feature-metadata', (feature: FeatureOrFactory<any>) => ({
             feature: feature,
             decoration: null as any,
-            forceBefore: [],
+            forceAround: [],
             symbols: [feature],
         }));
     }
 
-    featuresMetaOrderComparator<T extends object>(originalOrder: Array<Feature<T>>) {
-        return (aMeta: FeatureMetadata<any, any>, bMeta: FeatureMetadata<any, any>) => {
-            for (let i = 0; i < aMeta.forceBefore.length; i++) {
-                const forceBefore = aMeta.forceBefore[i];
-                if (bMeta.symbols.indexOf(forceBefore) >= 0) {
-                    return -1;
+    /**
+     * return the metadata of the supplied features, by the order they should apply
+     * (reverse the argument's order, and apply constraints)
+     */
+    getOrderedMetadata<T extends object>(features: Array<Feature<T>>): Array<FeatureMetadata<any, T>> {
+        // bubble sort
+        // you have reached the drakest part of the code. as far as dark code go, I think this one is pretty harmless
+        const result: Array<FeatureMetadata<any, T>> = [];
+        // go over each feature ans add them to the result
+        for (let i = features.length - 1; i >= 0; i--) {
+            const featureToAdd = this.featureMetadataProvider(features[i]);
+            // most features have no special constraints
+            if (featureToAdd.forceAround.length) {
+                let destinationIdx = 0;
+                let searching = true;
+                while (searching && (destinationIdx < result.length)) {
+                    const otherFeature = result[destinationIdx];
+                    let shouldAddBeforeOther = false;
+                    for (let k = 0; !shouldAddBeforeOther && k < featureToAdd.forceAround.length; k++) {
+                        const forceBefore = featureToAdd.forceAround[k];
+                        shouldAddBeforeOther = otherFeature.symbols.indexOf(forceBefore) >= 0;
+                    }
+                    if (shouldAddBeforeOther) {
+                        searching = false;
+                    } else {
+                        destinationIdx++;
+                    }
                 }
+                // insert featureToAdd before destinationIdx;
+                result.splice(destinationIdx, 0, featureToAdd);
+            } else {
+                result.push(featureToAdd);
             }
-            for (let i = 0; i < bMeta.forceBefore.length; i++) {
-                const forceBefore = bMeta.forceBefore[i];
-                if (aMeta.symbols.indexOf(forceBefore) >= 0) {
-                    return 1;
-                }
-            }
-            return originalOrder.indexOf(bMeta.feature) - originalOrder.indexOf(aMeta.feature);
-        };
+        }
+        return result;
     }
 
     isConstrained<T extends object>(features: Array<Feature<T>>, symbols: Array<any>) {
         for (let i = 0; i < features.length; i++) {
             const featureMetadata = this.featureMetadataProvider(features[i]);
-            for (let j = 0; j < featureMetadata.forceBefore.length; j++) {
-                const forceBefore = featureMetadata.forceBefore[j];
+            for (let j = 0; j < featureMetadata.forceAround.length; j++) {
+                const forceBefore = featureMetadata.forceAround[j];
                 if (symbols.indexOf(forceBefore) >= 0) {
                     return true;
                 }

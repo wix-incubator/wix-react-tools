@@ -6,8 +6,7 @@ import {inBrowser} from "mocha-plugin-env";
 import {runInContext} from "../../src/core/config";
 import {devMode} from "../../src/core/dev-mode";
 
-
-describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
+describe.assuming(inBrowser(), 'only in browser')('stylable-fragment-react', () => {
 
     const clientRenderer = new ClientRenderer();
     afterEach(() => runInContext(devMode.OFF, () => clientRenderer.cleanup()));
@@ -17,8 +16,29 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         .SomeClass {}
     `);
 
+    it('supports props as children as per #198', () => {
+        interface Props {
+            name: string;
+            children: (name: string) => JSX.Element;
+        }
+
+        const ChildrenAsFunction: React.SFC<Props> = ({name, children}) =>
+            children('Hello ' + name);
+
+        const AppWithChildrenAsFunction: React.SFC = stylable(runtime)(() => (
+            <div>
+                <ChildrenAsFunction name="React">
+                    {stylable.fragment(runtime)((name: string) => <div data-automation-id="Node"
+                                                                       className="SomeClass">{name}</div>)}
+                </ChildrenAsFunction>
+            </div>
+        ));
+        const {select} = clientRenderer.render(<AppWithChildrenAsFunction/>);
+        expect(select('Node')).to.have.class(runtime.SomeClass);
+    });
+
     it('supports empty elements', () => {
-        @stylable(runtime)
+        @stylable.fragment(runtime)
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root">
@@ -27,17 +47,13 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
             }
         }
 
-        const {select, container} = clientRenderer.render(<Comp> </Comp>);
+        const {container} = clientRenderer.render(<Comp> </Comp>);
 
-        expect(select('Root')).to.have.class(runtime.root);
-        expect(select('Root')).to.have.attribute('class', runtime.root);
-
-
-        expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
+        expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(0);
     });
 
     it('supports class names', () => {
-        @stylable(runtime)
+        @stylable.fragment(runtime)
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root">
@@ -48,8 +64,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
 
         const {select, container} = clientRenderer.render(<Comp> </Comp>);
 
-        expect(select('Root')).to.have.class(runtime.root);
-        expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(1);
+        expect(container.querySelectorAll(`.${runtime.root}`)).to.have.length(0);
         expect(select('Node')).to.have.class(runtime.SomeClass);
         expect(select('Node')).to.have.class('External');
         expect(container.querySelectorAll(`.${runtime.SomeClass}`)).to.have.length(1);
@@ -58,24 +73,19 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
     describe('style state', () => {
         const {fromCSS} = createGenerator();
         const {runtime} = fromCSS(`
-            .root {
-                -st-state:a,b;
-            }
             .SomeClass {
                 -st-state:x,y;
             }
         `);
 
-        const rootState = {a: true, b: false};
-        const rootStateAttrName = Object.keys(runtime.$stylesheet.cssStates(rootState))[0]; // css.cssStates(...) will only have keys for states which are true
         const nodeState = {x: true, y: false};
         const nodeStateAttrName = Object.keys(runtime.$stylesheet.cssStates(nodeState))[0];
 
         it('supported', () => {
-            @stylable(runtime)
+            @stylable.fragment(runtime)
             class Comp extends React.Component {
                 render() {
-                    return <div data-automation-id="Root" style-state={rootState}>
+                    return <div data-automation-id="Root" style-state={nodeState}>
                         <div data-automation-id="Node" className="SomeClass" style-state={nodeState}/>
                     </div>
                 }
@@ -83,7 +93,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
 
             const {select} = clientRenderer.render(<Comp> </Comp>);
 
-            expect(select('Root')).to.have.attribute(rootStateAttrName);
+            expect(select('Root')).to.have.attribute(nodeStateAttrName);
             expect(select('Node')).to.have.attribute(nodeStateAttrName);
             expect(new Comp({}).render().props).to.not.haveOwnProperty('cssState'); // delete original cssStates from render result
             expect(new Comp({}).render().props.children.props).to.not.haveOwnProperty('cssState'); // delete original cssStates from render result
@@ -91,10 +101,10 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         });
 
         it('cleans up original property', () => {
-            @stylable(runtime)
+            @stylable.fragment(runtime)
             class Comp extends React.Component {
                 render() {
-                    return <div style-state={rootState}/>
+                    return <div style-state={nodeState}/>
                 }
             }
 
@@ -104,7 +114,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
     });
 
     describe('decoration', () => {
-        @stylable(runtime)
+        @stylable.fragment(runtime)
         class Comp extends React.Component {
             render() {
                 return <div data-automation-id="Root"/>
@@ -112,8 +122,9 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
         }
 
         it('should return true when checking isDecorated on a component decorated with stylable', () => {
-            expect(reactDecor.isDecorated(Comp)).to.equal(true);
-            expect(reactDecor.isDecorated(Comp, stylable)).to.equal(true);
+            expect(reactDecor.isDecorated(Comp), 'isDecorated(Comp)').to.equal(true);
+            expect(reactDecor.isDecorated(Comp, stylable), 'isDecorated(Comp, stylable)').to.equal(true);
+            expect(reactDecor.isDecorated(Comp, stylable.fragment), 'isDecorated(Comp, stylable.fragment)').to.equal(true);
         });
     });
 });

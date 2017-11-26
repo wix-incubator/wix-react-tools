@@ -14,7 +14,7 @@ export interface Metadata<D, T extends object> {
 export const featuresApi = {
 
     forceFeatureOrder(before: FeatureOrFactory<any>, after: any) {
-        FeatureManager.instance.featureMetadataProvider(before).forceBefore.push(after);
+        FeatureManager.instance.featureMetadataProvider(before).forceAround.push(after);
     },
 
     markFeatureWith(feature: FeatureOrFactory<any>, symbol: any): void {
@@ -43,8 +43,8 @@ export abstract class DecorApi<D, T extends object> {
             const decoration = getDecoration.apply(null, arguments);
             const feature = decor.makeFeature(decoration);
             const featureMetadata = FeatureManager.instance.featureMetadataProvider(feature);
-            featureMetadata.symbols.push(factory);
-            featureMetadata.forceBefore.push(...factoryMetadata.forceBefore);
+            featureMetadata.symbols.push(...factoryMetadata.symbols);
+            featureMetadata.forceAround.push(...factoryMetadata.forceAround);
             return feature;
         } as FeatureFactory<T, C>;
         const factoryMetadata = FeatureManager.instance.featureMetadataProvider(factory);
@@ -104,13 +104,13 @@ export abstract class DecorApi<D, T extends object> {
             if (FeatureManager.instance.isConstrained(features, subjMetadata.symbols) || FeatureManager.instance.isConstrained(subjMetadata.features, symbols)) {
                 // order constraints are in play. apply all features by order
                 const newFeatures = [...subjMetadata.features, ...features];
-                const orderedFeaturesMeta = newFeatures.map(FeatureManager.instance.featureMetadataProvider).sort(FeatureManager.instance.featuresMetaOrderComparator(newFeatures));
+                const orderedFeaturesMeta = FeatureManager.instance.getOrderedMetadata(newFeatures);
                 decoration = orderedFeaturesMeta[0].decoration;
-                features = [orderedFeaturesMeta[0].feature];
+                features = [orderedFeaturesMeta[0].feature as Feature<T>];
                 symbols = orderedFeaturesMeta[0].symbols;
                 for (let i = 1; i < orderedFeaturesMeta.length; i++) {
                     decoration = this.mergeDecorations(orderedFeaturesMeta[i].decoration, decoration);
-                    features.push(orderedFeaturesMeta[i].feature);
+                    features.push(orderedFeaturesMeta[i].feature as Feature<T>);
                     symbols = orderedFeaturesMeta[i].symbols.concat(symbols);
                 }
             } else {

@@ -2,8 +2,8 @@ import {Attributes, Component, HTMLAttributes, ReactElement, ReactNode, ReactTyp
 import {functionDecor} from "../functoin-decor/index";
 import {DecorReactHooks, Element, ElementArgs, ElementType} from "./common";
 import {ReactDecor} from "./index";
-import React = require('react');
 import {Feature} from "../wrappers/feature-manager";
+import React = require('react');
 
 declare const process: { env: { [k: string]: any } };
 
@@ -110,8 +110,9 @@ export const wrappedReactCloneElement = functionDecor.makeFeature({
 export function makeRenderFeature(reactDecor: ReactDecor): Feature<Function> {
     function beforeRender(this: any, args: [object, any], wrappedRender: Function): [object, any] {
         if (React.createElement !== wrappedCreateElement) {
-            const isClass = this && this.render === wrappedRender;
-            const wrapperArgs = reactDecor.getDecoration(isClass ? this.constructor : wrappedRender);
+            const isClass = this && this.constructor && reactDecor.isDecorated(this.constructor);
+            const decorated: React.ComponentType = (isClass) ? this.constructor : wrappedRender;
+            const wrapperArgs = reactDecor.getDecoration(decorated);
             if (wrapperArgs) {
                 context.componentInstance = this;
                 context.createArgsMap.clear();
@@ -120,7 +121,7 @@ export function makeRenderFeature(reactDecor: ReactDecor): Feature<Function> {
                 React.createElement = wrappedCreateElement;
                 React.cloneElement = wrappedReactCloneElement;
             } else {
-                throw new Error('how comes no decoration?');
+                throw new Error(`Cannot extract decoration information during render of '${decorated.displayName || decorated.name || decorated}'`);
             }
         }
         return args;

@@ -14,7 +14,7 @@ describe('GlobalID', () => {
 
     describe('getRootId', () => {
         it('returns the same ID for the same parameter', () => {
-            const componentInstance = new TestClass();
+            const componentInstance = new TestClass({});
             expect(getRootId(componentInstance)).to.equal(getRootId(componentInstance));
 
             const props = {id};
@@ -22,8 +22,8 @@ describe('GlobalID', () => {
         });
 
         it('returns different IDs for different parameters', () => {
-            const componentInstance = new TestClass();
-            const differentInstance = new TestClass();
+            const componentInstance = new TestClass({});
+            const differentInstance = new TestClass({});
             expect(getRootId(componentInstance)).to.not.equal(getRootId(differentInstance));
 
             const props = {id};
@@ -44,7 +44,7 @@ describe('GlobalID', () => {
         });
 
         it('resolves the id from a component\'s private state if it was not provided in props', () => {
-            expect(typeof getRootId(new TestClass())).to.equal('string');
+            expect(typeof getRootId(new TestClass({}))).to.equal('string');
         });
     });
 

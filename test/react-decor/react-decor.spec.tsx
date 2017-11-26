@@ -52,14 +52,14 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
 
     describe(`rootOnly helpers`, () => {
         it('makeRootOnly() mutates input to be marked readonly', () => {
-            const arg: ElementHook<any, any> = () => 0;
+            const arg: ElementHook<any> = () => 0;
             const result = makeRootOnly(arg);
             expect(result).to.equal(arg);
             expect(result.rootOnly).to.equal(true);
         });
 
         it('makeRootOnly() returns the hook if it is already readonly', () => {
-            const arg: ElementHook<any, any> = () => 0;
+            const arg: ElementHook<any> = () => 0;
             arg.rootOnly = true;
             const result = asRootOnly(arg);
             expect(result).to.equal(arg);
@@ -67,19 +67,19 @@ describe.assuming(inBrowser(), 'only in browser')('react-decorator', () => {
         });
 
         it('asRootOnly() clones (wraps) original method with readonly:true', () => {
-            const arg: ElementHook<any, any> = sinon.spy();
-            const result: ElementHook<any, any> = asRootOnly(arg);
+            const arg: ElementHook<any> = sinon.spy();
+            const result: ElementHook<any> = asRootOnly(arg);
 
             expect(result.rootOnly).to.equal(true);
             expect(arg.rootOnly).to.equal(undefined);
             // check that result calls go to the argument
-            result(1, 2, true);
+            result(1, 2 as any, true);
             expect(arg).to.have.been.calledWith(1, 2, true);
         });
 
         it('asRootOnly() result is cached', () => {
-            const arg1: ElementHook<any, any> = () => 0;
-            const arg2: ElementHook<any, any> = () => 0;
+            const arg1: ElementHook<any> = () => 0;
+            const arg2: ElementHook<any> = () => 0;
             const result1 = asRootOnly(arg1);
             const result1_2 = asRootOnly(arg1);
             const result2 = asRootOnly(arg2);

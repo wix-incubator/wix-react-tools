@@ -9,15 +9,14 @@ export class FunctionFeatureStub implements FunctionMetaData {
 
     public middlewareBeforeSpy = sinon.spy();
     public middlewareAfterSpy = sinon.spy();
-    public beforeSpy = sinon.spy();
-    public afterSpy = sinon.spy();
-
-    public middleware: MiddlewareHook<any>[] = [(next:Function, args:any) => {
+    public middleware: MiddlewareHook<any>[] = [(next: Function, args: any) => {
         this.middlewareBeforeSpy();
         next(args);
         this.middlewareAfterSpy();
     }];
+    public beforeSpy = sinon.spy();
     public before: BeforeHook[] = [this.beforeSpy];
+    public afterSpy = sinon.spy();
     public after: AfterHook<any>[] = [this.afterSpy];
 
     public feature: Feature<Function> = functionDecor.makeFeature(this);
@@ -26,7 +25,7 @@ export class FunctionFeatureStub implements FunctionMetaData {
     }
 
 
-    reset(){
+    reset() {
         // reset spies memory
         this.middlewareBeforeSpy.reset();
         this.middlewareAfterSpy.reset();
@@ -36,16 +35,16 @@ export class FunctionFeatureStub implements FunctionMetaData {
         this.feature = functionDecor.makeFeature(this);
     }
 
-    expectToHaveBeenCalledOnce(){
-        expect(this.middlewareBeforeSpy, `${this.name}.middlewareBeforeSpy`).to.have.callCount(1);
-        expect(this.middlewareAfterSpy, `${this.name}.middlewareAfterSpy`).to.have.callCount(1);
-        expect(this.beforeSpy, `${this.name}.beforeSpy`).to.have.callCount(1);
-        expect(this.afterSpy, `${this.name}.afterSpy`).to.have.callCount(1);
+    expectToHaveBeenCalledOnce(msg = '') {
+        expect(this.beforeSpy, `${msg} : ${this.name}.beforeSpy`).to.have.callCount(1);
+        expect(this.middlewareBeforeSpy, `${msg} : ${this.name}.middlewareBeforeSpy`).to.have.callCount(1);
+        expect(this.middlewareAfterSpy, `${msg} : ${this.name}.middlewareAfterSpy`).to.have.callCount(1);
+        expect(this.afterSpy, `${msg} : ${this.name}.afterSpy`).to.have.callCount(1);
     }
 
-    expectToHaveWrapped(other: FunctionFeatureStub, msg = ''){
-        this.expectToHaveBeenCalledOnce();
-        other.expectToHaveBeenCalledOnce();
+    expectToHaveWrapped(other: FunctionFeatureStub, msg = '') {
+        this.expectToHaveBeenCalledOnce(msg);
+        other.expectToHaveBeenCalledOnce(msg);
 
         expect(this.beforeSpy.firstCall.calledBefore(other.beforeSpy.firstCall), `${msg} : ${this.name}.beforeSpy before ${other.name}.beforeSpy`).to.equal(true);
         expect(this.middlewareBeforeSpy.firstCall.calledBefore(other.middlewareBeforeSpy.firstCall), `${msg} : ${this.name}.middlewareBeforeSpy before ${other.name}.middlewareBeforeSpy`).to.equal(true);
