@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+
+# 4.1.0
+
+### Added
+- `stylable.fragment` feature (allow function as children, fixes [#198](https://github.com/wix/wix-react-tools/issues/198))
+
+# 4.0.0
+
 ### Added
 - a changelog (this file)
 - the three decor APIs (class, function and react) are nuw exported as objects.
