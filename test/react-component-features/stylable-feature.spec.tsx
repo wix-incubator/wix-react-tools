@@ -85,8 +85,8 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
 
             expect(select('Root')).to.have.attribute(rootStateAttrName);
             expect(select('Node')).to.have.attribute(nodeStateAttrName);
-            expect(new Comp().render().props).to.not.haveOwnProperty('cssState'); // delete original cssStates from render result
-            expect(new Comp().render().props.children.props).to.not.haveOwnProperty('cssState'); // delete original cssStates from render result
+            expect(new Comp({}).render().props).to.not.haveOwnProperty('cssState'); // delete original cssStates from render result
+            expect(new Comp({}).render().props.children.props).to.not.haveOwnProperty('cssState'); // delete original cssStates from render result
 
         });
 
@@ -98,7 +98,7 @@ describe.assuming(inBrowser(), 'only in browser')('stylable-react', () => {
                 }
             }
 
-            const rootElement = new Comp().render();
+            const rootElement = new Comp({}).render();
             expect(rootElement && rootElement.props).to.not.have.property('style-state');
         });
     });
