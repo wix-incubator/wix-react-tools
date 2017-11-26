@@ -5,8 +5,6 @@ import * as React from "react";
 import {runInContext} from "../../src/core/config";
 import {devMode} from "../../src/core/dev-mode";
 
-const ROOT_ATTRIBUTE_NAME = 'data-reactroot';
-
 describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
 
     const clientRenderer = new ClientRenderer();
@@ -17,7 +15,7 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
 
         const {select} = clientRenderer.render(<Comp/>);
 
-        expect(select('Root')).to.have.attribute(ROOT_ATTRIBUTE_NAME);
+        expect(select('Root')).to.be.ok;
     });
 
     it("works with empty class", () => {
@@ -30,7 +28,7 @@ describe.assuming(inBrowser(), 'only in browser')('react root wrapper', () => {
 
         const {select} = clientRenderer.render(<Comp/>);
 
-        expect(select('Root')).to.have.attribute(ROOT_ATTRIBUTE_NAME);
+        expect(select('Root')).to.be.ok;
     })
     ;
     it("use the rootProps function to process props (detect by behavior)", () => {

@@ -74,7 +74,7 @@
     "stylable": "^4.0.26",
     "test-drive-react": "^0.8.0",
     "ts-loader": "^3.1.0",
-    "typescript": "~2.6.1",
+    "typescript": "~2.5.3",
     "typings-checker": "^2.0.0",
     "webpack": "^3.5.5",
     "webpack-dev-server": "^2.5.1"

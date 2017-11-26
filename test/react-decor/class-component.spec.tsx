@@ -86,8 +86,8 @@ describe.assuming(inBrowser(), 'only in browser')('react-decor-class', () => {
         }
 
         class MyComp extends Parent {
-            constructor() {
-                super();
+            constructor(p:any) {
+                super(p);
                 this.render = this.render.bind(this);
             }
         }
