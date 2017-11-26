@@ -30,9 +30,9 @@
   version "2.2.44"
   resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-2.2.44.tgz#1d4a798e53f35212fd5ad4d04050620171cd5b5e"
 
-"@types/node@6":
-  version "6.0.91"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-6.0.91.tgz#607575951fd03362d19a93e8454f5d8484686aed"
+"@types/node@^8.0.48":
+  version "8.0.53"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.53.tgz#396b35af826fa66aad472c8cb7b8d5e277f4e6d8"
 
 "@types/react-dom@^15.5.3":
   version "15.5.6"
@@ -54,10 +54,6 @@
 "@types/sinon@*", "@types/sinon@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-4.0.0.tgz#9a93ffa4ee1329e85166278a5ed99f81dc4c8362"
-
-"@types/sinon@^2.3.2":
-  version "2.3.7"
-  resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-2.3.7.tgz#e92c2fed3297eae078d78d1da032b26788b4af86"
 
 abbrev@1:
   version "1.1.1"

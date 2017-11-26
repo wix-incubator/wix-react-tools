@@ -2,13 +2,12 @@ import * as React from "react";
 import {stylable} from "../dist/src/index";
 import {RuntimeStylesheet} from "stylable";
 
-
 interface CompProps {
 }
 
 declare const style: RuntimeStylesheet;
 
-// $ExpectType (props: any) => Element
+// $ExpectType (props: { children?: ReactNode; }) => Element
 stylable(style)(props => {
     return <div/>;
 });
