@@ -58,11 +58,11 @@ export class ReactDecor extends DecorClassApi<ReactDecoration<any>, ComponentTyp
         );
     }
 
-    makeFeature<P extends object, T extends Component<P> = Component<P>>(wrapperArgs: ReactDecoration<P, T>): ReactFeature<P> ;
+    makeFeature<P extends object = any, T extends Component<P> = Component<P>>(wrapperArgs: ReactDecoration<P, T>): ReactFeature<P> ;
 
-    makeFeature<P extends object, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): ReactFeature<P> ;
+    makeFeature<P extends object = any, T extends Component<P> = Component<P>>(statelessHooks: StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): ReactFeature<P> ;
 
-    makeFeature<P extends object, T extends Component<P> = Component<P>>(statelessHooks: ReactDecoration<P, T> | StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): ReactFeature<P> {
+    makeFeature<P extends object = any, T extends Component<P> = Component<P>>(statelessHooks: ReactDecoration<P, T> | StatelessDecorReactHooks<P>, classHooks?: DecorReactHooks<P, T>): ReactFeature<P> {
         if (Array.isArray(statelessHooks)) {
             return super.makeFeature(makeReactDecoration(statelessHooks, classHooks));
         } else {

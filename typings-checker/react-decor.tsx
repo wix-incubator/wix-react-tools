@@ -7,11 +7,12 @@ declare const hook: StatelessElementHook<PropsWithName>;
 type PropsWithName = { name: string };
 type PropsWithName2 = { name: Function };
 
+
 describe('React Decorator', () => {
-    // $ExpectType Feature<ComponentType<{}>>
+    // $ExpectType Feature<ComponentType<any>>
     reactDecor.makeFeature([]);
 
-    // $ExpectType Feature<ComponentType<{}>>
+    // $ExpectType Feature<ComponentType<any>>
     reactDecor.makeFeature([], []);
 
     // $ExpectType Feature<ComponentType<PropsWithName>>
@@ -26,3 +27,4 @@ describe('React Decorator', () => {
     // $ExpectType ComponentClass<PropsWithName>
     reactDecor.makeFeature([], [])(ClassComp);
 });
+

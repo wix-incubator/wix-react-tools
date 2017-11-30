@@ -5,6 +5,7 @@ import * as React from "react";
 import {inBrowser} from "mocha-plugin-env";
 import {testWithBothComponentTypes} from "../test-drivers/test-tools";
 import {ElementArgs} from "../../src/react-decor/common";
+import {HTMLAttributes} from "react";
 
 /**
  * this suite serves two purposes:
@@ -49,7 +50,7 @@ describe.assuming(inBrowser(), 'only in browser')('@stylable with @onRootElement
             byDecorator: !!props.byDecorator,
             noRightBorderRadius: !!props.byRender
         };
-        mergeStyleState(args.newProps, styleState);
+        mergeStyleState(args.newProps as any, styleState);
         return args;
     });
     const stylableWrapper = stylable(runtime);

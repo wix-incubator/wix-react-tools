@@ -55,7 +55,7 @@ export type Maybe<T> = T | Falsy;
 export interface StatefulElementHook<P extends object, T extends Component<P> = Component<P>> {
     rootOnly?: boolean;
 
-    <E = object>(this: Instance<T>, props: P, args: ElementArgs<E>, isRoot: boolean): Maybe<ElementArgs<E>>;
+    (this: Instance<T>, props: P, args: ElementArgs<any>, isRoot: boolean): Maybe<ElementArgs<any>>;
 }
 
 export type StatelessElementHook<P extends object> = StatefulElementHook<P, any>;

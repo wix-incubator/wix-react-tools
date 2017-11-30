@@ -25,7 +25,7 @@ export class ClassDecor extends DecorClassApi<Partial<ClassMetaData>, Class<obje
         super('class-decor');
     }
 
-    onInstance<T extends object>(hook: ConstructorHook<T>): ClassFeature<T> {
+    onInstance<T extends object>(hook: ConstructorHook<T, any>): ClassFeature<T> {
         return this.makeFeature(makeClassDecorMetadata([hook], null, null));
     }
 

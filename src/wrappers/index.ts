@@ -115,7 +115,7 @@ export abstract class DecorApi<D, T extends object> {
                 }
             } else {
                 decoration = this.mergeDecorations(subjMetadata.decoration, decoration);
-                features = subjMetadata.features.concat(features);
+                features = subjMetadata.features.concat(features as ReadonlyArray<Feature<T>>);
                 symbols = subjMetadata.symbols.concat(symbols);
             }
             if (subjMetadata.features.length > 0 || features.length > 0) {

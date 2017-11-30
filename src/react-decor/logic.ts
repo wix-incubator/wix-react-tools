@@ -134,7 +134,7 @@ export function makeRenderFeature(reactDecor: ReactDecor): Feature<Function> {
                 for (let i = 0; i < context.hooks.length; i++) {
                     rootElementArgs = (context.hooks[i].call(context.componentInstance, context.componentProps, rootElementArgs, true) || rootElementArgs) as ElementArgs<any>;
                 }
-                renderResult = originalReactCreateElement(renderResult.type as any, Object.assign({}, renderResult.props, rootElementArgs.newProps), ...rootElementArgs.children);
+                renderResult = originalReactCreateElement(renderResult.type, Object.assign({}, renderResult.props, rootElementArgs.newProps), ...rootElementArgs.children);
                 // please un-comment only when using cloneElement is justified by tests
                 // renderResult = originalReactCloneElement(renderResult, rootElementArgs.newProps, ...rootElementArgs.children);
                 context.createArgsMap.set(renderResult, rootElementArgs!);

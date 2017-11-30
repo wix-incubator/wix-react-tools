@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+- support for typescript 2.6.2, except for the new `strictFunctionTypes` (pending [typescript issue](https://github.com/Microsoft/TypeScript/issues/18770))
 
+# 4.1.1
 # 4.1.0
 
 ### Added

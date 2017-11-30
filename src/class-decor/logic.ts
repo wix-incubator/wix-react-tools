@@ -6,7 +6,7 @@ import {Feature} from "../wrappers/feature-manager";
 
 export type MethodWrapper = Feature<Function>;
 
-export type ConstructorHook<T extends object> = (this: T, constructorArguments: any[]) => void;
+export type ConstructorHook<T extends object, A extends Array<any> = any[]> = (this: T, constructorArguments: A) => void;
 
 export function forceMethod(...wrappers: MethodWrapper[]): MethodWrappers {
     const result: MethodWrappers = wrappers;

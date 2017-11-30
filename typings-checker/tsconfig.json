@@ -3,6 +3,7 @@
     "strict": true,
     "noImplicitReturns": true,
     "strictNullChecks": true,
+    "strictFunctionTypes": false,
     "jsx": "react",
     "module": "commonjs",
     "experimentalDecorators": true,
