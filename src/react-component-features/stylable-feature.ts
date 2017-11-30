@@ -35,8 +35,8 @@ function featureGenerator(isFragment: boolean, sheet: RuntimeStylesheet) {
     return makeReactDecoration([stylableElementHook]);
 }
 
-export type StylableFeature = FeatureFactory<ComponentType, RuntimeStylesheet> & {
-    fragment: FeatureFactory<ComponentType | Fragment, RuntimeStylesheet>
+export type StylableFeature = FeatureFactory<ComponentType<any>, RuntimeStylesheet> & {
+    fragment: FeatureFactory<ComponentType<any> | Fragment, RuntimeStylesheet>
 }
 
 export const stylable = reactDecor.makeFeatureFactory(featureGenerator.bind(null, false)) as StylableFeature;
