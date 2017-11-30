@@ -3,11 +3,12 @@ import {stylable} from "../dist/src/index";
 import {RuntimeStylesheet} from "stylable";
 
 interface CompProps {
+    message: string;
 }
 
 declare const style: RuntimeStylesheet;
 
-// $ExpectType (props: { children?: ReactNode; }) => Element
+// $ExpectType (props: any) => Element
 stylable(style)(props => {
     return <div/>;
 });
