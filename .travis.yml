@@ -7,8 +7,6 @@ node_js:
 os:
   - linux
 
-dist: trusty
-
 addons:
   firefox: latest
   chrome: stable
