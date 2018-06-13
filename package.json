@@ -48,7 +48,7 @@
     "@types/react": "^16.0.25",
     "@types/react-dom": "^16.0.3",
     "@types/sinon": "^4.0.0",
-    "@types/sinon-chai": "^2.7.28",
+    "@types/sinon-chai": "^3.2.0",
     "chai": "^4.1.1",
     "chai-dom": "^1.5.0",
     "chai-subset": "^1.5.0",
